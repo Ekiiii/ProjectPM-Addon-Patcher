@@ -160,8 +160,8 @@ TRANSLATIONS = {
         "fr": "Télécharger la mise à jour"
     },
     "disclaimer": {
-        "en": "Unofficial Community Mod Manager by Sonny / Ekiiii. Not affiliated with official Project PM team.",
-        "fr": "Gestionnaire de Mods communautaire par Sonny / Ekiiii. Non affilié à l'équipe officielle Project PM."
+        "en": "Unofficial Community Mod Manager by Ekiiii. Not affiliated with official Project PM team.",
+        "fr": "Gestionnaire de Mods communautaire par Ekiiii. Non affilié à l'équipe officielle Project PM."
     }
 }
 

@@ -42,5 +42,5 @@
 ---
 
 ### Disclaimer / Avertissement
-*This is an unofficial community project developed by Sonny / Ekiiii. It is not officially affiliated with or endorsed by the core Project PM team.*  
-*Ceci est un projet communautaire non-officiel développé par Sonny / Ekiiii. Il n'est pas affilié à l'équipe officielle de Project PM.*
+*This is an unofficial community project developed by Ekiiii. It is not officially affiliated with or endorsed by the core Project PM team.*  
+*Ceci est un projet communautaire non-officiel développé par Ekiiii. Il n'est pas affilié à l'équipe officielle de Project PM.*
