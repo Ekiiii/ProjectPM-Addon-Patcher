@@ -65,6 +65,9 @@ class StatusBadge(tk.Label):
         elif badge_type == "danger":
             bg = "#3D1C1C"
             fg = COLOR_RED
+        elif badge_type == "purple":
+            bg = "#331D42"
+            fg = "#C678DD"
             
         super().__init__(
             parent,
@@ -90,4 +93,7 @@ class StatusBadge(tk.Label):
         elif badge_type == "danger":
             bg = "#3D1C1C"
             fg = COLOR_RED
+        elif badge_type == "purple":
+            bg = "#331D42"
+            fg = "#C678DD"
         self.config(text=text, bg=bg, fg=fg)

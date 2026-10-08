@@ -4,7 +4,12 @@ rom_detector.py
 Analyzes and classifies Nintendo DS Pokémon Platinum ROMs:
 - Language detection (US / FR)
 - Version detection (Vanilla / ProjectPM 0.4.5)
-- Active mod detection (SoulLocke, Visual+ BG, Visual+ 3D Camera)
+- Active mod detection:
+  * Multiplayer Base (ProjectPM overlay 122 & discovery magic)
+  * SoulLocke C mod (ARM9 Hook H1)
+  * Randomizer (file 331 pl_enc_data.narc & .rand.txt)
+  * Visual+ Battle Backgrounds (file 159 pl_batt_bg.narc)
+  * Visual+ 3D Camera (camera parameters table)
 - Companion save files (.dsv) and randomizer files (.rand.txt)
 """
 import os
@@ -16,14 +21,26 @@ import ndspy.rom
 KNOWN_HASHES = {
     # Vanilla Platinum
     "38914619d0e2e505ea99994cb1783cf6cb79ea29": {"type": "vanilla_us", "name": "Vanilla Platinum (USA Rev 1)"},
+    "0862ec35b24de5c7e2dcb88c9eea0873110d755c": {"type": "vanilla_us", "name": "Vanilla Platinum (USA Rev 1)"},
     "f4448555e5dfad41763740e53a25cb8ec89ef239": {"type": "vanilla_fr", "name": "Vanilla Platinum (France)"},
+    "41ea92f794560e347cd9509f5ec9e9d479a4bbf1": {"type": "vanilla_fr", "name": "Vanilla Platinum (France)"},
     # ProjectPM FR 0.4.5
     "7914acff08156d4c2be6d7babb275afe2d60a3b0": {"type": "projectpm_fr", "name": "ProjectPM 0.4.5 (FR - Standard)"},
     "534992df5165d8ed182da8b922da09614fd70022": {"type": "projectpm_fr", "name": "ProjectPM 0.4.5 (FR - Visual+)"},
+    # ProjectPM USA 0.4.5
+    "13a17485f168f7c66a8632598929ffb9232be252": {"type": "projectpm_us", "name": "ProjectPM 0.4.5 (USA)"},
 }
 
+STANDARD_ENC_HASHES = {
+    "50100e5c276738c4e4758011b2b2e49922da1f1f",  # ProjectPM standard (both US and FR)
+    "9d3829844b18063946f3bddcf67a839c95c0186f",  # Vanilla Platinum France
+    "e484a4ea105e16977b9f39b965aaad014a4ec923",  # Vanilla Platinum USA
+}
+
+FR_BATTLE_UI_HASH = "b87bbe5bf36e0d420552ba0d488f58285ec9d275"
+
 CAM_VANILLA_B64 = b"vAEAALkBAAC6AQAAKgEAAOQBAACAAAAADwIAAEsAAADBrikAAtYAAAAAAAAAAMEFAGAJAABAOADBrikAYs8AAAAAAAAAAMEFAGAJAABAOABMNyAAItkAAAAAAAAAAHAHAGAJAABAOADBrikAAtYAAAAAAAAAAMEFAGAJAABAOACbuGEAYtwAAAAAAAABAIECAGAJAABwbAAFyBMAA9YAAAAAAAAAAAEMAKAAAAAAPwDfKDYAA8wAAAAAAAAAAIEEADAHAABQTADBrikAA9YAAAAAAAAAAMEFAJAJAABwQADBbikA480AAAAAAAAAAAEHAGAJAACgQACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACxJUsAw9QAAAAAAAAAAEEDAGAJAAAgbQBVPSoA49YAAAAAAAAAAMEFAGAOAABwRgA/6SMAA9MAAAAAAAAAAMEGAGAJAABAOABMNyAAA94AAAAAAAAAAHAHAGAJAABAOABllwoARMgAAAAAAAAAAAEVAKAAAAAAPwDf3igAItkAAAAAAAAAAPAFAGAJAABAOADArhQAAtYAAAAAAAAAAAELAGAJAABAOAA="
-CAM_VISUAL_B64  = b"vAEAALkBAAC6AQAAKgEAAOQBAACAAAAADwIAAEsAAACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOADArhQAAtYAAAAAAAAAAAELAGAJAABAOAA="
+CAM_VISUAL_B64  = b"vAEAALkBAAC6AQAAKgEAAOQBAACAAAAADwIAAEsAAACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOACsWRYAI+MAAAAAAAAAALAKAGAJAABAOADArhQAAtYAAAAAAAAAAAELAGAJAABAOAA="
 
 CAM_VANILLA_BYTES = base64.b64decode(CAM_VANILLA_B64)
 CAM_VISUAL_BYTES = base64.b64decode(CAM_VISUAL_B64)
@@ -41,8 +58,13 @@ class RomInfo:
         self.category = "unknown"   # "projectpm", "vanilla", "unknown"
         self.display_name = ""
         
+        # Multiplayer Base state
+        self.has_multiplayer = False
+        self.mp_lang = "en"        # "en" or "fr"
+        
         # Mod states
         self.is_soullocke = False
+        self.is_randomized = False
         self.has_visual_bg = False
         self.has_visual_cam = False
         
@@ -60,7 +82,6 @@ class RomInfo:
                 header = f.read(32)
                 f.seek(0)
                 h = hashlib.sha1()
-                # Hash in chunks
                 while chunk := f.read(1024 * 1024):
                     h.update(chunk)
                 self.sha1 = h.hexdigest()
@@ -75,7 +96,7 @@ class RomInfo:
             elif "CPUE" in self.game_code:
                 self.lang = "en"
 
-            # Check known hash
+            # Check known hash first
             known = KNOWN_HASHES.get(self.sha1.lower())
             if known:
                 self.category = "vanilla" if "vanilla" in known["type"] else "projectpm"
@@ -84,45 +105,95 @@ class RomInfo:
                     self.lang = "fr"
                 elif "_us" in known["type"]:
                     self.lang = "en"
-            else:
-                # Deduce from header and overlays
-                if "POKEMON PL" in self.game_title:
-                    if self.size >= 134217728:
-                        self.category = "projectpm"
-                        # Check filename hints
-                        low_path = self.path.lower()
-                        if "fr" in low_path or "france" in low_path:
-                            self.lang = "fr"
-                        self.display_name = f"ProjectPM ({'FR' if self.lang == 'fr' else 'USA'})"
-                    else:
-                        self.category = "vanilla"
-                        self.display_name = f"Pokémon Platinum ({'FR' if self.lang == 'fr' else 'USA'})"
 
-            # Check mods by loading ndspy
+            # Read full ROM content for pattern checks
+            with open(self.path, "rb") as f:
+                content = f.read()
+
+            # Check Multiplayer Base presence
+            # 1. Overlay 122 discovery magic (CAFE1234 & 5678CAFE in close proximity)
+            idx = 0
+            while True:
+                pos1 = content.find(b"\x34\x12\xfe\xca", idx)
+                if pos1 == -1:
+                    break
+                start_search = max(0, pos1 - 64)
+                end_search = min(len(content), pos1 + 64)
+                if b"\xfe\xca\x78\x56" in content[start_search:end_search]:
+                    self.has_multiplayer = True
+                    self.category = "projectpm"
+                    break
+                idx = pos1 + 1
+
+            # Parse ndspy ROM structure
             rom = ndspy.rom.NintendoDSRom.fromFile(self.path)
-            
-            # Check SoulLocke: Hook H1 at 0x02055FA8 (offset in arm9 = 0x02055FA8 - 0x02000000 = 0x55FA8)
+
+            # Overlay 122 check (ProjectPM Multiplayer Overlay)
+            ovs = rom.loadArm9Overlays()
+            if 122 in ovs:
+                self.has_multiplayer = True
+                self.category = "projectpm"
+
+            # Determine Language precisely
+            if len(rom.files) > 158 and rom.files[158]:
+                h_ui = hashlib.sha1(rom.files[158]).hexdigest()
+                if h_ui == FR_BATTLE_UI_HASH or "CPUF" in self.game_code:
+                    self.lang = "fr"
+                elif "CPUE" in self.game_code and not ("fr" in self.filename.lower() or "france" in self.filename.lower()):
+                    self.lang = "en"
+                elif "fr" in self.filename.lower() or "france" in self.filename.lower():
+                    self.lang = "fr"
+
+            self.mp_lang = self.lang
+
+            if self.has_multiplayer:
+                if not self.display_name:
+                    self.display_name = f"ProjectPM 0.4.5 ({'Français' if self.lang == 'fr' else 'English'})"
+            else:
+                if not self.display_name:
+                    if "POKEMON PL" in self.game_title:
+                        self.category = "vanilla"
+                        self.display_name = f"Vanilla Platinum ({'France' if self.lang == 'fr' else 'USA'})"
+                    else:
+                        self.display_name = f"Custom ROM ({self.game_title})"
+
+            # Check SoulLocke: Hook H1 at 0x02055FA8 (arm9 offset 0x55FA8)
             arm9 = rom.arm9
             if len(arm9) > 0x55FA8 + 4:
-                h1_bytes = arm9[0x55FA8: 0x55FA8 + 4]
+                h1_bytes = arm9[0x55FA8 : 0x55FA8 + 4]
                 if h1_bytes == bytes.fromhex("89f36af9"):
                     self.is_soullocke = True
-                    self.display_name += " [SoulLocke Active]"
 
-            # Check Visual+ Battle BG: file 159 pl_batt_bg.narc
+            # Check Randomizer
+            # 1. Sidecar file <rom>.rand.txt
+            base_no_ext = os.path.splitext(self.path)[0]
+            rand_candidate = base_no_ext + ".rand.txt"
+            if os.path.isfile(rand_candidate):
+                self.has_rand_sidecar = True
+                self.rand_file = rand_candidate
+                self.is_randomized = True
+
+            # 2. Filename check
+            if "random" in self.filename.lower() or "rand" in self.filename.lower():
+                self.is_randomized = True
+
+            # 3. Encounter table pl_enc_data.narc (file 331)
+            if len(rom.files) > 331 and rom.files[331]:
+                enc_hash = hashlib.sha1(rom.files[331]).hexdigest()
+                if enc_hash not in STANDARD_ENC_HASHES:
+                    self.is_randomized = True
+
+            # Check Visual+ Battle BG: file 159 pl_batt_bg.narc > 1MB
             if len(rom.files) > 159 and rom.files[159]:
                 bg_size = len(rom.files[159])
                 if bg_size > 1000000:
                     self.has_visual_bg = True
 
             # Check Visual+ 3D Camera: check presence of camera byte tables
-            with open(self.path, "rb") as f:
-                content = f.read()
-                if CAM_VISUAL_BYTES in content:
-                    self.has_visual_cam = True
+            if CAM_VISUAL_BYTES in content:
+                self.has_visual_cam = True
 
             # Companion Save File (.dsv)
-            base_no_ext = os.path.splitext(self.path)[0]
             dsv_candidate = base_no_ext + ".dsv"
             if os.path.isfile(dsv_candidate):
                 self.companion_save = dsv_candidate
@@ -132,12 +203,6 @@ class RomInfo:
                 bat_dsv = os.path.join(parent, "battery", os.path.basename(base_no_ext) + ".dsv")
                 if os.path.isfile(bat_dsv):
                     self.companion_save = bat_dsv
-
-            # Companion Randomizer (.rand.txt)
-            rand_candidate = base_no_ext + ".rand.txt"
-            if os.path.isfile(rand_candidate):
-                self.has_rand_sidecar = True
-                self.rand_file = rand_candidate
 
         except Exception as e:
             self.display_name = f"Error reading ROM ({e})"

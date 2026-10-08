@@ -39,49 +39,109 @@ TRANSLATIONS = {
         "en": "Analyzing ROM...",
         "fr": "Analyse de la ROM en cours..."
     },
-    "rom_valid_fr": {
-        "en": "ProjectPM 0.4.5 (French) Detected",
-        "fr": "ProjectPM 0.4.5 (Français) Détecté"
+    "badge_mp_active_fr": {
+        "en": "ProjectPM 0.4.5 (FR) Active",
+        "fr": "ProjectPM 0.4.5 (FR) Actif"
     },
-    "rom_valid_us": {
-        "en": "ProjectPM 0.4.5 (English) Detected",
-        "fr": "ProjectPM 0.4.5 (Anglais) Détecté"
+    "badge_mp_active_en": {
+        "en": "ProjectPM 0.4.5 (EN) Active",
+        "fr": "ProjectPM 0.4.5 (EN) Actif"
     },
-    "rom_vanilla_fr": {
-        "en": "Vanilla Platinum (France) Detected",
-        "fr": "Platine Vanilla (France) Détecté"
+    "badge_mp_none": {
+        "en": "Vanilla ROM (No Multiplayer)",
+        "fr": "ROM Vanilla (Sans Multijoueur)"
     },
-    "rom_vanilla_us": {
-        "en": "Vanilla Platinum (USA Rev 1) Detected",
-        "fr": "Platine Vanilla (USA Rev 1) Détecté"
+    "badge_sl_active": {
+        "en": "SoulLocke Active",
+        "fr": "SoulLocke Actif"
     },
-    "rom_unknown": {
-        "en": "Unrecognized / Custom ROM",
-        "fr": "ROM non reconnue ou personnalisée"
+    "badge_sl_none": {
+        "en": "No SoulLocke",
+        "fr": "SoulLocke Inactif"
+    },
+    "badge_rand_yes": {
+        "en": "Randomized ROM",
+        "fr": "ROM Randomisée"
+    },
+    "badge_rand_no": {
+        "en": "Standard Encounters",
+        "fr": "Rencontres Standard"
+    },
+    "badge_vbg_yes": {
+        "en": "Visual+ BG: Active",
+        "fr": "Visual+ BG : Actif"
+    },
+    "badge_vcam_yes": {
+        "en": "Visual+ Cam: Active",
+        "fr": "Visual+ Cam : Actif"
+    },
+    "badge_already_installed": {
+        "en": "Already Installed on ROM",
+        "fr": "Déjà installé sur la ROM"
+    },
+    "badge_incompatible_req_mp": {
+        "en": "Requires ProjectPM Multiplayer",
+        "fr": "Nécessite le multijoueur ProjectPM"
+    },
+    "badge_incompatible_lang": {
+        "en": "Incompatible with chosen Multiplayer",
+        "fr": "Incompatible avec le Multijoueur choisi"
+    },
+    "section_multiplayer": {
+        "en": "2. MULTIPLAYER BASE (PROJECT PM)",
+        "fr": "2. BASE MULTIJOUEUR (PROJECT PM)"
+    },
+    "mp_installed_desc": {
+        "en": "ProjectPM Multiplayer is already embedded on this ROM (Selection locked).",
+        "fr": "Le multijoueur ProjectPM est déjà intégré à cette ROM (Sélection verrouillée)."
+    },
+    "mp_vanilla_desc": {
+        "en": "Select which Multiplayer version to install onto your Vanilla ROM:",
+        "fr": "Sélectionnez quelle version Multijoueur installer sur votre ROM Vanilla :"
+    },
+    "mp_opt_keep_vanilla": {
+        "en": "None (Keep Vanilla ROM)",
+        "fr": "Aucun (Conserver la ROM Vanilla)"
+    },
+    "mp_opt_fr": {
+        "en": "ProjectPM Multiplayer 0.4.5 (Français)",
+        "fr": "ProjectPM Multijoueur 0.4.5 (Français)"
+    },
+    "mp_opt_en": {
+        "en": "ProjectPM Multiplayer 0.4.5 (English)",
+        "fr": "ProjectPM Multijoueur 0.4.5 (Anglais)"
     },
     "section_addons": {
-        "en": "2. GAME MODS & ADDONS",
-        "fr": "2. MODS DE JEU & ADDONS"
+        "en": "3. SOULLOCKE ADDON",
+        "fr": "3. ADDON SOULLOCKE"
     },
-    "addon_soullocke": {
-        "en": "Soul Link / SoulLocke Edition",
-        "fr": "Édition Soul Link / SoulLocke"
+    "addon_soullocke_fr": {
+        "en": "SoulLocke Edition (Français)",
+        "fr": "Édition SoulLocke (Français)"
+    },
+    "addon_soullocke_en": {
+        "en": "SoulLocke Edition (English)",
+        "fr": "Édition SoulLocke (English)"
     },
     "addon_soullocke_desc": {
         "en": "Shared fates with partners: synchronized faint/graveyard, 1 shared catch per area, streamer overlay.",
         "fr": "Destins liés : mort partagée, boîte cimetière auto, 1 capture partagée par zone, overlay streamers."
     },
+    "addon_none": {
+        "en": "None / Do not add",
+        "fr": "Aucun / Ne pas ajouter"
+    },
     "addon_restore": {
-        "en": "Restore Clean ProjectPM (Remove Addons)",
-        "fr": "Restaurer en ProjectPM Classique (Retirer les Addons)"
+        "en": "Restore Clean ProjectPM (Uninstall SoulLocke)",
+        "fr": "Restaurer en ProjectPM Classique (Retirer SoulLocke)"
     },
     "addon_restore_desc": {
-        "en": "Removes SoulLocke hooks and reverts to stock multiplayer ROM.",
-        "fr": "Nettoie les points d'accroche et remet la ROM multijoueur propre."
+        "en": "Reverts to stock multiplayer ROM, removes SoulLocke hooks.",
+        "fr": "Remet la ROM multijoueur propre, retire les hooks SoulLocke."
     },
     "section_visual": {
-        "en": "3. VISUAL+ GRAPHIC OPTIONS",
-        "fr": "3. OPTIONS GRAPHIQUES VISUAL+"
+        "en": "4. VISUAL+ GRAPHIC OPTIONS",
+        "fr": "4. OPTIONS GRAPHIQUES VISUAL+"
     },
     "visual_battle_bg": {
         "en": "Visual+ Battle Backgrounds",
@@ -100,11 +160,11 @@ TRANSLATIONS = {
         "fr": "Rapproche la caméra en extérieur pour un effet 3D renforcé."
     },
     "opt_builtin": {
-        "en": "Built-in",
+        "en": "Activate",
         "fr": "Activer"
     },
     "opt_off": {
-        "en": "Off",
+        "en": "Deactivate",
         "fr": "Désactiver"
     },
     "opt_keep": {
@@ -112,8 +172,8 @@ TRANSLATIONS = {
         "fr": "Conserver"
     },
     "section_save": {
-        "en": "4. SAVE FILE & BACKUPS",
-        "fr": "4. SAUVEGARDE & BACKUPS"
+        "en": "5. SAVE FILE & BACKUPS",
+        "fr": "5. SAUVEGARDE & BACKUPS"
     },
     "save_preserve_checkbox": {
         "en": "Automatically backup and preserve companion save file (.dsv)",

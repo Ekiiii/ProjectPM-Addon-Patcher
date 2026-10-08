@@ -4,9 +4,12 @@ main_window.py
 Main graphical interface for ProjectPM Addon Patcher:
 - Platine Moderne pixel-art theme
 - Bilingual support with real-time toggle
+- Full window scrolling (Canvas + Scrollbar + MouseWheel)
+- In-depth ROM state detection & live badges (Multiplayer, SoulLocke, Randomizer, Visual+)
+- Selectable Multiplayer Base with auto-detection & lock when already present
+- Dynamic interlocking dependencies between Multiplayer and SoulLocke addons
 - Visual+ options with image previews
-- Drag & Drop / File selector with automatic ROM analysis
-- Save & Randomizer protection
+- Save file (.dsv) & Randomizer (.rand.txt) preservation
 - GitHub Auto-Updater integration
 """
 import os
@@ -40,8 +43,8 @@ class MainWindow(tk.Tk):
 
         # Window settings
         self.title("ProjectPM Addon Patcher")
-        self.geometry("900x780")
-        self.minsize(860, 720)
+        self.geometry("920x820")
+        self.minsize(880, 700)
         self.configure(bg=BG_DARK)
 
         # App Icon
@@ -58,7 +61,8 @@ class MainWindow(tk.Tk):
         self.update_info = None
 
         # Mode Variables
-        self.var_mode = tk.StringVar(value="soullocke")   # "soullocke", "restore", "none"
+        self.var_mp_base = tk.StringVar(value="none")     # "installed", "fr", "en", "none"
+        self.var_sl_mode = tk.StringVar(value="none")     # "soullocke_fr", "soullocke_en", "restore", "none"
         self.var_bg = tk.StringVar(value="keep")          # "builtin", "off", "keep"
         self.var_cam = tk.StringVar(value="keep")         # "builtin", "off", "keep"
         self.var_backup_save = tk.BooleanVar(value=True)
@@ -66,24 +70,32 @@ class MainWindow(tk.Tk):
         # Image cache
         self.img_cache = {}
 
-        # Build UI
+        # Top fixed header
         self._build_header()
+
+        # Center scrollable container
+        self._build_scrollable_container()
+
+        # Sections inside scrollable container
         self._build_rom_section()
+        self._build_multiplayer_section()
         self._build_addons_section()
         self._build_visual_section()
         self._build_save_section()
         self._build_action_section()
+
+        # Bottom fixed footer
         self._build_footer()
 
         # Check for updates in background
         check_for_updates_async(self._on_update_found)
 
     def _build_header(self):
-        header_frame = tk.Frame(self, bg=BG_DARK)
-        header_frame.pack(fill="x", padx=20, pady=(15, 10))
+        self.header_frame = tk.Frame(self, bg=BG_DARK)
+        self.header_frame.pack(fill="x", padx=20, pady=(12, 6))
 
         # Title + Subtitle
-        left_box = tk.Frame(header_frame, bg=BG_DARK)
+        left_box = tk.Frame(self.header_frame, bg=BG_DARK)
         left_box.pack(side="left")
 
         self.lbl_title = tk.Label(
@@ -105,7 +117,7 @@ class MainWindow(tk.Tk):
         self.lbl_sub.pack(anchor="w")
 
         # Right box: Lang switch & Version
-        right_box = tk.Frame(header_frame, bg=BG_DARK)
+        right_box = tk.Frame(self.header_frame, bg=BG_DARK)
         right_box.pack(side="right", anchor="e")
 
         self.btn_lang = PixelButton(
@@ -138,9 +150,39 @@ class MainWindow(tk.Tk):
         )
         self.btn_update_action.pack(side="right", padx=15, pady=6)
 
+    def _build_scrollable_container(self):
+        container = tk.Frame(self, bg=BG_DARK)
+        container.pack(fill="both", expand=True)
+
+        self.canvas = tk.Canvas(container, bg=BG_DARK, highlightthickness=0)
+        self.scrollbar = tk.Scrollbar(container, orient="vertical", command=self.canvas.yview)
+        self.scroll_content = tk.Frame(self.canvas, bg=BG_DARK)
+
+        self.scroll_content.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        self.canvas_win = self.canvas.create_window((0, 0), window=self.scroll_content, anchor="nw")
+
+        def _on_canvas_configure(event):
+            self.canvas.itemconfig(self.canvas_win, width=event.width)
+
+        self.canvas.bind("<Configure>", _on_canvas_configure)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.pack(side="left", fill="both", expand=True, padx=(10, 0))
+        self.scrollbar.pack(side="right", fill="y")
+
+        # MouseWheel for Windows
+        def _on_mousewheel(event):
+            self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        self.bind_all("<MouseWheel>", _on_mousewheel)
+
     def _build_rom_section(self):
-        self.card_rom = ModernCard(self)
-        self.card_rom.pack(fill="x", padx=20, pady=6)
+        self.card_rom = ModernCard(self.scroll_content)
+        self.card_rom.pack(fill="x", padx=10, pady=5)
 
         self.sec_rom_title = tk.Label(
             self.card_rom,
@@ -178,9 +220,9 @@ class MainWindow(tk.Tk):
         )
         self.btn_browse.pack(side="right")
 
-        # Info line
+        # Status & SHA1 line
         info_row = tk.Frame(self.card_rom, bg=BG_CARD)
-        info_row.pack(fill="x", pady=(4, 0))
+        info_row.pack(fill="x", pady=(4, 6))
 
         self.badge_rom_status = StatusBadge(info_row, text=t("rom_placeholder"), badge_type="info")
         self.badge_rom_status.pack(side="left")
@@ -188,9 +230,113 @@ class MainWindow(tk.Tk):
         self.lbl_rom_sha1 = tk.Label(info_row, text="", bg=BG_CARD, fg=TEXT_MUTED, font=get_font(9))
         self.lbl_rom_sha1.pack(side="right")
 
+        # Multi-badge features row
+        self.badges_row = tk.Frame(self.card_rom, bg=BG_CARD)
+        self.badges_row.pack(fill="x", pady=(2, 0))
+
+        self.badge_feat_mp = StatusBadge(self.badges_row, text=t("badge_mp_none"), badge_type="info")
+        self.badge_feat_mp.pack(side="left", padx=(0, 6))
+
+        self.badge_feat_sl = StatusBadge(self.badges_row, text=t("badge_sl_none"), badge_type="info")
+        self.badge_feat_sl.pack(side="left", padx=(0, 6))
+
+        self.badge_feat_rand = StatusBadge(self.badges_row, text=t("badge_rand_no"), badge_type="info")
+        self.badge_feat_rand.pack(side="left", padx=(0, 6))
+
+        self.badge_feat_vbg = StatusBadge(self.badges_row, text="Visual+ BG: Off", badge_type="info")
+        self.badge_feat_vbg.pack(side="left", padx=(0, 6))
+
+        self.badge_feat_vcam = StatusBadge(self.badges_row, text="Visual+ Cam: Off", badge_type="info")
+        self.badge_feat_vcam.pack(side="left")
+
+    def _build_multiplayer_section(self):
+        self.card_mp = ModernCard(self.scroll_content)
+        self.card_mp.pack(fill="x", padx=10, pady=5)
+
+        self.sec_mp_title = tk.Label(
+            self.card_mp,
+            text=t("section_multiplayer"),
+            bg=BG_CARD,
+            fg=COLOR_PRIMARY,
+            font=get_font(11, bold=True)
+        )
+        self.sec_mp_title.pack(anchor="w")
+
+        self.lbl_mp_desc = tk.Label(
+            self.card_mp,
+            text=t("mp_vanilla_desc"),
+            bg=BG_CARD,
+            fg=TEXT_MUTED,
+            font=get_font(9),
+            justify="left"
+        )
+        self.lbl_mp_desc.pack(anchor="w", pady=(2, 6))
+
+        # Radio options frame
+        self.frame_mp_opts = tk.Frame(self.card_mp, bg=BG_CARD)
+        self.frame_mp_opts.pack(fill="x")
+
+        # Option: Keep Vanilla
+        row0 = tk.Frame(self.frame_mp_opts, bg=BG_CARD)
+        row0.pack(fill="x", pady=2)
+        self.rb_mp_vanilla = tk.Radiobutton(
+            row0,
+            text=t("mp_opt_keep_vanilla"),
+            variable=self.var_mp_base,
+            value="none",
+            command=self._on_mp_base_changed,
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_PRIMARY,
+            selectcolor=BG_PANEL,
+            font=get_font(10)
+        )
+        self.rb_mp_vanilla.pack(side="left")
+
+        # Option: FR Multiplayer
+        row1 = tk.Frame(self.frame_mp_opts, bg=BG_CARD)
+        row1.pack(fill="x", pady=2)
+        self.rb_mp_fr = tk.Radiobutton(
+            row1,
+            text=t("mp_opt_fr"),
+            variable=self.var_mp_base,
+            value="fr",
+            command=self._on_mp_base_changed,
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_PRIMARY,
+            selectcolor=BG_PANEL,
+            font=get_font(10, bold=True)
+        )
+        self.rb_mp_fr.pack(side="left")
+
+        self.badge_mp_fr_status = StatusBadge(row1, text="", badge_type="success")
+
+        # Option: EN Multiplayer
+        row2 = tk.Frame(self.frame_mp_opts, bg=BG_CARD)
+        row2.pack(fill="x", pady=2)
+        self.rb_mp_en = tk.Radiobutton(
+            row2,
+            text=t("mp_opt_en"),
+            variable=self.var_mp_base,
+            value="en",
+            command=self._on_mp_base_changed,
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_PRIMARY,
+            selectcolor=BG_PANEL,
+            font=get_font(10, bold=True)
+        )
+        self.rb_mp_en.pack(side="left")
+
+        self.badge_mp_en_status = StatusBadge(row2, text="", badge_type="success")
+
     def _build_addons_section(self):
-        self.card_addons = ModernCard(self)
-        self.card_addons.pack(fill="x", padx=20, pady=6)
+        self.card_addons = ModernCard(self.scroll_content)
+        self.card_addons.pack(fill="x", padx=10, pady=5)
 
         self.sec_addons_title = tk.Label(
             self.card_addons,
@@ -199,28 +345,7 @@ class MainWindow(tk.Tk):
             fg=COLOR_PRIMARY,
             font=get_font(11, bold=True)
         )
-        self.sec_addons_title.pack(anchor="w", pady=(0, 6))
-
-        # Radio 1: SoulLocke
-        row1 = tk.Frame(self.card_addons, bg=BG_CARD)
-        row1.pack(fill="x", pady=3)
-
-        self.rb_soullocke = tk.Radiobutton(
-            row1,
-            text=t("addon_soullocke"),
-            variable=self.var_mode,
-            value="soullocke",
-            bg=BG_CARD,
-            fg=TEXT_WHITE,
-            activebackground=BG_CARD,
-            activeforeground=COLOR_GOLD,
-            selectcolor=BG_PANEL,
-            font=get_font(10, bold=True)
-        )
-        self.rb_soullocke.pack(side="left")
-
-        self.badge_sl_tag = StatusBadge(row1, text="Soul Link Co-op", badge_type="gold")
-        self.badge_sl_tag.pack(side="left", padx=8)
+        self.sec_addons_title.pack(anchor="w", pady=(0, 4))
 
         self.lbl_soullocke_desc = tk.Label(
             self.card_addons,
@@ -228,19 +353,77 @@ class MainWindow(tk.Tk):
             bg=BG_CARD,
             fg=TEXT_MUTED,
             font=get_font(9),
-            wraplength=800,
+            wraplength=820,
             justify="left"
         )
-        self.lbl_soullocke_desc.pack(anchor="w", padx=(25, 0), pady=(0, 8))
+        self.lbl_soullocke_desc.pack(anchor="w", pady=(0, 6))
 
-        # Radio 2: Restore Clean
-        row2 = tk.Frame(self.card_addons, bg=BG_CARD)
-        row2.pack(fill="x", pady=3)
+        # Radio 1: SoulLocke Français
+        row_fr = tk.Frame(self.card_addons, bg=BG_CARD)
+        row_fr.pack(fill="x", pady=3)
 
-        self.rb_restore = tk.Radiobutton(
-            row2,
+        self.rb_sl_fr = tk.Radiobutton(
+            row_fr,
+            text=t("addon_soullocke_fr"),
+            variable=self.var_sl_mode,
+            value="soullocke_fr",
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_GOLD,
+            selectcolor=BG_PANEL,
+            font=get_font(10, bold=True)
+        )
+        self.rb_sl_fr.pack(side="left")
+
+        self.badge_sl_fr_lock = StatusBadge(row_fr, text="", badge_type="danger")
+
+        # Radio 2: SoulLocke English
+        row_en = tk.Frame(self.card_addons, bg=BG_CARD)
+        row_en.pack(fill="x", pady=3)
+
+        self.rb_sl_en = tk.Radiobutton(
+            row_en,
+            text=t("addon_soullocke_en"),
+            variable=self.var_sl_mode,
+            value="soullocke_en",
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_GOLD,
+            selectcolor=BG_PANEL,
+            font=get_font(10, bold=True)
+        )
+        self.rb_sl_en.pack(side="left")
+
+        self.badge_sl_en_lock = StatusBadge(row_en, text="", badge_type="danger")
+
+        # Radio 3: None / Do not add
+        row_none = tk.Frame(self.card_addons, bg=BG_CARD)
+        row_none.pack(fill="x", pady=3)
+
+        self.rb_sl_none = tk.Radiobutton(
+            row_none,
+            text=t("addon_none"),
+            variable=self.var_sl_mode,
+            value="none",
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=TEXT_WHITE,
+            selectcolor=BG_PANEL,
+            font=get_font(10)
+        )
+        self.rb_sl_none.pack(side="left")
+
+        # Radio 4: Restore Clean ProjectPM
+        row_res = tk.Frame(self.card_addons, bg=BG_CARD)
+        row_res.pack(fill="x", pady=3)
+
+        self.rb_sl_restore = tk.Radiobutton(
+            row_res,
             text=t("addon_restore"),
-            variable=self.var_mode,
+            variable=self.var_sl_mode,
             value="restore",
             bg=BG_CARD,
             fg=TEXT_WHITE,
@@ -249,7 +432,7 @@ class MainWindow(tk.Tk):
             selectcolor=BG_PANEL,
             font=get_font(10, bold=True)
         )
-        self.rb_restore.pack(side="left")
+        self.rb_sl_restore.pack(side="left")
 
         self.lbl_restore_desc = tk.Label(
             self.card_addons,
@@ -257,14 +440,14 @@ class MainWindow(tk.Tk):
             bg=BG_CARD,
             fg=TEXT_MUTED,
             font=get_font(9),
-            wraplength=800,
+            wraplength=820,
             justify="left"
         )
         self.lbl_restore_desc.pack(anchor="w", padx=(25, 0))
 
     def _build_visual_section(self):
-        self.card_visual = ModernCard(self)
-        self.card_visual.pack(fill="x", padx=20, pady=6)
+        self.card_visual = ModernCard(self.scroll_content)
+        self.card_visual.pack(fill="x", padx=10, pady=5)
 
         self.sec_visual_title = tk.Label(
             self.card_visual,
@@ -288,7 +471,7 @@ class MainWindow(tk.Tk):
         self.lbl_vbg_title = tk.Label(left_b1, text=t("visual_battle_bg"), bg=BG_PANEL, fg=TEXT_WHITE, font=get_font(10, bold=True))
         self.lbl_vbg_title.pack(anchor="w")
 
-        self.lbl_vbg_desc = tk.Label(left_b1, text=t("visual_battle_bg_desc"), bg=BG_PANEL, fg=TEXT_MUTED, font=get_font(9), wraplength=260, justify="left")
+        self.lbl_vbg_desc = tk.Label(left_b1, text=t("visual_battle_bg_desc"), bg=BG_PANEL, fg=TEXT_MUTED, font=get_font(9), wraplength=250, justify="left")
         self.lbl_vbg_desc.pack(anchor="w", pady=(2, 6))
 
         rb_row1 = tk.Frame(left_b1, bg=BG_PANEL)
@@ -318,7 +501,7 @@ class MainWindow(tk.Tk):
         self.lbl_vcam_title = tk.Label(left_b2, text=t("visual_camera"), bg=BG_PANEL, fg=TEXT_WHITE, font=get_font(10, bold=True))
         self.lbl_vcam_title.pack(anchor="w")
 
-        self.lbl_vcam_desc = tk.Label(left_b2, text=t("visual_camera_desc"), bg=BG_PANEL, fg=TEXT_MUTED, font=get_font(9), wraplength=260, justify="left")
+        self.lbl_vcam_desc = tk.Label(left_b2, text=t("visual_camera_desc"), bg=BG_PANEL, fg=TEXT_MUTED, font=get_font(9), wraplength=250, justify="left")
         self.lbl_vcam_desc.pack(anchor="w", pady=(2, 6))
 
         rb_row2 = tk.Frame(left_b2, bg=BG_PANEL)
@@ -339,8 +522,8 @@ class MainWindow(tk.Tk):
             lbl_img2.pack(side="right", padx=(8, 0))
 
     def _build_save_section(self):
-        self.card_save = ModernCard(self)
-        self.card_save.pack(fill="x", padx=20, pady=6)
+        self.card_save = ModernCard(self.scroll_content)
+        self.card_save.pack(fill="x", padx=10, pady=5)
 
         self.sec_save_title = tk.Label(
             self.card_save,
@@ -374,8 +557,8 @@ class MainWindow(tk.Tk):
         self.lbl_save_status.pack(anchor="w", padx=(24, 0))
 
     def _build_action_section(self):
-        action_frame = tk.Frame(self, bg=BG_DARK)
-        action_frame.pack(fill="x", padx=20, pady=10)
+        action_frame = tk.Frame(self.scroll_content, bg=BG_DARK)
+        action_frame.pack(fill="x", padx=10, pady=(10, 15))
 
         self.btn_apply = PixelButton(
             action_frame,
@@ -401,7 +584,7 @@ class MainWindow(tk.Tk):
 
     def _build_footer(self):
         footer_frame = tk.Frame(self, bg=BG_DARK)
-        footer_frame.pack(side="bottom", fill="x", padx=20, pady=(0, 8))
+        footer_frame.pack(side="bottom", fill="x", padx=20, pady=(4, 8))
 
         self.lbl_footer = tk.Label(
             footer_frame,
@@ -412,7 +595,7 @@ class MainWindow(tk.Tk):
         )
         self.lbl_footer.pack()
 
-    # --- Handlers & Actions ---
+    # --- Dynamic Interlocking & Handlers ---
 
     def _toggle_language(self):
         new_lang = "fr" if get_lang() == "en" else "en"
@@ -425,10 +608,16 @@ class MainWindow(tk.Tk):
         self.lbl_sub.config(text=t("app_subtitle"))
         self.sec_rom_title.config(text=t("section_rom"))
         self.btn_browse.config(text=t("rom_browse"))
+        self.sec_mp_title.config(text=t("section_multiplayer"))
+        self.rb_mp_vanilla.config(text=t("mp_opt_keep_vanilla"))
+        self.rb_mp_fr.config(text=t("mp_opt_fr"))
+        self.rb_mp_en.config(text=t("mp_opt_en"))
         self.sec_addons_title.config(text=t("section_addons"))
-        self.rb_soullocke.config(text=t("addon_soullocke"))
         self.lbl_soullocke_desc.config(text=t("addon_soullocke_desc"))
-        self.rb_restore.config(text=t("addon_restore"))
+        self.rb_sl_fr.config(text=t("addon_soullocke_fr"))
+        self.rb_sl_en.config(text=t("addon_soullocke_en"))
+        self.rb_sl_none.config(text=t("addon_none"))
+        self.rb_sl_restore.config(text=t("addon_restore"))
         self.lbl_restore_desc.config(text=t("addon_restore_desc"))
         self.sec_visual_title.config(text=t("section_visual"))
         self.lbl_vbg_title.config(text=t("visual_battle_bg"))
@@ -477,10 +666,38 @@ class MainWindow(tk.Tk):
             self.badge_rom_status.set_badge(t("rom_unknown"), badge_type="danger")
             return
 
-        # Badge type & text
-        b_type = "success" if info.category == "projectpm" else "gold"
+        # Main ROM badge
+        b_type = "success" if info.has_multiplayer else "gold"
         self.badge_rom_status.set_badge(f"{info.display_name} ({info.size // (1024*1024)} MB)", badge_type=b_type)
         self.lbl_rom_sha1.config(text=f"SHA1: {info.sha1[:10]}...")
+
+        # Feature badges
+        if info.has_multiplayer:
+            self.badge_feat_mp.set_badge(t("badge_mp_active_fr") if info.mp_lang == "fr" else t("badge_mp_active_en"), badge_type="success")
+        else:
+            self.badge_feat_mp.set_badge(t("badge_mp_none"), badge_type="info")
+
+        if info.is_soullocke:
+            self.badge_feat_sl.set_badge(t("badge_sl_active"), badge_type="gold")
+        else:
+            self.badge_feat_sl.set_badge(t("badge_sl_none"), badge_type="info")
+
+        if info.is_randomized:
+            self.badge_feat_rand.set_badge(t("badge_rand_yes"), badge_type="purple")
+        else:
+            self.badge_feat_rand.set_badge(t("badge_rand_no"), badge_type="info")
+
+        if info.has_visual_bg:
+            self.badge_feat_vbg.set_badge(t("badge_vbg_yes"), badge_type="success")
+            self.var_bg.set("builtin")
+        else:
+            self.badge_feat_vbg.set_badge("Visual+ BG: Off", badge_type="info")
+
+        if info.has_visual_cam:
+            self.badge_feat_vcam.set_badge(t("badge_vcam_yes"), badge_type="success")
+            self.var_cam.set("builtin")
+        else:
+            self.badge_feat_vcam.set_badge("Visual+ Cam: Off", badge_type="info")
 
         # Save status
         if info.companion_save:
@@ -492,18 +709,101 @@ class MainWindow(tk.Tk):
         else:
             self.lbl_save_status.config(text=t("save_none"), fg=TEXT_MUTED)
 
-        # Preselect Visual options
-        if info.has_visual_bg:
-            self.var_bg.set("builtin")
-        if info.has_visual_cam:
-            self.var_cam.set("builtin")
+        # Update Multiplayer Base section
+        if info.has_multiplayer:
+            self.lbl_mp_desc.config(text=t("mp_installed_desc"), fg=COLOR_GOLD)
+            # Select detected multiplayer language
+            self.var_mp_base.set(info.mp_lang)
+            # Gray out / disable radio buttons since it's already installed
+            self.rb_mp_vanilla.config(state="disabled")
+            self.rb_mp_fr.config(state="disabled")
+            self.rb_mp_en.config(state="disabled")
+            
+            # Show "Already Installed" badge on the active option
+            if info.mp_lang == "fr":
+                self.badge_mp_fr_status.set_badge(f"[{t('badge_already_installed')}]", badge_type="success")
+                self.badge_mp_fr_status.pack(side="left", padx=8)
+                self.badge_mp_en_status.pack_forget()
+            else:
+                self.badge_mp_en_status.set_badge(f"[{t('badge_already_installed')}]", badge_type="success")
+                self.badge_mp_en_status.pack(side="left", padx=8)
+                self.badge_mp_fr_status.pack_forget()
+        else:
+            self.lbl_mp_desc.config(text=t("mp_vanilla_desc"), fg=TEXT_MUTED)
+            self.rb_mp_vanilla.config(state="normal")
+            self.rb_mp_fr.config(state="normal")
+            self.rb_mp_en.config(state="normal")
+            self.badge_mp_fr_status.pack_forget()
+            self.badge_mp_en_status.pack_forget()
+            # Default to French if Vanilla FR, or English if Vanilla US
+            self.var_mp_base.set(info.lang if info.lang in ("fr", "en") else "fr")
+
+        # Update Addon dependencies
+        self._update_addon_dependencies()
 
         self.lbl_status.config(text=t("status_ready"), fg=TEXT_WHITE)
+
+    def _on_mp_base_changed(self):
+        self._update_addon_dependencies()
+
+    def _update_addon_dependencies(self):
+        info = self.current_rom_info
+        if not info:
+            return
+
+        # Determine effective multiplayer status and language
+        if info.has_multiplayer:
+            effective_mp = info.mp_lang
+        else:
+            effective_mp = self.var_mp_base.get()
+
+        # Update SoulLocke options based on effective multiplayer
+        if effective_mp == "none":
+            # ROM is Vanilla and no Multiplayer selected -> SoulLocke completely disabled!
+            self.rb_sl_fr.config(state="disabled")
+            self.rb_sl_en.config(state="disabled")
+            self.badge_sl_fr_lock.set_badge(f"[{t('badge_incompatible_req_mp')}]", badge_type="danger")
+            self.badge_sl_fr_lock.pack(side="left", padx=8)
+            self.badge_sl_en_lock.pack_forget()
+            if self.var_sl_mode.get() in ("soullocke_fr", "soullocke_en"):
+                self.var_sl_mode.set("none")
+        elif effective_mp == "fr":
+            # French Multiplayer -> French SoulLocke enabled, English disabled
+            self.rb_sl_fr.config(state="normal")
+            self.badge_sl_fr_lock.pack_forget()
+
+            self.rb_sl_en.config(state="disabled")
+            self.badge_sl_en_lock.set_badge(f"[{t('badge_incompatible_lang')}]", badge_type="danger")
+            self.badge_sl_en_lock.pack(side="left", padx=8)
+
+            if self.var_sl_mode.get() == "soullocke_en":
+                self.var_sl_mode.set("soullocke_fr")
+            elif self.var_sl_mode.get() == "none" and not info.is_soullocke:
+                self.var_sl_mode.set("soullocke_fr")
+        elif effective_mp == "en":
+            # English Multiplayer -> English SoulLocke enabled, French disabled
+            self.rb_sl_en.config(state="normal")
+            self.badge_sl_en_lock.pack_forget()
+
+            self.rb_sl_fr.config(state="disabled")
+            self.badge_sl_fr_lock.set_badge(f"[{t('badge_incompatible_lang')}]", badge_type="danger")
+            self.badge_sl_fr_lock.pack(side="left", padx=8)
+
+            if self.var_sl_mode.get() == "soullocke_fr":
+                self.var_sl_mode.set("soullocke_en")
+            elif self.var_sl_mode.get() == "none" and not info.is_soullocke:
+                self.var_sl_mode.set("soullocke_en")
+
+        # Restore Clean ProjectPM option: enabled if SoulLocke is active
+        if info.is_soullocke:
+            self.rb_sl_restore.config(state="normal")
+        else:
+            self.rb_sl_restore.config(state="disabled")
 
     def _on_update_found(self, tag, url):
         self.update_info = (tag, url)
         self.lbl_update_text.config(text=t("update_available", tag))
-        self.banner_update.pack(fill="x", padx=20, pady=(0, 6), before=self.card_rom)
+        self.banner_update.pack(fill="x", padx=20, pady=(0, 6), before=self.header_frame)
 
     def _open_update_link(self):
         if self.update_info:
@@ -528,31 +828,51 @@ class MainWindow(tk.Tk):
         try:
             rom_path = self.selected_rom_path
             info = self.current_rom_info or detect_rom(rom_path)
-            mode = self.var_mode.get()
+            sl_mode = self.var_sl_mode.get()
             bg_opt = self.var_bg.get()
             cam_opt = self.var_cam.get()
-            lang = info.lang
+            
+            # Determine effective multiplayer and target language
+            if info.has_multiplayer:
+                effective_mp = info.mp_lang
+            else:
+                effective_mp = self.var_mp_base.get()
+
+            target_lang = "fr" if (sl_mode == "soullocke_fr" or effective_mp == "fr") else "en"
 
             # Destination ROM name
             parent_dir = os.path.dirname(rom_path)
             base_name = os.path.splitext(os.path.basename(rom_path))[0]
             
-            if mode == "soullocke":
-                out_name = "ProjectPM_FR_SoulLocke.nds" if lang == "fr" else "ProjectPM_USA_SoulLocke.nds"
+            if sl_mode in ("soullocke_fr", "soullocke_en"):
+                out_name = "ProjectPM_FR_SoulLocke.nds" if target_lang == "fr" else "ProjectPM_USA_SoulLocke.nds"
+            elif sl_mode == "restore":
+                out_name = f"{base_name}_Clean.nds"
+            elif not info.has_multiplayer and effective_mp in ("fr", "en"):
+                out_name = f"ProjectPM_{'FR' if effective_mp == 'fr' else 'USA'}.nds"
             else:
-                out_name = f"{base_name}_patched.nds"
+                out_name = f"{base_name}_modded.nds"
             
             output_rom = os.path.join(parent_dir, out_name)
 
-            # 1. Base ROM check: If Vanilla, run xDelta base patch first!
+            # Avoid direct overwriting of source if output is identical
+            if os.path.abspath(output_rom).lower() == os.path.abspath(rom_path).lower():
+                output_rom = os.path.join(parent_dir, f"{base_name}_patched.nds")
+
+            # 1. Base ROM check: If Vanilla and user wants Multiplayer, apply base xDelta patch!
             working_rom = rom_path
-            if info.category == "vanilla":
-                self._log_msg("[Pipeline] Converting Vanilla ROM to ProjectPM...")
+            if not info.has_multiplayer and effective_mp in ("fr", "en"):
+                self._log_msg("[Pipeline] Converting Vanilla ROM to ProjectPM Multiplayer...")
                 temp_base = os.path.join(parent_dir, "temp_projectpm_base.nds")
                 patch_file = None
-                if info.lang == "fr":
-                    patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
-                else:
+                
+                # Check source ROM language for proper patch selection
+                if effective_mp == "fr":
+                    if info.lang == "fr":
+                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
+                    else:
+                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta")
+                else: # English
                     patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5.xdelta")
 
                 xd_exe = os.path.join(self.assets_dir, "xdelta3.exe")
@@ -566,19 +886,20 @@ class MainWindow(tk.Tk):
                 backup_and_sync_save(rom_path, output_rom, self._log_msg)
 
             # 3. Apply Mod (SoulLocke or Restore)
-            payload_json = os.path.join(self.payloads_dir, f"soullocke_{lang}.json")
-            if mode == "soullocke":
-                self._log_msg("[Pipeline] Injecting SoulLocke C mod payload...")
+            if sl_mode in ("soullocke_fr", "soullocke_en"):
+                payload_json = os.path.join(self.payloads_dir, f"soullocke_{target_lang}.json")
+                self._log_msg(f"[Pipeline] Injecting SoulLocke ({target_lang.upper()}) C mod payload...")
                 ok = apply_soullocke(working_rom, output_rom, payload_json, self._log_msg)
                 if not ok:
                     raise RuntimeError("Failed to inject SoulLocke payload.")
-            elif mode == "restore":
+            elif sl_mode == "restore":
+                payload_json = os.path.join(self.payloads_dir, f"soullocke_{info.lang}.json")
                 self._log_msg("[Pipeline] Restoring clean ProjectPM...")
                 ok = restore_clean_projectpm(working_rom, output_rom, payload_json, self._log_msg)
                 if not ok:
                     raise RuntimeError("Failed to restore clean ProjectPM.")
             else:
-                # Direct copy if no mode
+                # Direct copy if no addon mode
                 import shutil
                 shutil.copy2(working_rom, output_rom)
 

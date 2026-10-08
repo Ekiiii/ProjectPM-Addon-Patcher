@@ -12,7 +12,7 @@
 
 ### Features
 - **Smart Direct Injection Engine**: Injects C mods cleanly into the Nitro-SDK Autoload Table and high arena memory. Zero xDelta checksum mismatch errors, works on any ROM configuration!
-- **Soul Link / SoulLocke Edition**: Full support for shared fates, automated graveyard PC boxes, single shared catch per area, and live streamer overlay.
+- **SoulLocke Edition**: Full support for shared fates, automated graveyard PC boxes, single shared catch per area, and live streamer overlay.
 - **Visual+ Options**:
   - *Visual+ Battle Backgrounds*: High-definition redrawn battle scenes (`Built-in` / `Off`).
   - *Visual+ 3D Camera*: Closer overworld perspective for an enhanced 3D look (`Built-in` / `Off`).
@@ -30,7 +30,7 @@
 
 ### Fonctionnalités
 - **Moteur d'Injection Directe Intelligent** : Injecte proprement le code C via la table d'Autoload du SDK Nitro et la mémoire haute de l'arène. Zéro erreur de checksum, compatible avec toutes les ROMs existantes !
-- **Mode Soul Link / SoulLocke** : Destins liés en multijoueur, boîtes cimetière automatiques, 1 capture partagée par zone et overlay streamer en direct.
+- **Édition SoulLocke** : Destins liés en multijoueur, boîtes cimetière automatiques, 1 capture partagée par zone et overlay streamer en direct.
 - **Options Graphiques Visual+** :
   - *Arrière-plans de combat HD* (`Activer` / `Désactiver`).
   - *Caméra 3D Rapprochée* (`Activer` / `Désactiver`).
