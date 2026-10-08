@@ -38,7 +38,7 @@ from core.addon_registry import (
 )
 
 from ui.theme import *
-from ui.widgets import ModernCard, PixelButton, StatusBadge
+from ui.widgets import ModernCard, PixelButton, StatusBadge, ModernScrollbar
 
 class MainWindow(tk.Tk):
     def __init__(self, root_dir):
@@ -179,7 +179,7 @@ class MainWindow(tk.Tk):
         container.pack(fill="both", expand=True)
 
         self.canvas = tk.Canvas(container, bg=BG_DARK, highlightthickness=0)
-        self.scrollbar = tk.Scrollbar(container, orient="vertical", command=self.canvas.yview)
+        self.scrollbar = ModernScrollbar(container, command=self.canvas.yview, width=12, bg=BG_DARK)
         self.scroll_content = tk.Frame(self.canvas, bg=BG_DARK)
 
         self.scroll_content.bind(
@@ -196,7 +196,7 @@ class MainWindow(tk.Tk):
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
         self.canvas.pack(side="left", fill="both", expand=True, padx=(10, 0))
-        self.scrollbar.pack(side="right", fill="y")
+        self.scrollbar.pack(side="right", fill="y", padx=(2, 2))
 
         # MouseWheel for Windows
         def _on_mousewheel(event):
