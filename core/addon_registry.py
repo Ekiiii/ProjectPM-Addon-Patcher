@@ -46,7 +46,7 @@ ADDONS_REGISTRY = [
                 "payload_file": "soullocke_en.json",
             },
         ],
-        "default_variant": "fr",
+        "default_variant": None,
     },
 ]
 
@@ -54,7 +54,7 @@ def get_mp_version(version_id):
     for v in MULTIPLAYER_VERSIONS:
         if v["id"] == version_id:
             return v
-    return MULTIPLAYER_VERSIONS[0]
+    return None
 
 def is_mp_version_supported(version_id, rom_info):
     """
@@ -64,7 +64,9 @@ def is_mp_version_supported(version_id, rom_info):
         return True, ""
     
     v = get_mp_version(version_id)
-    
+    if not v:
+        return False, "badge_incompatible_lang"
+
     # If source is French Vanilla, only French Multiplayer is supported
     if rom_info.lang == "fr" and v["id"] != "fr":
         return False, "badge_incompatible_vanilla_fr"

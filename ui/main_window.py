@@ -71,7 +71,7 @@ class MainWindow(tk.Tk):
 
         # Mode Variables
         self.var_mp_enabled = tk.BooleanVar(value=True)
-        self.var_mp_version = tk.StringVar(value="fr")     # "fr", "en", etc.
+        self.var_mp_version = tk.StringVar(value="")     # No default language pre-selected
         self.addon_enabled_vars = {}
         self.addon_variant_vars = {}
         self.addon_mode_vars = {}
@@ -79,10 +79,11 @@ class MainWindow(tk.Tk):
         for addon in ADDONS_REGISTRY:
             a_id = addon["id"]
             self.addon_enabled_vars[a_id] = tk.BooleanVar(value=True)
-            self.addon_variant_vars[a_id] = tk.StringVar(value=addon.get("default_variant", "fr"))
+            self.addon_variant_vars[a_id] = tk.StringVar(value="")  # No default language pre-selected
             self.addon_mode_vars[a_id] = tk.StringVar(value="apply")
         self.var_bg = tk.StringVar(value="keep")          # "builtin", "off", "keep"
         self.var_cam = tk.StringVar(value="keep")         # "builtin", "off", "keep"
+        self.var_custom_patch_enabled = tk.BooleanVar(value=False)
         self.var_backup_save = tk.BooleanVar(value=True)
         self.output_manually_edited = False
 
@@ -100,6 +101,7 @@ class MainWindow(tk.Tk):
         self._build_multiplayer_section()
         self._build_addons_section()
         self._build_visual_section()
+        self._build_custom_patch_section()
         self._build_save_section()
         self._build_action_section()
 
@@ -367,7 +369,7 @@ class MainWindow(tk.Tk):
         # Version button (opens modal dialog to pick language / version)
         self.btn_mp_version = PixelButton(
             row,
-            text=t("mp_version_btn", "Français"),
+            text=t("btn_select_lang"),
             command=self._open_mp_version_dialog,
             bg_color=BG_PANEL,
             fg_color=COLOR_GOLD,
@@ -423,7 +425,7 @@ class MainWindow(tk.Tk):
 
             btn_ver = PixelButton(
                 top_line,
-                text=t("addon_version_btn", "Français"),
+                text=t("btn_select_lang"),
                 command=lambda id=a_id: self._open_addon_config_dialog(id),
                 bg_color=BG_DARK,
                 fg_color=COLOR_GOLD,
@@ -528,7 +530,15 @@ class MainWindow(tk.Tk):
         btn_box.pack(fill="x", padx=20, pady=(0, 15))
 
         def _on_confirm():
-            self.var_mp_version.set(selected_var.get())
+            choice = selected_var.get()
+            if not choice:
+                messagebox.showwarning("Notice", t("dialog_select_prompt"), parent=dlg)
+                return
+            self.var_mp_version.set(choice)
+            for a in ADDONS_REGISTRY:
+                a_id = a["id"]
+                if a.get("requires_multiplayer"):
+                    self.addon_variant_vars[a_id].set(choice)
             self._update_multiplayer_ui_state()
             self._update_suggested_output_path()
             dlg.destroy()
@@ -620,7 +630,11 @@ class MainWindow(tk.Tk):
         btn_box.pack(fill="x", padx=20, pady=(0, 15))
 
         def _on_confirm():
-            self.addon_variant_vars[addon_id].set(selected_var.get())
+            choice = selected_var.get()
+            if not choice:
+                messagebox.showwarning("Notice", t("dialog_select_prompt"), parent=dlg)
+                return
+            self.addon_variant_vars[addon_id].set(choice)
             if self.addon_mode_vars[addon_id].get() == "restore":
                 self.addon_mode_vars[addon_id].set("apply")
             self._update_addon_ui_state()
@@ -634,12 +648,19 @@ class MainWindow(tk.Tk):
         btn_ok.pack(side="right")
 
     def _on_mp_toggle_changed(self):
+        if self.var_mp_enabled.get() and not self.var_mp_version.get():
+            self._open_mp_version_dialog()
         self._update_multiplayer_ui_state()
         self._update_suggested_output_path()
 
     def _on_addon_toggle_changed(self, addon_id):
         if self.addon_enabled_vars[addon_id].get():
             self.addon_mode_vars[addon_id].set("apply")
+            if not self.addon_variant_vars[addon_id].get():
+                if self.var_mp_version.get():
+                    self.addon_variant_vars[addon_id].set(self.var_mp_version.get())
+                else:
+                    self._open_addon_config_dialog(addon_id)
         self._update_addon_ui_state()
         self._update_suggested_output_path()
 
@@ -724,6 +745,129 @@ class MainWindow(tk.Tk):
             self.img_cache["cam"] = ImageTk.PhotoImage(img2)
             lbl_img2 = tk.Label(box_cam, image=self.img_cache["cam"], bg=BG_PANEL, relief="solid", bd=1)
             lbl_img2.pack(side="right", padx=(8, 0))
+
+    def _build_custom_patch_section(self):
+        self.card_custom = ModernCard(self.scroll_content)
+        self.card_custom.pack(fill="x", padx=10, pady=5)
+
+        self.sec_custom_title = tk.Label(
+            self.card_custom,
+            text=t("section_custom_patch"),
+            bg=BG_CARD,
+            fg=COLOR_PRIMARY,
+            font=get_font(11, bold=True)
+        )
+        self.sec_custom_title.pack(anchor="w")
+
+        self.lbl_custom_desc = tk.Label(
+            self.card_custom,
+            text=t("custom_patch_desc"),
+            bg=BG_CARD,
+            fg=TEXT_MUTED,
+            font=get_font(9),
+            justify="left"
+        )
+        self.lbl_custom_desc.pack(anchor="w", pady=(2, 6))
+
+        # Checkbox to enable
+        self.cb_custom_patch = tk.Checkbutton(
+            self.card_custom,
+            text=t("custom_patch_checkbox"),
+            variable=self.var_custom_patch_enabled,
+            command=self._on_custom_patch_toggle_changed,
+            bg=BG_CARD,
+            fg=TEXT_WHITE,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_PRIMARY,
+            selectcolor=BG_PANEL,
+            font=get_font(10, bold=True)
+        )
+        self.cb_custom_patch.pack(anchor="w", pady=(0, 4))
+
+        # Row with Entry + Browse + Clear
+        row = tk.Frame(self.card_custom, bg=BG_CARD)
+        row.pack(fill="x", pady=2)
+
+        self.entry_custom_patch = tk.Entry(
+            row,
+            bg=BG_PANEL,
+            fg=TEXT_WHITE,
+            insertbackground=TEXT_WHITE,
+            highlightbackground=BORDER_COLOR,
+            highlightcolor=COLOR_PRIMARY,
+            highlightthickness=1,
+            relief="flat",
+            font=get_font(10)
+        )
+        self.entry_custom_patch.pack(side="left", fill="x", expand=True, padx=(0, 8), ipady=5)
+        self.entry_custom_patch.bind("<Key>", lambda e: self.var_custom_patch_enabled.set(True))
+
+        self.btn_browse_custom = PixelButton(
+            row,
+            text=t("custom_patch_browse"),
+            command=self._on_browse_custom_patch,
+            bg_color=COLOR_PRIMARY,
+            font_size=10,
+            padx=14,
+            pady=4
+        )
+        self.btn_browse_custom.pack(side="left", padx=(0, 6))
+
+        self.btn_clear_custom = PixelButton(
+            row,
+            text=t("custom_patch_clear"),
+            command=self._on_clear_custom_patch,
+            bg_color=BG_PANEL,
+            fg_color=COLOR_RED,
+            font_size=10,
+            padx=10,
+            pady=4
+        )
+        self.btn_clear_custom.pack(side="left")
+
+        # Bottom info label
+        self.lbl_custom_info = tk.Label(
+            self.card_custom,
+            text=t("custom_patch_info"),
+            bg=BG_CARD,
+            fg=TEXT_MUTED,
+            font=get_font(8),
+            justify="left"
+        )
+        self.lbl_custom_info.pack(anchor="w", pady=(4, 0))
+
+    def _on_custom_patch_toggle_changed(self):
+        if self.var_custom_patch_enabled.get():
+            if not self.entry_custom_patch.get().strip():
+                self._on_browse_custom_patch()
+        self._update_custom_patch_ui_state()
+
+    def _on_browse_custom_patch(self):
+        initial_dir = os.path.dirname(self.selected_rom_path) if self.selected_rom_path else os.getcwd()
+        f = filedialog.askopenfilename(
+            title="Select Custom XDelta Patch",
+            initialdir=initial_dir,
+            filetypes=[("xDelta Patches", "*.xdelta;*.patch;*.xd"), ("All files", "*.*")]
+        )
+        if f:
+            self.entry_custom_patch.delete(0, tk.END)
+            self.entry_custom_patch.insert(0, f)
+            self.var_custom_patch_enabled.set(True)
+            self._update_custom_patch_ui_state()
+
+    def _on_clear_custom_patch(self):
+        self.entry_custom_patch.delete(0, tk.END)
+        self.var_custom_patch_enabled.set(False)
+        self._update_custom_patch_ui_state()
+
+    def _update_custom_patch_ui_state(self):
+        is_en = self.var_custom_patch_enabled.get()
+        if is_en:
+            self.entry_custom_patch.config(bg=BG_PANEL, fg=TEXT_WHITE)
+            self.lbl_custom_info.config(fg=COLOR_GOLD)
+        else:
+            self.entry_custom_patch.config(bg=BG_DARK, fg=TEXT_MUTED)
+            self.lbl_custom_info.config(fg=TEXT_MUTED)
 
     def _build_save_section(self):
         self.card_save = ModernCard(self.scroll_content)
@@ -838,6 +982,12 @@ class MainWindow(tk.Tk):
         self.rb_cam_builtin.config(text=t("opt_builtin"))
         self.rb_cam_off.config(text=t("opt_off"))
         self.rb_cam_keep.config(text=t("opt_keep"))
+        self.sec_custom_title.config(text=t("section_custom_patch"))
+        self.lbl_custom_desc.config(text=t("custom_patch_desc"))
+        self.cb_custom_patch.config(text=t("custom_patch_checkbox"))
+        self.btn_browse_custom.config(text=t("custom_patch_browse"))
+        self.btn_clear_custom.config(text=t("custom_patch_clear"))
+        self.lbl_custom_info.config(text=t("custom_patch_info"))
         self.sec_save_title.config(text=t("section_save"))
         self.cb_save.config(text=t("save_preserve_checkbox"))
         self.btn_apply.config(text=t("btn_apply"))
@@ -848,6 +998,7 @@ class MainWindow(tk.Tk):
         else:
             self.badge_rom_status.set_badge(t("rom_placeholder"), badge_type="info")
             self.lbl_status.config(text=t("status_ready"))
+            self._update_multiplayer_ui_state()
 
     def _on_output_manual_edit(self):
         self.output_manually_edited = True
@@ -895,14 +1046,14 @@ class MainWindow(tk.Tk):
 
         sl_enabled = self.addon_enabled_vars.get("soullocke", tk.BooleanVar(value=False)).get()
         sl_mode = self.addon_mode_vars.get("soullocke", tk.StringVar(value="apply")).get()
-        sl_variant = self.addon_variant_vars.get("soullocke", tk.StringVar(value="fr")).get()
+        sl_variant = self.addon_variant_vars.get("soullocke", tk.StringVar(value="")).get()
 
-        target_lang = sl_variant if sl_enabled else (effective_mp or "en")
+        target_lang = sl_variant if sl_enabled else (effective_mp or "")
 
         if sl_mode == "restore":
             out_name = f"{base_name}_Clean.nds"
         elif sl_enabled and effective_mp:
-            out_name = "ProjectPM_FR_SoulLocke.nds" if target_lang == "fr" else "ProjectPM_USA_SoulLocke.nds"
+            out_name = "ProjectPM_FR_SoulLocke.nds" if target_lang == "fr" else ("ProjectPM_USA_SoulLocke.nds" if target_lang == "en" else f"{base_name}_SoulLocke.nds")
         elif info and not info.has_multiplayer and effective_mp:
             out_name = f"ProjectPM_{'FR' if effective_mp == 'fr' else 'USA'}.nds"
         else:
@@ -1001,20 +1152,16 @@ class MainWindow(tk.Tk):
             self.cb_mp_enable.config(state="normal")
             self.badge_mp_status.pack_forget()
 
-            # Sensible default language
-            if info.lang == "fr":
-                self.var_mp_version.set("fr")
-            else:
-                if self.var_mp_version.get() not in ("fr", "en"):
-                    self.var_mp_version.set("en")
-
         self._update_multiplayer_ui_state()
         self.lbl_status.config(text=t("status_ready"), fg=TEXT_WHITE)
 
     def _update_multiplayer_ui_state(self):
         info = self.current_rom_info
         v = get_mp_version(self.var_mp_version.get())
-        self.btn_mp_version.config(text=t("mp_version_btn", v["short_name"]))
+        if v:
+            self.btn_mp_version.config(text=t("mp_version_btn", v["short_name"]))
+        else:
+            self.btn_mp_version.config(text=t("btn_select_lang"))
 
         if info and info.has_multiplayer:
             self.btn_mp_version.config(state="disabled")
@@ -1061,8 +1208,11 @@ class MainWindow(tk.Tk):
                 if effective_mp and current_var != effective_mp:
                     self.addon_variant_vars[a_id].set(effective_mp)
 
-                variant_name = "Français" if self.addon_variant_vars[a_id].get() == "fr" else "English"
-                w["btn_ver"].config(text=t("addon_version_btn", variant_name))
+                if self.addon_variant_vars[a_id].get():
+                    variant_name = "Français" if self.addon_variant_vars[a_id].get() == "fr" else "English"
+                    w["btn_ver"].config(text=t("addon_version_btn", variant_name))
+                else:
+                    w["btn_ver"].config(text=t("btn_select_lang"))
 
                 # If installed on ROM
                 if a_id == "soullocke" and info and info.is_soullocke:
@@ -1094,6 +1244,24 @@ class MainWindow(tk.Tk):
         if not self.selected_rom_path or not os.path.isfile(self.selected_rom_path):
             messagebox.showwarning("Notice", "Please select a valid .nds ROM file first.")
             return
+
+        info = self.current_rom_info or detect_rom(self.selected_rom_path)
+
+        # Check if Multiplayer is enabled on Vanilla but no language chosen
+        if not info.has_multiplayer and self.var_mp_enabled.get():
+            if not self.var_mp_version.get():
+                messagebox.showwarning("Notice", t("err_need_select_mp_lang"))
+                self._open_mp_version_dialog()
+                return
+
+        # Check if any addon is enabled without a variant chosen
+        for addon in ADDONS_REGISTRY:
+            a_id = addon["id"]
+            if self.addon_enabled_vars[a_id].get() and self.addon_mode_vars[a_id].get() == "apply":
+                if not self.addon_variant_vars[a_id].get():
+                    messagebox.showwarning("Notice", t("err_need_select_addon_lang", addon["name"]))
+                    self._open_addon_config_dialog(a_id)
+                    return
 
         self.btn_apply.config(state="disabled")
         self._log_msg(t("status_patching"))
@@ -1237,6 +1405,34 @@ class MainWindow(tk.Tk):
             if rand_data["is_randomized"]:
                 self._log_msg("[Pipeline] Re-applying randomized tables onto destination ROM...")
                 restore_randomizer_data(output_rom, rand_data, log_cb=self._log_msg)
+
+            # 6. Apply Custom XDelta Patch if requested
+            if self.var_custom_patch_enabled.get():
+                custom_patch_file = self.entry_custom_patch.get().strip()
+                if custom_patch_file:
+                    if not os.path.isfile(custom_patch_file):
+                        raise FileNotFoundError(f"Custom XDelta patch file not found: {custom_patch_file}")
+
+                    self._log_msg(f"[Pipeline] Applying custom XDelta patch: {os.path.basename(custom_patch_file)}...")
+                    temp_pre_custom = output_rom + ".pre_custom.tmp"
+                    import shutil
+                    shutil.copy2(output_rom, temp_pre_custom)
+                    xd_exe = os.path.join(self.assets_dir, "xdelta3.exe")
+
+                    ok = apply_xdelta(temp_pre_custom, custom_patch_file, output_rom, xd_exe, self._log_msg)
+                    if not ok:
+                        # Revert on error
+                        if os.path.isfile(temp_pre_custom):
+                            shutil.copy2(temp_pre_custom, output_rom)
+                            os.remove(temp_pre_custom)
+                        raise RuntimeError(f"Failed to apply custom XDelta patch ({os.path.basename(custom_patch_file)}). Check that the patch matches this base ROM.")
+
+                    if os.path.isfile(temp_pre_custom):
+                        try:
+                            os.remove(temp_pre_custom)
+                        except Exception:
+                            pass
+                    self._log_msg("[Pipeline] Custom XDelta patch successfully applied!")
 
             self._log_msg(t("status_success"))
             messagebox.showinfo("Success", f"{t('status_success')}\n\nOutput: {os.path.basename(output_rom)}")

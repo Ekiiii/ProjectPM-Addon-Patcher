@@ -135,6 +135,26 @@ TRANSLATIONS = {
         "en": "⚙ Version: %s ▾",
         "fr": "⚙ Version : %s ▾"
     },
+    "btn_select_lang": {
+        "en": "⚙ Select Language ▾",
+        "fr": "⚙ Sélectionner la langue ▾"
+    },
+    "btn_select_version": {
+        "en": "⚙ Select Version ▾",
+        "fr": "⚙ Sélectionner la version ▾"
+    },
+    "err_need_select_mp_lang": {
+        "en": "Please select a language for ProjectPM Multiplayer before proceeding.",
+        "fr": "Veuillez sélectionner une langue pour le Multijoueur ProjectPM avant de continuer."
+    },
+    "err_need_select_addon_lang": {
+        "en": "Please select a language / version for addon: %s",
+        "fr": "Veuillez sélectionner une langue / version pour l'addon : %s"
+    },
+    "dialog_select_prompt": {
+        "en": "Please choose an option from the list before confirming.",
+        "fr": "Veuillez choisir une option dans la liste avant de confirmer."
+    },
     "dialog_mp_title": {
         "en": "Select Multiplayer Version",
         "fr": "Sélectionner la version du Multijoueur"
@@ -251,9 +271,37 @@ TRANSLATIONS = {
         "en": "Keep As-Is",
         "fr": "Conserver"
     },
+    "section_custom_patch": {
+        "en": "5. ADDITIONAL XDELTA PATCH (OPTIONAL)",
+        "fr": "5. PATCH XDELTA SUPPLÉMENTAIRE (OPTIONNEL)"
+    },
+    "custom_patch_desc": {
+        "en": "Apply an additional custom .xdelta patch onto the final ROM after all other mods are applied:",
+        "fr": "Appliquez un patch .xdelta personnalisé supplémentaire sur la ROM finale après tous les autres patchs :"
+    },
+    "custom_patch_checkbox": {
+        "en": "Enable additional custom xDelta patch",
+        "fr": "Activer un patch xDelta supplémentaire"
+    },
+    "custom_patch_browse": {
+        "en": "Browse...",
+        "fr": "Parcourir..."
+    },
+    "custom_patch_clear": {
+        "en": "Clear",
+        "fr": "Effacer"
+    },
+    "custom_patch_info": {
+        "en": "Applied as the final step. Ensure this patch is compatible with the resulting ROM.",
+        "fr": "Appliqué en étape finale. Veillez à ce que ce patch corresponde à la ROM résultante."
+    },
+    "custom_patch_none": {
+        "en": "No custom patch selected",
+        "fr": "Aucun patch personnalisé sélectionné"
+    },
     "section_save": {
-        "en": "5. SAVE FILE & BACKUPS",
-        "fr": "5. SAUVEGARDE & BACKUPS"
+        "en": "6. SAVE FILE & BACKUPS",
+        "fr": "6. SAUVEGARDE & BACKUPS"
     },
     "save_preserve_checkbox": {
         "en": "Automatically backup and preserve companion save file (.dsv)",
