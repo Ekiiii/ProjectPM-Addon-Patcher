@@ -814,12 +814,14 @@ class MainWindow(tk.Tk):
             self.var_bg.set("builtin")
         else:
             self.badge_feat_vbg.set_badge("Visual+ BG: Off", badge_type="info")
+            self.var_bg.set("off")
 
         if info.has_visual_cam:
             self.badge_feat_vcam.set_badge(t("badge_vcam_yes"), badge_type="success")
             self.var_cam.set("builtin")
         else:
             self.badge_feat_vcam.set_badge("Visual+ Cam: Off", badge_type="info")
+            self.var_cam.set("off")
 
         # Save status
         if info.companion_save:
