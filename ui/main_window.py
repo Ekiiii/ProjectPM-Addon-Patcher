@@ -870,20 +870,26 @@ class MainWindow(tk.Tk):
 
                 self.var_mp_base.set("fr")
             else: # English / USA
-                self.rb_mp_fr.config(state="disabled")
-                self.badge_mp_fr_status.set_badge(f"[{t('badge_incompatible_vanilla_us')}]", badge_type="danger")
-                self.badge_mp_fr_status.pack(side="left", padx=8)
-
                 if info.game_code == "CPUE" and not getattr(info, "is_usa_rev1", True):
                     # Incompatible USA Rev 0
+                    self.rb_mp_fr.config(state="disabled")
+                    self.badge_mp_fr_status.set_badge(f"[{t('badge_requires_usa_rev1')}]", badge_type="danger")
+                    self.badge_mp_fr_status.pack(side="left", padx=8)
+
                     self.rb_mp_en.config(state="disabled")
                     self.badge_mp_en_status.set_badge(f"[{t('badge_requires_usa_rev1')}]", badge_type="danger")
                     self.badge_mp_en_status.pack(side="left", padx=8)
                     self.var_mp_base.set("none")
                 else:
+                    # USA Rev 1 can be patched to either English or French!
                     self.rb_mp_en.config(state="normal")
                     self.badge_mp_en_status.pack_forget()
-                    self.var_mp_base.set("en")
+
+                    self.rb_mp_fr.config(state="normal")
+                    self.badge_mp_fr_status.pack_forget()
+
+                    if self.var_mp_base.get() not in ("none", "fr", "en"):
+                        self.var_mp_base.set("en")
 
         # Update Addon dependencies
         self._update_addon_dependencies()
@@ -1035,14 +1041,17 @@ class MainWindow(tk.Tk):
                 
                 # Check source ROM language for proper patch selection
                 if effective_mp == "fr":
-                    patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
+                    if info.lang == "fr":
+                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
+                    else:
+                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta")
                 else: # English
                     patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5.xdelta")
 
                 clean_src = rom_path
                 if rand_data["is_randomized"]:
                     temp_clean = os.path.join(parent_dir, "temp_vanilla_clean.nds")
-                    clean_src = clean_vanilla_for_xdelta(rom_path, temp_clean, lang=effective_mp, assets_dir=self.assets_dir, log_cb=self._log_msg)
+                    clean_src = clean_vanilla_for_xdelta(rom_path, temp_clean, lang=info.lang, assets_dir=self.assets_dir, log_cb=self._log_msg)
 
                 xd_exe = os.path.join(self.assets_dir, "xdelta3.exe")
                 ok = apply_xdelta(clean_src, patch_file, temp_base, xd_exe, self._log_msg)
