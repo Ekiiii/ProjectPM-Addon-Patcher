@@ -55,6 +55,9 @@ class RomInfo:
         self.game_title = ""
         self.game_code = ""
         self.lang = "en"           # "en" or "fr"
+        self.rom_version = 0
+        self.is_usa_rev1 = False
+        self.is_france = False
         self.category = "unknown"   # "projectpm", "vanilla", "unknown"
         self.display_name = ""
         
@@ -90,11 +93,16 @@ class RomInfo:
             if len(header) >= 16:
                 self.game_title = header[:12].decode("latin-1", errors="ignore").rstrip("\x00")
                 self.game_code = header[12:16].decode("latin-1", errors="ignore")
+            if len(header) >= 0x20:
+                self.rom_version = header[0x1E]
                 
             if "CPUF" in self.game_code:
                 self.lang = "fr"
+                self.is_france = True
             elif "CPUE" in self.game_code:
                 self.lang = "en"
+                if self.rom_version == 1:
+                    self.is_usa_rev1 = True
 
             # Check known hash first
             known = KNOWN_HASHES.get(self.sha1.lower())
@@ -103,8 +111,10 @@ class RomInfo:
                 self.display_name = known["name"]
                 if "_fr" in known["type"]:
                     self.lang = "fr"
+                    self.is_france = True
                 elif "_us" in known["type"]:
                     self.lang = "en"
+                    self.is_usa_rev1 = True
 
             # Read full ROM content for pattern checks
             with open(self.path, "rb") as f:
@@ -138,10 +148,14 @@ class RomInfo:
                 h_ui = hashlib.sha1(rom.files[158]).hexdigest()
                 if h_ui == FR_BATTLE_UI_HASH or "CPUF" in self.game_code:
                     self.lang = "fr"
+                    self.is_france = True
                 elif "CPUE" in self.game_code and not ("fr" in self.filename.lower() or "france" in self.filename.lower()):
                     self.lang = "en"
+                    if self.rom_version == 1:
+                        self.is_usa_rev1 = True
                 elif "fr" in self.filename.lower() or "france" in self.filename.lower():
                     self.lang = "fr"
+                    self.is_france = True
 
             self.mp_lang = self.lang
 
@@ -152,7 +166,11 @@ class RomInfo:
                 if not self.display_name:
                     if "POKEMON PL" in self.game_title:
                         self.category = "vanilla"
-                        self.display_name = f"Vanilla Platinum ({'France' if self.lang == 'fr' else 'USA'})"
+                        if self.lang == "fr":
+                            self.display_name = "Vanilla Platine (France)"
+                        else:
+                            rev_str = "USA Rev 1" if self.rom_version == 1 else f"USA Rev {self.rom_version}"
+                            self.display_name = f"Vanilla Platinum ({rev_str})"
                     else:
                         self.display_name = f"Custom ROM ({self.game_title})"
 
@@ -163,8 +181,7 @@ class RomInfo:
                 if h1_bytes == bytes.fromhex("89f36af9"):
                     self.is_soullocke = True
 
-            # Check Randomizer
-            # 1. Sidecar file <rom>.rand.txt
+            # Check Randomizer via sidecar, filename, or candidate NARC tables
             base_no_ext = os.path.splitext(self.path)[0]
             rand_candidate = base_no_ext + ".rand.txt"
             if os.path.isfile(rand_candidate):
@@ -172,15 +189,22 @@ class RomInfo:
                 self.rand_file = rand_candidate
                 self.is_randomized = True
 
-            # 2. Filename check
             if "random" in self.filename.lower() or "rand" in self.filename.lower():
                 self.is_randomized = True
 
-            # 3. Encounter table pl_enc_data.narc (file 331)
             if len(rom.files) > 331 and rom.files[331]:
                 enc_hash = hashlib.sha1(rom.files[331]).hexdigest()
                 if enc_hash not in STANDARD_ENC_HASHES:
                     self.is_randomized = True
+
+            # Use rand_manager scanner for deep check
+            try:
+                from core.rand_manager import extract_randomizer_data
+                rand_check = extract_randomizer_data(self.path)
+                if rand_check["is_randomized"]:
+                    self.is_randomized = True
+            except Exception:
+                pass
 
             # Check Visual+ Battle BG: file 159 pl_batt_bg.narc > 1MB
             if len(rom.files) > 159 and rom.files[159]:

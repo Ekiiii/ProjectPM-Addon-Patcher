@@ -99,6 +99,22 @@ TRANSLATIONS = {
         "en": "Incompatible with chosen Multiplayer",
         "fr": "Incompatible avec le Multijoueur choisi"
     },
+    "badge_incompatible_vanilla_fr": {
+        "en": "Incompatible with Platinum FR",
+        "fr": "Incompatible avec Platine France"
+    },
+    "badge_incompatible_vanilla_us": {
+        "en": "Incompatible with Platinum USA",
+        "fr": "Incompatible avec Platine USA"
+    },
+    "badge_requires_usa_rev1": {
+        "en": "Requires Platinum USA Rev 1",
+        "fr": "Nécessite Platine USA Rev 1"
+    },
+    "badge_requires_france": {
+        "en": "Requires Platinum France",
+        "fr": "Nécessite Platine France"
+    },
     "section_multiplayer": {
         "en": "2. MULTIPLAYER BASE (PROJECT PM)",
         "fr": "2. BASE MULTIJOUEUR (PROJECT PM)"

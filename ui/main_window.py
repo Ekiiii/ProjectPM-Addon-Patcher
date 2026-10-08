@@ -27,6 +27,7 @@ from core.visual_patcher import apply_battle_bg_patch, apply_camera_patch
 from core.xdelta_engine import apply_xdelta
 from core.save_manager import backup_and_sync_save
 from core.updater import check_for_updates_async, CURRENT_VERSION
+from core.rand_manager import extract_randomizer_data, clean_vanilla_for_xdelta, restore_randomizer_data
 
 from ui.theme import *
 from ui.widgets import ModernCard, PixelButton, StatusBadge
@@ -855,12 +856,34 @@ class MainWindow(tk.Tk):
         else:
             self.lbl_mp_desc.config(text=t("mp_vanilla_desc"), fg=TEXT_MUTED)
             self.rb_mp_vanilla.config(state="normal")
-            self.rb_mp_fr.config(state="normal")
-            self.rb_mp_en.config(state="normal")
-            self.badge_mp_fr_status.pack_forget()
-            self.badge_mp_en_status.pack_forget()
-            # Default to French if Vanilla FR, or English if Vanilla US
-            self.var_mp_base.set(info.lang if info.lang in ("fr", "en") else "fr")
+            
+            # Enforce strict language pairing:
+            # - Platine France Vanilla -> ONLY Multiplayer FR is allowed
+            # - Platinum USA Vanilla -> ONLY Multiplayer EN is allowed (and requires Rev 1)
+            if info.lang == "fr":
+                self.rb_mp_fr.config(state="normal")
+                self.badge_mp_fr_status.pack_forget()
+
+                self.rb_mp_en.config(state="disabled")
+                self.badge_mp_en_status.set_badge(f"[{t('badge_incompatible_vanilla_fr')}]", badge_type="danger")
+                self.badge_mp_en_status.pack(side="left", padx=8)
+
+                self.var_mp_base.set("fr")
+            else: # English / USA
+                self.rb_mp_fr.config(state="disabled")
+                self.badge_mp_fr_status.set_badge(f"[{t('badge_incompatible_vanilla_us')}]", badge_type="danger")
+                self.badge_mp_fr_status.pack(side="left", padx=8)
+
+                if info.game_code == "CPUE" and not getattr(info, "is_usa_rev1", True):
+                    # Incompatible USA Rev 0
+                    self.rb_mp_en.config(state="disabled")
+                    self.badge_mp_en_status.set_badge(f"[{t('badge_requires_usa_rev1')}]", badge_type="danger")
+                    self.badge_mp_en_status.pack(side="left", padx=8)
+                    self.var_mp_base.set("none")
+                else:
+                    self.rb_mp_en.config(state="normal")
+                    self.badge_mp_en_status.pack_forget()
+                    self.var_mp_base.set("en")
 
         # Update Addon dependencies
         self._update_addon_dependencies()
@@ -996,8 +1019,15 @@ class MainWindow(tk.Tk):
             # Ensure parent folder exists
             os.makedirs(os.path.dirname(os.path.abspath(output_rom)), exist_ok=True)
 
+            # 0. Snapshot randomizer tables if input ROM is randomized
+            rand_data = extract_randomizer_data(rom_path, log_cb=self._log_msg)
+            if rand_data["is_randomized"]:
+                self._log_msg(f"[Pipeline] Preserving {len(rand_data['files'])} randomized tables from source ROM...")
+
             # 1. Base ROM check: If Vanilla and user wants Multiplayer, apply base xDelta patch!
             working_rom = rom_path
+            temp_clean = None
+            temp_base = None
             if not info.has_multiplayer and effective_mp in ("fr", "en"):
                 self._log_msg("[Pipeline] Converting Vanilla ROM to ProjectPM Multiplayer...")
                 temp_base = os.path.join(parent_dir, "temp_projectpm_base.nds")
@@ -1005,15 +1035,17 @@ class MainWindow(tk.Tk):
                 
                 # Check source ROM language for proper patch selection
                 if effective_mp == "fr":
-                    if info.lang == "fr":
-                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
-                    else:
-                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta")
+                    patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
                 else: # English
                     patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5.xdelta")
 
+                clean_src = rom_path
+                if rand_data["is_randomized"]:
+                    temp_clean = os.path.join(parent_dir, "temp_vanilla_clean.nds")
+                    clean_src = clean_vanilla_for_xdelta(rom_path, temp_clean, lang=effective_mp, assets_dir=self.assets_dir, log_cb=self._log_msg)
+
                 xd_exe = os.path.join(self.assets_dir, "xdelta3.exe")
-                ok = apply_xdelta(rom_path, patch_file, temp_base, xd_exe, self._log_msg)
+                ok = apply_xdelta(clean_src, patch_file, temp_base, xd_exe, self._log_msg)
                 if not ok:
                     raise RuntimeError("Failed to apply base ProjectPM patch to Vanilla ROM.")
                 working_rom = temp_base
@@ -1040,12 +1072,13 @@ class MainWindow(tk.Tk):
                 import shutil
                 shutil.copy2(working_rom, output_rom)
 
-            # Clean up temp base if created
-            if working_rom != rom_path and os.path.isfile(working_rom):
-                try:
-                    os.remove(working_rom)
-                except Exception:
-                    pass
+            # Clean up temporary base & clean files if created
+            for temp_f in (temp_clean, temp_base):
+                if temp_f and os.path.isfile(temp_f):
+                    try:
+                        os.remove(temp_f)
+                    except Exception:
+                        pass
 
             # 4. Apply Visual+ Options
             if bg_opt == "builtin":
@@ -1061,6 +1094,11 @@ class MainWindow(tk.Tk):
             elif cam_opt == "off":
                 self._log_msg("[Pipeline] Reverting Visual+ 3D Camera...")
                 apply_camera_patch(output_rom, enable=False, log_cb=self._log_msg)
+
+            # 5. Restore Randomizer tables if input was randomized
+            if rand_data["is_randomized"]:
+                self._log_msg("[Pipeline] Re-applying randomized tables onto destination ROM...")
+                restore_randomizer_data(output_rom, rand_data, log_cb=self._log_msg)
 
             self._log_msg(t("status_success"))
             messagebox.showinfo("Success", f"{t('status_success')}\n\nOutput: {os.path.basename(output_rom)}")
