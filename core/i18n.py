@@ -124,8 +124,32 @@ TRANSLATIONS = {
         "fr": "Le multijoueur ProjectPM est déjà intégré à cette ROM (Sélection verrouillée)."
     },
     "mp_vanilla_desc": {
-        "en": "Select which Multiplayer version to install onto your Vanilla ROM:",
-        "fr": "Sélectionnez quelle version Multijoueur installer sur votre ROM Vanilla :"
+        "en": "Activate ProjectPM Multiplayer on your Vanilla ROM and choose the version:",
+        "fr": "Activez le Multijoueur ProjectPM sur votre ROM Vanilla et choisissez la version :"
+    },
+    "mp_enable_checkbox": {
+        "en": "Enable ProjectPM Multiplayer 0.4.5",
+        "fr": "Activer le Multijoueur ProjectPM 0.4.5"
+    },
+    "mp_version_btn": {
+        "en": "⚙ Version: %s ▾",
+        "fr": "⚙ Version : %s ▾"
+    },
+    "dialog_mp_title": {
+        "en": "Select Multiplayer Version",
+        "fr": "Sélectionner la version du Multijoueur"
+    },
+    "dialog_mp_desc": {
+        "en": "Choose the multiplayer language & version to install onto your ROM:",
+        "fr": "Choisissez la version linguistique du Multijoueur à installer sur votre ROM :"
+    },
+    "dialog_confirm": {
+        "en": "Confirm",
+        "fr": "Confirmer"
+    },
+    "dialog_cancel": {
+        "en": "Cancel",
+        "fr": "Annuler"
     },
     "mp_opt_keep_vanilla": {
         "en": "None (Keep Vanilla ROM)",
@@ -140,8 +164,36 @@ TRANSLATIONS = {
         "fr": "ProjectPM Multijoueur 0.4.5 (Anglais)"
     },
     "section_addons": {
-        "en": "3. SOULLOCKE ADDON",
-        "fr": "3. ADDON SOULLOCKE"
+        "en": "3. ADDONS & MODS",
+        "fr": "3. ADDONS & MODS"
+    },
+    "addon_soullocke": {
+        "en": "SoulLocke",
+        "fr": "SoulLocke"
+    },
+    "dialog_addon_title": {
+        "en": "Configure Addon: %s",
+        "fr": "Configuration de l'Addon : %s"
+    },
+    "dialog_addon_desc": {
+        "en": "Select the variant / language for this addon:",
+        "fr": "Sélectionnez la variante / langue pour cet addon :"
+    },
+    "btn_configure": {
+        "en": "Configure...",
+        "fr": "Configurer..."
+    },
+    "btn_uninstall_addon": {
+        "en": "Uninstall Addon (Revert to Clean)",
+        "fr": "Désinstaller l'Addon (Restaurer)"
+    },
+    "addon_installed_badge": {
+        "en": "Installed on ROM",
+        "fr": "Installé sur la ROM"
+    },
+    "addon_version_btn": {
+        "en": "⚙ Version: %s ▾",
+        "fr": "⚙ Version : %s ▾"
     },
     "addon_soullocke_fr": {
         "en": "SoulLocke Edition (Français)",
