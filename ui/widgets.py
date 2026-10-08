@@ -24,7 +24,7 @@ class ModernCard(tk.Frame):
         )
 
 class PixelButton(tk.Button):
-    def __init__(self, parent, text, command=None, bg_color=COLOR_PRIMARY, fg_color=TEXT_WHITE, font_size=11, bold=True, **kwargs):
+    def __init__(self, parent, text, command=None, bg_color=COLOR_PRIMARY, fg_color=TEXT_WHITE, font_size=11, bold=True, padx=16, pady=8, **kwargs):
         self.normal_bg = bg_color
         self.hover_bg = BG_HOVER
         super().__init__(
@@ -39,8 +39,8 @@ class PixelButton(tk.Button):
             relief="flat",
             bd=0,
             cursor="hand2",
-            padx=16,
-            pady=8,
+            padx=padx,
+            pady=pady,
             **kwargs
         )
         self.bind("<Enter>", self._on_enter)
