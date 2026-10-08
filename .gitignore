@@ -1,0 +1,20 @@
+# Bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller build outputs
+build/
+dist/
+*.spec
+
+# ROMs & Saves
+*.nds
+*.dsv
+*.sav
+PMBackups/
+temp_*.nds
+
+# OS files
+.DS_Store
+Thumbs.db

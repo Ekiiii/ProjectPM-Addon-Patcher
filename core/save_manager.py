@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+"""
+save_manager.py
+Manages safe backups and automatic companion synchronization for:
+- Save files (.dsv)
+- Randomizer sidecar files (.rand.txt)
+- ROM backups before patching
+"""
+import os
+import shutil
+import time
+
+def backup_and_sync_save(source_rom, output_rom, log_cb=None):
+    """
+    Backs up the original ROM and its save file, and copies the save file
+    to match the new output ROM's filename.
+    """
+    def log(msg):
+        if log_cb:
+            log_cb(msg)
+
+    source_dir = os.path.dirname(os.path.abspath(source_rom))
+    backup_dir = os.path.join(source_dir, "PMBackups")
+    os.makedirs(backup_dir, exist_ok=True)
+
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    src_base = os.path.splitext(os.path.basename(source_rom))[0]
+    out_base = os.path.splitext(os.path.basename(output_rom))[0]
+
+    # 1. Backup source ROM
+    rom_bak = os.path.join(backup_dir, f"{src_base}.{timestamp}.nds")
+    try:
+        shutil.copy2(source_rom, rom_bak)
+        log(f"[Backup] Saved ROM backup -> PMBackups/{os.path.basename(rom_bak)}")
+    except Exception as e:
+        log(f"[Backup] Warning: could not backup ROM ({e})")
+
+    # 2. Check and Backup Save file (.dsv)
+    src_dsv = os.path.join(source_dir, src_base + ".dsv")
+    bat_dsv = os.path.join(source_dir, "battery", src_base + ".dsv")
+    
+    save_file = None
+    if os.path.isfile(src_dsv):
+        save_file = src_dsv
+    elif os.path.isfile(bat_dsv):
+        save_file = bat_dsv
+
+    if save_file:
+        dsv_bak = os.path.join(backup_dir, f"{src_base}.{timestamp}.dsv")
+        try:
+            shutil.copy2(save_file, dsv_bak)
+            log(f"[Backup] Saved Save file backup -> PMBackups/{os.path.basename(dsv_bak)}")
+        except Exception as e:
+            log(f"[Backup] Warning: could not backup save ({e})")
+
+        # Sync save to new name if names differ
+        if src_base != out_base:
+            out_dsv = os.path.join(os.path.dirname(save_file), out_base + ".dsv")
+            try:
+                shutil.copy2(save_file, out_dsv)
+                log(f"[Save] Preserved companion save -> {os.path.basename(out_dsv)}")
+            except Exception as e:
+                log(f"[Save] Warning: could not copy save ({e})")
+    else:
+        log("[Save] Note: No existing save file (.dsv) found to backup.")
+
+    # 3. Check and Preserve Randomizer record (.rand.txt)
+    src_rand = os.path.join(source_dir, src_base + ".rand.txt")
+    if os.path.isfile(src_rand):
+        rand_bak = os.path.join(backup_dir, f"{src_base}.{timestamp}.rand.txt")
+        try:
+            shutil.copy2(src_rand, rand_bak)
+        except Exception:
+            pass
+
+        if src_base != out_base:
+            out_rand = os.path.join(source_dir, out_base + ".rand.txt")
+            try:
+                shutil.copy2(src_rand, out_rand)
+                log(f"[Rand] Preserved randomizer record -> {os.path.basename(out_rand)}")
+            except Exception as e:
+                log(f"[Rand] Warning: could not copy rand record ({e})")
+
+    return True
