@@ -1287,6 +1287,8 @@ class MainWindow(tk.Tk):
         t_thread.start()
 
     def _run_patch_pipeline(self):
+        temp_clean = None
+        temp_base = None
         try:
             rom_path = self.selected_rom_path
             info = self.current_rom_info or detect_rom(rom_path)
@@ -1306,14 +1308,14 @@ class MainWindow(tk.Tk):
             sl_mode = self.addon_mode_vars.get("soullocke", tk.StringVar(value="apply")).get()
             sl_variant = self.addon_variant_vars.get("soullocke", tk.StringVar(value="fr")).get()
 
-            # Destination ROM name
+            # Resolve directories and output ROM name
+            parent_dir = os.path.dirname(os.path.abspath(rom_path))
             user_output = self.entry_output.get().strip()
             if user_output:
                 output_rom = user_output
                 if not output_rom.lower().endswith(".nds"):
                     output_rom += ".nds"
             else:
-                parent_dir = os.path.dirname(rom_path)
                 base_name = os.path.splitext(os.path.basename(rom_path))[0]
                 if sl_mode == "restore":
                     out_name = f"{base_name}_Clean.nds"
@@ -1325,6 +1327,10 @@ class MainWindow(tk.Tk):
                     out_name = f"{base_name}_modded.nds"
                 output_rom = os.path.join(parent_dir, out_name)
 
+            out_dir = os.path.dirname(os.path.abspath(output_rom))
+            os.makedirs(out_dir, exist_ok=True)
+            parent_dir = out_dir
+
             # Prevent accidental silent overwriting of input ROM
             if os.path.abspath(output_rom).lower() == os.path.abspath(rom_path).lower():
                 ans = messagebox.askyesno(
@@ -1334,9 +1340,6 @@ class MainWindow(tk.Tk):
                 if not ans:
                     self._log_msg("Patching cancelled by user.")
                     return
-
-            # Ensure parent folder exists
-            os.makedirs(os.path.dirname(os.path.abspath(output_rom)), exist_ok=True)
 
             # 0. Snapshot randomizer tables if input ROM is randomized
             rand_data = extract_randomizer_data(rom_path, log_cb=self._log_msg)
@@ -1458,4 +1461,10 @@ class MainWindow(tk.Tk):
             self._log_msg(f"{t('status_error')} ({e})")
             messagebox.showerror("Error", f"{t('status_error')}\n\nDetails: {e}")
         finally:
+            for temp_f in (temp_clean, temp_base):
+                if temp_f and os.path.isfile(temp_f):
+                    try:
+                        os.remove(temp_f)
+                    except Exception:
+                        pass
             self.btn_apply.config(state="normal")
