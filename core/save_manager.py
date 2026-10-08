@@ -70,6 +70,8 @@ def backup_and_sync_save(source_rom, output_rom, log_cb=None):
 
     # 3. Check and Preserve Randomizer record (.rand.txt)
     src_rand = os.path.join(source_dir, src_base + ".rand.txt")
+    if not os.path.isfile(src_rand) and os.path.isfile(source_rom + ".rand.txt"):
+        src_rand = source_rom + ".rand.txt"
     if os.path.isfile(src_rand):
         rand_bak = os.path.join(backup_dir, f"{src_base}.{timestamp}.rand.txt")
         try:

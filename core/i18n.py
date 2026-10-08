@@ -128,8 +128,8 @@ TRANSLATIONS = {
         "fr": "Activez le Multijoueur ProjectPM sur votre ROM Vanilla et choisissez la version :"
     },
     "mp_enable_checkbox": {
-        "en": "Enable ProjectPM Multiplayer 0.4.5",
-        "fr": "Activer le Multijoueur ProjectPM 0.4.5"
+        "en": "Enable ProjectPM Multiplayer",
+        "fr": "Activer le Multijoueur ProjectPM"
     },
     "mp_version_btn": {
         "en": "⚙ Version: %s ▾",

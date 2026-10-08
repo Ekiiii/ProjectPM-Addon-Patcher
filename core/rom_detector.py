@@ -181,30 +181,37 @@ class RomInfo:
                 if h1_bytes == bytes.fromhex("89f36af9"):
                     self.is_soullocke = True
 
-            # Check Randomizer via sidecar, filename, or candidate NARC tables
             base_no_ext = os.path.splitext(self.path)[0]
-            rand_candidate = base_no_ext + ".rand.txt"
-            if os.path.isfile(rand_candidate):
-                self.has_rand_sidecar = True
-                self.rand_file = rand_candidate
-                self.is_randomized = True
 
-            if "random" in self.filename.lower() or "rand" in self.filename.lower():
-                self.is_randomized = True
-
-            if len(rom.files) > 331 and rom.files[331]:
-                enc_hash = hashlib.sha1(rom.files[331]).hexdigest()
-                if enc_hash not in STANDARD_ENC_HASHES:
+            # Check Randomizer: If ROM matches an exact clean vanilla or stock ProjectPM hash, it is NOT randomized
+            if self.sha1.lower() in KNOWN_HASHES:
+                self.is_randomized = False
+            else:
+                # Check Randomizer via sidecar, filename, or candidate NARC tables
+                rand_candidate = base_no_ext + ".rand.txt"
+                if not os.path.isfile(rand_candidate) and os.path.isfile(self.path + ".rand.txt"):
+                    rand_candidate = self.path + ".rand.txt"
+                if os.path.isfile(rand_candidate):
+                    self.has_rand_sidecar = True
+                    self.rand_file = rand_candidate
                     self.is_randomized = True
 
-            # Use rand_manager scanner for deep check
-            try:
-                from core.rand_manager import extract_randomizer_data
-                rand_check = extract_randomizer_data(self.path)
-                if rand_check["is_randomized"]:
+                if "random" in self.filename.lower() or "rand" in self.filename.lower():
                     self.is_randomized = True
-            except Exception:
-                pass
+
+                if len(rom.files) > 331 and rom.files[331]:
+                    enc_hash = hashlib.sha1(rom.files[331]).hexdigest()
+                    if enc_hash not in STANDARD_ENC_HASHES:
+                        self.is_randomized = True
+
+                # Use rand_manager scanner for deep check
+                try:
+                    from core.rand_manager import extract_randomizer_data
+                    rand_check = extract_randomizer_data(self.path)
+                    if rand_check["is_randomized"]:
+                        self.is_randomized = True
+                except Exception:
+                    pass
 
             # Check Visual+ Battle BG: file 159 pl_batt_bg.narc > 1MB
             if len(rom.files) > 159 and rom.files[159]:

@@ -13,6 +13,21 @@ import zlib
 import pickle
 import ndspy.rom
 
+# Known clean official Vanilla Platinum and stock ProjectPM 0.4.5 full ROM SHA-1s
+KNOWN_CLEAN_ROM_HASHES = {
+    # Vanilla Platinum
+    "38914619d0e2e505ea99994cb1783cf6cb79ea29",  # Vanilla USA Rev 1
+    "0862ec35b24de5c7e2dcb88c9eea0873110d755c",  # Vanilla USA Rev 1
+    "f4448555e5dfad41763740e53a25cb8ec89ef239",  # Vanilla France
+    "41ea92f794560e347cd9509f5ec9e9d479a4bbf1",  # Vanilla France
+    # ProjectPM FR 0.4.5
+    "7914acff08156d4c2be6d7babb275afe2d60a3b0",  # Standard FR
+    "534992df5165d8ed182da8b922da09614fd70022",  # Visual+ FR
+    # ProjectPM USA 0.4.5
+    "13a17485f168f7c66a8632598929ffb9232be252",
+    "0e0ea676a7d289fe7efd5b3b80434d7b067f1f4a",
+}
+
 # Standard clean file hashes for Nintendo DS Pokémon Platinum (Vanilla FR, Vanilla US, ProjectPM 0.4.5)
 CLEAN_FILE_HASHES = {
     "fielddata/encountdata/pl_enc_data.narc": {
@@ -45,6 +60,7 @@ CLEAN_FILE_HASHES = {
     "poketool/personal/personal.narc": {
         "9276bf00abe261643529ec61b1ec235a9229c3d1",
         "1f8689cbc763d9efedac9e6f12e940dbd361f7a9",
+        "16f526ba6a59561e1f351769ef74a6a3e0428e8c",  # Vanilla US/FR & ProjectPM
     },
     "poketool/personal/evo.narc": {
         "24718dc9a1d612c5e5799b503e09a705dd8db2b4",  # ProjectPM standard
@@ -56,9 +72,11 @@ CLEAN_FILE_HASHES = {
     },
     "poketool/personal/pl_growtbl.narc": {
         "8397a6d892040b2efd44a7ecf0148fb0fa8e38bc",
+        "fbbf1287b2ac10c5212be0e4a69461507e860005",  # Platinum clean growtbl
     },
     "poketool/personal/growtbl.narc": {
         "8397a6d892040b2efd44a7ecf0148fb0fa8e38bc",
+        "fbbf1287b2ac10c5212be0e4a69461507e860005",  # Platinum clean growtbl
     },
     "poketool/waza/pl_waza_tbl.narc": {
         "12cb9af69581a76fe17e4a7f5a7941608949cf97",  # ProjectPM standard
@@ -73,6 +91,9 @@ CLEAN_FILE_HASHES = {
 CLEAN_OV78_HASHES = {
     "16757b15a6b7501a355938ea49d7b42589e4726e",
     "b8cfb4aa262f3fcfd46c8206aa1e24749fef1c46",
+    "8571cf57764db093c9ce385586894659297b783e",  # Vanilla US Rev 1
+    "32996678d5919a686b31c426fd3d23d6d788f6e6",  # Vanilla FR
+    "b39aa6eb12b7016b3f45bfc942c92974e2914120",  # ProjectPM 0.4.5
 }
 
 RANDOMIZER_CANDIDATES = [
@@ -111,6 +132,19 @@ def extract_randomizer_data(rom_path, log_cb=None):
     if not os.path.isfile(rom_path):
         return result
 
+    # Fast path: Check if full ROM matches an official clean vanilla or stock ProjectPM dump
+    try:
+        with open(rom_path, "rb") as f:
+            h = hashlib.sha1()
+            while chunk := f.read(1024 * 1024):
+                h.update(chunk)
+            full_sha1 = h.hexdigest().lower()
+    except Exception:
+        full_sha1 = ""
+
+    if full_sha1 in KNOWN_CLEAN_ROM_HASHES:
+        return result
+
     try:
         rom = ndspy.rom.NintendoDSRom.fromFile(rom_path)
     except Exception as e:
@@ -120,6 +154,8 @@ def extract_randomizer_data(rom_path, log_cb=None):
     # Check companion .rand.txt
     base_no_ext = os.path.splitext(rom_path)[0]
     rand_candidate = base_no_ext + ".rand.txt"
+    if not os.path.isfile(rand_candidate) and os.path.isfile(rom_path + ".rand.txt"):
+        rand_candidate = rom_path + ".rand.txt"
     if os.path.isfile(rand_candidate):
         result["rand_log_path"] = rand_candidate
         result["is_randomized"] = True
