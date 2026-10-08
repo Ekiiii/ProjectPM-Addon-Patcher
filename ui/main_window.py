@@ -66,6 +66,7 @@ class MainWindow(tk.Tk):
         self.var_bg = tk.StringVar(value="keep")          # "builtin", "off", "keep"
         self.var_cam = tk.StringVar(value="keep")         # "builtin", "off", "keep"
         self.var_backup_save = tk.BooleanVar(value=True)
+        self.output_manually_edited = False
 
         # Image cache
         self.img_cache = {}
@@ -86,6 +87,9 @@ class MainWindow(tk.Tk):
 
         # Bottom fixed footer
         self._build_footer()
+
+        # Ensure scroll is at the top on start
+        self.after(50, lambda: self.canvas.yview_moveto(0))
 
         # Check for updates in background
         check_for_updates_async(self._on_update_found)
@@ -193,8 +197,18 @@ class MainWindow(tk.Tk):
         )
         self.sec_rom_title.pack(anchor="w")
 
+        # Source ROM sub-label
+        self.lbl_in_title = tk.Label(
+            self.card_rom,
+            text=t("rom_input_label"),
+            bg=BG_CARD,
+            fg=TEXT_MUTED,
+            font=get_font(9, bold=True)
+        )
+        self.lbl_in_title.pack(anchor="w", pady=(6, 2))
+
         row = tk.Frame(self.card_rom, bg=BG_CARD)
-        row.pack(fill="x", pady=(6, 4))
+        row.pack(fill="x", pady=(0, 4))
 
         self.entry_rom = tk.Entry(
             row,
@@ -222,7 +236,7 @@ class MainWindow(tk.Tk):
 
         # Status & SHA1 line
         info_row = tk.Frame(self.card_rom, bg=BG_CARD)
-        info_row.pack(fill="x", pady=(4, 6))
+        info_row.pack(fill="x", pady=(2, 6))
 
         self.badge_rom_status = StatusBadge(info_row, text=t("rom_placeholder"), badge_type="info")
         self.badge_rom_status.pack(side="left")
@@ -232,7 +246,7 @@ class MainWindow(tk.Tk):
 
         # Multi-badge features row
         self.badges_row = tk.Frame(self.card_rom, bg=BG_CARD)
-        self.badges_row.pack(fill="x", pady=(2, 0))
+        self.badges_row.pack(fill="x", pady=(2, 8))
 
         self.badge_feat_mp = StatusBadge(self.badges_row, text=t("badge_mp_none"), badge_type="info")
         self.badge_feat_mp.pack(side="left", padx=(0, 6))
@@ -248,6 +262,48 @@ class MainWindow(tk.Tk):
 
         self.badge_feat_vcam = StatusBadge(self.badges_row, text="Visual+ Cam: Off", badge_type="info")
         self.badge_feat_vcam.pack(side="left")
+
+        # Destination ROM (Where to save) line
+        out_box = tk.Frame(self.card_rom, bg=BG_CARD)
+        out_box.pack(fill="x", pady=(8, 2))
+
+        self.lbl_out_title = tk.Label(
+            out_box,
+            text=t("rom_output_label"),
+            bg=BG_CARD,
+            fg=COLOR_GOLD,
+            font=get_font(9, bold=True)
+        )
+        self.lbl_out_title.pack(anchor="w", pady=(0, 3))
+
+        out_row = tk.Frame(out_box, bg=BG_CARD)
+        out_row.pack(fill="x")
+
+        self.entry_output = tk.Entry(
+            out_row,
+            bg=BG_PANEL,
+            fg=TEXT_WHITE,
+            insertbackground=TEXT_WHITE,
+            highlightbackground=BORDER_COLOR,
+            highlightcolor=COLOR_GOLD,
+            highlightthickness=1,
+            relief="flat",
+            font=get_font(10)
+        )
+        self.entry_output.pack(side="left", fill="x", expand=True, padx=(0, 10), ipady=5)
+        self.entry_output.bind("<Key>", lambda e: self._on_output_manual_edit())
+
+        self.btn_browse_output = PixelButton(
+            out_row,
+            text=t("rom_output_browse"),
+            command=self._on_browse_output,
+            bg_color=COLOR_GOLD,
+            fg_color="#101010",
+            font_size=10,
+            padx=14,
+            pady=4
+        )
+        self.btn_browse_output.pack(side="right")
 
     def _build_multiplayer_section(self):
         self.card_mp = ModernCard(self.scroll_content)
@@ -607,7 +663,10 @@ class MainWindow(tk.Tk):
         self.lbl_title.config(text=t("app_title"))
         self.lbl_sub.config(text=t("app_subtitle"))
         self.sec_rom_title.config(text=t("section_rom"))
+        self.lbl_in_title.config(text=t("rom_input_label"))
+        self.lbl_out_title.config(text=t("rom_output_label"))
         self.btn_browse.config(text=t("rom_browse"))
+        self.btn_browse_output.config(text=t("rom_output_browse"))
         self.sec_mp_title.config(text=t("section_multiplayer"))
         self.rb_mp_vanilla.config(text=t("mp_opt_keep_vanilla"))
         self.rb_mp_fr.config(text=t("mp_opt_fr"))
@@ -641,6 +700,67 @@ class MainWindow(tk.Tk):
             self.badge_rom_status.set_badge(t("rom_placeholder"), badge_type="info")
             self.lbl_status.config(text=t("status_ready"))
 
+    def _on_output_manual_edit(self):
+        self.output_manually_edited = True
+
+    def _on_browse_output(self):
+        current_val = self.entry_output.get().strip()
+        if current_val:
+            initial_dir = os.path.dirname(current_val)
+            initial_file = os.path.basename(current_val)
+        elif self.selected_rom_path:
+            initial_dir = os.path.dirname(self.selected_rom_path)
+            initial_file = "ProjectPM_Patched.nds"
+        else:
+            initial_dir = os.getcwd()
+            initial_file = "ProjectPM_Patched.nds"
+
+        f = filedialog.asksaveasfilename(
+            title="Select Destination ROM",
+            initialdir=initial_dir,
+            initialfile=initial_file,
+            defaultextension=".nds",
+            filetypes=[("Nintendo DS ROMs", "*.nds"), ("All files", "*.*")]
+        )
+        if f:
+            self.entry_output.delete(0, tk.END)
+            self.entry_output.insert(0, f)
+            self.output_manually_edited = True
+
+    def _update_suggested_output_path(self):
+        if self.output_manually_edited:
+            return
+        if not self.selected_rom_path:
+            return
+
+        parent_dir = os.path.dirname(self.selected_rom_path)
+        base_name = os.path.splitext(os.path.basename(self.selected_rom_path))[0]
+        info = self.current_rom_info
+        sl_mode = self.var_sl_mode.get()
+
+        if info and info.has_multiplayer:
+            effective_mp = info.mp_lang
+        else:
+            effective_mp = self.var_mp_base.get()
+
+        target_lang = "fr" if (sl_mode == "soullocke_fr" or effective_mp == "fr") else "en"
+
+        if sl_mode in ("soullocke_fr", "soullocke_en"):
+            out_name = "ProjectPM_FR_SoulLocke.nds" if target_lang == "fr" else "ProjectPM_USA_SoulLocke.nds"
+        elif sl_mode == "restore":
+            out_name = f"{base_name}_Clean.nds"
+        elif info and not info.has_multiplayer and effective_mp in ("fr", "en"):
+            out_name = f"ProjectPM_{'FR' if effective_mp == 'fr' else 'USA'}.nds"
+        else:
+            out_name = f"{base_name}_modded.nds"
+
+        suggested = os.path.join(parent_dir, out_name)
+        if os.path.abspath(suggested).lower() == os.path.abspath(self.selected_rom_path).lower():
+            suggested = os.path.join(parent_dir, f"{base_name}_patched.nds")
+
+        self.entry_output.delete(0, tk.END)
+        self.entry_output.insert(0, suggested)
+
     def _on_browse_rom(self):
         f = filedialog.askopenfilename(
             title="Select Pokémon Platinum / ProjectPM ROM",
@@ -659,7 +779,9 @@ class MainWindow(tk.Tk):
 
         info = detect_rom(rom_path)
         self.current_rom_info = info
+        self.output_manually_edited = False
         self._update_rom_display(info)
+        self._update_suggested_output_path()
 
     def _update_rom_display(self, info):
         if not info.exists:
@@ -841,23 +963,36 @@ class MainWindow(tk.Tk):
             target_lang = "fr" if (sl_mode == "soullocke_fr" or effective_mp == "fr") else "en"
 
             # Destination ROM name
-            parent_dir = os.path.dirname(rom_path)
-            base_name = os.path.splitext(os.path.basename(rom_path))[0]
-            
-            if sl_mode in ("soullocke_fr", "soullocke_en"):
-                out_name = "ProjectPM_FR_SoulLocke.nds" if target_lang == "fr" else "ProjectPM_USA_SoulLocke.nds"
-            elif sl_mode == "restore":
-                out_name = f"{base_name}_Clean.nds"
-            elif not info.has_multiplayer and effective_mp in ("fr", "en"):
-                out_name = f"ProjectPM_{'FR' if effective_mp == 'fr' else 'USA'}.nds"
+            user_output = self.entry_output.get().strip()
+            if user_output:
+                output_rom = user_output
+                if not output_rom.lower().endswith(".nds"):
+                    output_rom += ".nds"
             else:
-                out_name = f"{base_name}_modded.nds"
-            
-            output_rom = os.path.join(parent_dir, out_name)
+                parent_dir = os.path.dirname(rom_path)
+                base_name = os.path.splitext(os.path.basename(rom_path))[0]
+                if sl_mode in ("soullocke_fr", "soullocke_en"):
+                    out_name = "ProjectPM_FR_SoulLocke.nds" if target_lang == "fr" else "ProjectPM_USA_SoulLocke.nds"
+                elif sl_mode == "restore":
+                    out_name = f"{base_name}_Clean.nds"
+                elif not info.has_multiplayer and effective_mp in ("fr", "en"):
+                    out_name = f"ProjectPM_{'FR' if effective_mp == 'fr' else 'USA'}.nds"
+                else:
+                    out_name = f"{base_name}_modded.nds"
+                output_rom = os.path.join(parent_dir, out_name)
 
-            # Avoid direct overwriting of source if output is identical
+            # Prevent accidental silent overwriting of input ROM
             if os.path.abspath(output_rom).lower() == os.path.abspath(rom_path).lower():
-                output_rom = os.path.join(parent_dir, f"{base_name}_patched.nds")
+                ans = messagebox.askyesno(
+                    "Confirm Overwrite",
+                    "The destination file is identical to the source ROM.\nPatching in place will modify your original file directly.\n\nDo you want to proceed?"
+                )
+                if not ans:
+                    self._log_msg("Patching cancelled by user.")
+                    return
+
+            # Ensure parent folder exists
+            os.makedirs(os.path.dirname(os.path.abspath(output_rom)), exist_ok=True)
 
             # 1. Base ROM check: If Vanilla and user wants Multiplayer, apply base xDelta patch!
             working_rom = rom_path

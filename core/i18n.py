@@ -24,12 +24,24 @@ TRANSLATIONS = {
         "fr": "v1.0.0"
     },
     "section_rom": {
-        "en": "1. SELECT YOUR ROM",
-        "fr": "1. SÉLECTIONNEZ VOTRE ROM"
+        "en": "1. SELECT YOUR ROM & DESTINATION",
+        "fr": "1. SÉLECTION DE LA ROM & DESTINATION"
+    },
+    "rom_input_label": {
+        "en": "Source ROM:",
+        "fr": "ROM Source :"
+    },
+    "rom_output_label": {
+        "en": "Destination ROM (Where to save):",
+        "fr": "ROM de destination (Emplacement d'enregistrement) :"
     },
     "rom_browse": {
         "en": "Browse...",
         "fr": "Parcourir..."
+    },
+    "rom_output_browse": {
+        "en": "Save As...",
+        "fr": "Enregistrer sous..."
     },
     "rom_placeholder": {
         "en": "Select or drag & drop your ProjectPM.nds or Vanilla Platinum ROM...",
