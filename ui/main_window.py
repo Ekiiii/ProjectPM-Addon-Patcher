@@ -40,6 +40,12 @@ from core.addon_registry import (
 from ui.theme import *
 from ui.widgets import ModernCard, PixelButton, StatusBadge, ModernScrollbar
 
+def normalize_ui_path(path):
+    """Returns normalized absolute path with uniform forward slashes for clean UI display."""
+    if not path:
+        return ""
+    return os.path.abspath(path).replace("\\", "/")
+
 class MainWindow(tk.Tk):
     def __init__(self, root_dir):
         super().__init__()
@@ -866,6 +872,7 @@ class MainWindow(tk.Tk):
             filetypes=[("xDelta Patches", "*.xdelta;*.patch;*.xd"), ("All files", "*.*")]
         )
         if f:
+            f = normalize_ui_path(f)
             self.entry_custom_patch.delete(0, tk.END)
             self.entry_custom_patch.insert(0, f)
             self.var_custom_patch_enabled.set(True)
@@ -1039,6 +1046,7 @@ class MainWindow(tk.Tk):
             filetypes=[("Nintendo DS ROMs", "*.nds"), ("All files", "*.*")]
         )
         if f:
+            f = normalize_ui_path(f)
             self.entry_output.delete(0, tk.END)
             self.entry_output.insert(0, f)
             self.output_manually_edited = True
@@ -1075,9 +1083,9 @@ class MainWindow(tk.Tk):
         else:
             out_name = f"{base_name}_modded.nds"
 
-        suggested = os.path.join(parent_dir, out_name)
+        suggested = normalize_ui_path(os.path.join(parent_dir, out_name))
         if os.path.abspath(suggested).lower() == os.path.abspath(self.selected_rom_path).lower():
-            suggested = os.path.join(parent_dir, f"{base_name}_patched.nds")
+            suggested = normalize_ui_path(os.path.join(parent_dir, f"{base_name}_patched.nds"))
 
         self.entry_output.delete(0, tk.END)
         self.entry_output.insert(0, suggested)
@@ -1091,6 +1099,7 @@ class MainWindow(tk.Tk):
             self._load_rom(f)
 
     def _load_rom(self, rom_path):
+        rom_path = normalize_ui_path(rom_path)
         self.selected_rom_path = rom_path
         self.entry_rom.delete(0, tk.END)
         self.entry_rom.insert(0, rom_path)
@@ -1327,9 +1336,10 @@ class MainWindow(tk.Tk):
                     out_name = f"{base_name}_modded.nds"
                 output_rom = os.path.join(parent_dir, out_name)
 
+            output_rom = normalize_ui_path(output_rom)
             out_dir = os.path.dirname(os.path.abspath(output_rom))
             os.makedirs(out_dir, exist_ok=True)
-            parent_dir = out_dir
+            parent_dir = normalize_ui_path(out_dir)
 
             # Prevent accidental silent overwriting of input ROM
             if os.path.abspath(output_rom).lower() == os.path.abspath(rom_path).lower():
