@@ -218,16 +218,21 @@ class RomInfo:
             elif 5 in ovs and CAM_VISUAL_BYTES in ovs[5].data:
                 self.has_visual_cam = True
 
-            # Companion Save File (.dsv)
+            # Companion Save Files (.dsv and .sav)
             dsv_candidate = base_no_ext + ".dsv"
-            if os.path.isfile(dsv_candidate):
-                self.companion_save = dsv_candidate
-            else:
-                # Check battery/ subdirectory (melonDS / DeSmuME)
-                parent = os.path.dirname(self.path)
-                bat_dsv = os.path.join(parent, "battery", os.path.basename(base_no_ext) + ".dsv")
-                if os.path.isfile(bat_dsv):
-                    self.companion_save = bat_dsv
+            sav_candidate = base_no_ext + ".sav"
+            parent = os.path.dirname(self.path)
+            bat_dsv = os.path.join(parent, "battery", os.path.basename(base_no_ext) + ".dsv")
+            bat_sav = os.path.join(parent, "battery", os.path.basename(base_no_ext) + ".sav")
+
+            found_saves = []
+            for candidate in (dsv_candidate, sav_candidate, bat_dsv, bat_sav):
+                if os.path.isfile(candidate) and candidate not in found_saves:
+                    found_saves.append(candidate)
+
+            if found_saves:
+                self.companion_save = found_saves[0]
+                self.all_companion_saves = found_saves
 
         except Exception as e:
             self.display_name = f"Error reading ROM ({e})"

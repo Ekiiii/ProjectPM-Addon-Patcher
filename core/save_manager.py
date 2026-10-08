@@ -35,34 +35,38 @@ def backup_and_sync_save(source_rom, output_rom, log_cb=None):
     except Exception as e:
         log(f"[Backup] Warning: could not backup ROM ({e})")
 
-    # 2. Check and Backup Save file (.dsv)
-    src_dsv = os.path.join(source_dir, src_base + ".dsv")
-    bat_dsv = os.path.join(source_dir, "battery", src_base + ".dsv")
-    
-    save_file = None
-    if os.path.isfile(src_dsv):
-        save_file = src_dsv
-    elif os.path.isfile(bat_dsv):
-        save_file = bat_dsv
+    # 2. Check and Backup Save files (.dsv and .sav)
+    save_candidates = [
+        (os.path.join(source_dir, src_base + ".dsv"), ".dsv"),
+        (os.path.join(source_dir, "battery", src_base + ".dsv"), ".dsv"),
+        (os.path.join(source_dir, src_base + ".sav"), ".sav"),
+        (os.path.join(source_dir, "battery", src_base + ".sav"), ".sav"),
+    ]
 
-    if save_file:
-        dsv_bak = os.path.join(backup_dir, f"{src_base}.{timestamp}.dsv")
-        try:
-            shutil.copy2(save_file, dsv_bak)
-            log(f"[Backup] Saved Save file backup -> PMBackups/{os.path.basename(dsv_bak)}")
-        except Exception as e:
-            log(f"[Backup] Warning: could not backup save ({e})")
+    found_saves = []
+    for save_path, ext in save_candidates:
+        if os.path.isfile(save_path) and save_path not in [s[0] for s in found_saves]:
+            found_saves.append((save_path, ext))
 
-        # Sync save to new name if names differ
-        if src_base != out_base:
-            out_dsv = os.path.join(os.path.dirname(save_file), out_base + ".dsv")
+    if found_saves:
+        for save_file, ext in found_saves:
+            save_bak = os.path.join(backup_dir, f"{src_base}.{timestamp}{ext}")
             try:
-                shutil.copy2(save_file, out_dsv)
-                log(f"[Save] Preserved companion save -> {os.path.basename(out_dsv)}")
+                shutil.copy2(save_file, save_bak)
+                log(f"[Backup] Saved Save file backup -> PMBackups/{os.path.basename(save_bak)}")
             except Exception as e:
-                log(f"[Save] Warning: could not copy save ({e})")
+                log(f"[Backup] Warning: could not backup save ({e})")
+
+            # Sync save to new name if names differ
+            if src_base != out_base:
+                out_save = os.path.join(os.path.dirname(save_file), out_base + ext)
+                try:
+                    shutil.copy2(save_file, out_save)
+                    log(f"[Save] Preserved companion save -> {os.path.basename(out_save)}")
+                except Exception as e:
+                    log(f"[Save] Warning: could not copy save ({e})")
     else:
-        log("[Save] Note: No existing save file (.dsv) found to backup.")
+        log("[Save] Note: No existing save file (.dsv / .sav) found to backup.")
 
     # 3. Check and Preserve Randomizer record (.rand.txt)
     src_rand = os.path.join(source_dir, src_base + ".rand.txt")

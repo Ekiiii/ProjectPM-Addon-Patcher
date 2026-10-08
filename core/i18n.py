@@ -304,16 +304,16 @@ TRANSLATIONS = {
         "fr": "6. SAUVEGARDE & BACKUPS"
     },
     "save_preserve_checkbox": {
-        "en": "Automatically backup and preserve companion save file (.dsv)",
-        "fr": "Sauvegarder et conserver automatiquement le fichier de sauvegarde (.dsv)"
+        "en": "Automatically backup and preserve companion save files (.dsv / .sav)",
+        "fr": "Sauvegarder et conserver automatiquement les fichiers de sauvegarde (.dsv / .sav)"
     },
     "save_detected": {
         "en": "Save file found: %s",
         "fr": "Sauvegarde détectée : %s"
     },
     "save_none": {
-        "en": "No existing save file detected next to ROM",
-        "fr": "Aucune sauvegarde détectée à côté de la ROM"
+        "en": "No existing save file detected next to ROM (.dsv / .sav)",
+        "fr": "Aucune sauvegarde détectée à côté de la ROM (.dsv / .sav)"
     },
     "rand_detected": {
         "en": "Randomization record (.rand.txt) found and protected.",

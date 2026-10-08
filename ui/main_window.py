@@ -485,6 +485,13 @@ class MainWindow(tk.Tk):
         dlg.grab_set()
         dlg.resizable(False, False)
 
+        icon_path = os.path.join(self.assets_dir, "PM.ico")
+        if os.path.isfile(icon_path):
+            try:
+                dlg.iconbitmap(icon_path)
+            except Exception:
+                pass
+
         x = self.winfo_x() + (self.winfo_width() // 2) - 260
         y = self.winfo_y() + (self.winfo_height() // 2) - 165
         dlg.geometry(f"+{x}+{y}")
@@ -512,6 +519,7 @@ class MainWindow(tk.Tk):
                 text=v["name"],
                 variable=selected_var,
                 value=v_id,
+                tristatevalue="--UNSET--",
                 bg=BG_CARD,
                 fg=TEXT_WHITE if is_supported else TEXT_MUTED,
                 activebackground=BG_CARD,
@@ -570,6 +578,13 @@ class MainWindow(tk.Tk):
         dlg.grab_set()
         dlg.resizable(False, False)
 
+        icon_path = os.path.join(self.assets_dir, "PM.ico")
+        if os.path.isfile(icon_path):
+            try:
+                dlg.iconbitmap(icon_path)
+            except Exception:
+                pass
+
         x = self.winfo_x() + (self.winfo_width() // 2) - 260
         y = self.winfo_y() + (self.winfo_height() // 2) - 165
         dlg.geometry(f"+{x}+{y}")
@@ -597,6 +612,7 @@ class MainWindow(tk.Tk):
                 text=v["name"],
                 variable=selected_var,
                 value=v_id,
+                tristatevalue="--UNSET--",
                 bg=BG_CARD,
                 fg=TEXT_WHITE if is_supported else TEXT_MUTED,
                 activebackground=BG_CARD,
@@ -1130,8 +1146,9 @@ class MainWindow(tk.Tk):
 
         # Save status
         if info.companion_save:
-            save_name = os.path.basename(info.companion_save)
-            msg = t("save_detected", save_name)
+            saves = getattr(info, "all_companion_saves", [info.companion_save])
+            save_names = ", ".join([os.path.basename(s) for s in saves])
+            msg = t("save_detected", save_names)
             if info.has_rand_sidecar:
                 msg += " | " + t("rand_detected")
             self.lbl_save_status.config(text=msg, fg=TEXT_GREEN)
