@@ -9,7 +9,7 @@ import threading
 import urllib.request
 import json
 
-CURRENT_VERSION = "v1.0.1"
+CURRENT_VERSION = "v1.0.2"
 GITHUB_REPO = "Ekiiii/ProjectPM-Addon-Patcher"
 RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
