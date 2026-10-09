@@ -24,9 +24,9 @@
 - **One-Click Reversible**: Easily uninstall addons to revert to clean stock ProjectPM at any time.
 - **Save & Randomizer Protection**: Automatically backs up and synchronizes companion save files (`.sav` and `.dsv`) into `PMBackups/`. Automatically preserves and re-applies randomizer tables (`.rand.txt`).
 - **Additional Custom Patches**: Apply an optional external `.xdelta` patch after all other mods are applied.
-- **Automatic In-App Updates**: Seamlessly checks for newer GitHub releases and updates itself with a single click and automatic restart!
-- **Bilingual Interface**: Full English and French support with instant in-app switching and sleek Dark Modern UI.
-- **Standalone Portable `.exe`**: No Python installation required for players!
+- **Built-in Co-op Randomizer**: Full high-compatibility randomizer engine supporting Wild Encounters (187 areas), Starter Trios, 973 Trainer parties, Species Types, Abilities, Level-up Movesets, Honey Trees, Gift Eggs, Static Legendaries, In-Game Trades, and ARM9 Shiny Odds patching (~1/100 to 1/8192). Features shareable `PMC-...` Co-op codes ensuring 100% multiplayer sync between players!
+- **Sinnoh Pixel Art Interface**: Authentic Nintendo DS Pokémon Platinum aesthetic featuring retro pixel typography, DS dialogue frames, animated components, and type badges.
+- **Standalone Portable `.exe`**: Built with PyWebView (Edge WebView2) and PyInstaller — zero Python installation required for players!
 
 ### Quick Start
 1. Download `ProjectPM-Addon-Patcher.exe` from the [Latest Release](https://github.com/Ekiiii/ProjectPM-Addon-Patcher/releases/latest).
@@ -51,9 +51,9 @@
 - **Restauration en 1 clic** : Retirez les addons à tout moment pour revenir instantanément à la version ProjectPM classique d'origine.
 - **Protection des Sauvegardes & Randomisation** : Copie de secours automatique de vos sauvegardes (`.sav` et `.dsv`) dans `PMBackups/`. Préservation et réapplication automatique des tables de randomisation (`.rand.txt`).
 - **Patchs Personnalisés XDelta** : Possibilité d'appliquer un patch externe optionnel de votre choix en étape finale.
-- **Mises à Jour Automatiques Intégrées** : Détecte les nouvelles versions GitHub et se met à jour en 1 clic avec redémarrage transparent automatique !
-- **Interface Bilingue & Moderne** : Français et Anglais avec bascule instantanée et thème sombre soigné.
-- **Exécutable .exe Autonome** : Aucune installation de Python requise pour les joueurs !
+- **Randomizer Co-op Intégré** : Moteur de randomisation complet et robuste gérant les Pokémon Sauvages (187 zones), le Trio de Starters, les 973 Dresseurs et Champions, les Types, Talents, Attaques apprises, Arbres à miel, Œufs, Légendaires statiques, Échanges PNJs et le seuil de Shiny ARM9 (~1/100 à 1/8192). Génération de codes Co-op `PMC-...` garantissant une synchronisation multijoueur parfaite sans désync !
+- **Interface Pixel Art Sinnoh Authentique** : Esthétique soignée inspirée des menus Nintendo DS de Pokémon Platine avec typographies pixel, fenêtres de dialogue rétro, animations et badges de types officiels.
+- **Exécutable .exe Autonome & Portable** : Propulsé par PyWebView (Edge WebView2) et compilé via PyInstaller — aucune installation de Python requise pour les joueurs !
 
 ### Démarrage Rapide
 1. Téléchargez `ProjectPM-Addon-Patcher.exe` depuis la [dernière Release](https://github.com/Ekiiii/ProjectPM-Addon-Patcher/releases/latest).

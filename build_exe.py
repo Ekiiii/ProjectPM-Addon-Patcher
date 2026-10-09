@@ -36,6 +36,11 @@ def build():
         "--hidden-import=ndspy.rom",
         "--hidden-import=ndspy.narc",
         "--hidden-import=ndspy.code",
+        "--hidden-import=webview",
+        "--hidden-import=webview.platforms.winforms",
+        "--hidden-import=webview.platforms.edgechromium",
+        "--hidden-import=clr",
+        "--hidden-import=pythonnet",
         os.path.join(ROOT_DIR, "main.py")
     ]
 
