@@ -37,6 +37,8 @@ def launch_webview():
         width=1040,
         height=760,
         min_size=(960, 680),
+        frameless=True,
+        easy_drag=False,
         background_color="#0b101b"
     )
     bridge.set_window(window)

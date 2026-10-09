@@ -18,6 +18,37 @@ const SHINY_STEPS = {
 };
 
 // ============================================================================
+// WINDOW CONTROLS & SEAMLESS DRAG
+// ============================================================================
+function startWindowDrag(e) {
+  // If clicked a button, input, or control, ignore
+  if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) {
+    return;
+  }
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.window_drag) {
+    window.pywebview.api.window_drag();
+  }
+}
+
+function windowMinimize() {
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.window_minimize) {
+    window.pywebview.api.window_minimize();
+  }
+}
+
+function windowToggleMaximize() {
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.window_toggle_maximize) {
+    window.pywebview.api.window_toggle_maximize();
+  }
+}
+
+function windowClose() {
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.window_close) {
+    window.pywebview.api.window_close();
+  }
+}
+
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 window.addEventListener('pywebviewready', async () => {
@@ -26,6 +57,7 @@ window.addEventListener('pywebviewready', async () => {
     const initData = await window.pywebview.api.init_app();
     currentLang = initData.lang || 'fr';
     translations = initData.translations || {};
+    pokemonNames = initData.pokemon_names || {};
     
     // Set version
     document.getElementById('app-version').innerText = initData.version || 'v1.0.3';
@@ -40,26 +72,12 @@ window.addEventListener('pywebviewready', async () => {
       document.getElementById('preview-world-seed').innerText = `Seed: ${initData.initial_world.seed}`;
     }
 
-    // Load pokemon names for current language
-    await loadPokemonNames(currentLang);
     updateLangUI();
     updateStartersPreview();
   } catch (err) {
     console.error('[App Init Error]', err);
   }
 });
-
-async function loadPokemonNames(lang) {
-  try {
-    const file = lang === 'fr' ? 'assets/pokemon_names_fr.json' : 'assets/pokemon_names_en.json';
-    const resp = await fetch(file);
-    if (resp.ok) {
-      pokemonNames = await resp.json();
-    }
-  } catch (e) {
-    console.warn('[Pokemon Names Load Warning]', e);
-  }
-}
 
 // ============================================================================
 // TAB NAVIGATION
@@ -87,8 +105,11 @@ async function changeLang(lang) {
   document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
 
   try {
-    translations = await window.pywebview.api.set_language(lang);
-    await loadPokemonNames(lang);
+    const res = await window.pywebview.api.set_language(lang);
+    if (res) {
+      translations = res.translations || {};
+      pokemonNames = res.pokemon_names || {};
+    }
     updateLangUI();
     updateStartersPreview();
   } catch (e) {
@@ -97,7 +118,6 @@ async function changeLang(lang) {
 }
 
 function updateLangUI() {
-  // Update static UI elements
   if (currentLang === 'fr') {
     document.getElementById('i18n-app-subtitle').innerText = "Gestionnaire de Mods, Multijoueur & Randomizer pour Pokémon Platine";
     document.getElementById('i18n-tab-patcher').innerText = "MODS & MULTI";
@@ -111,8 +131,8 @@ function updateLangUI() {
     document.getElementById('i18n-btn-browse-dst').innerText = "Enregistrer sous...";
     document.getElementById('i18n-card-mods-title').innerText = "2. BASE MULTI ET MODES DE JEU";
     document.getElementById('i18n-card-visual-title').innerText = "3. GRAPHISMES & CONFORT (VISUAL+)";
-    document.getElementById('btn-start-patch').innerText = "⚡ APPLIQUER LES PATCHS SUR LA ROM";
-    document.getElementById('btn-start-randomizer').innerText = "🎲 GÉNÉRER LA ROM RANDOMISÉE";
+    document.getElementById('btn-start-patch').querySelector('span').innerText = "APPLIQUER LES PATCHS SUR LA ROM";
+    document.getElementById('btn-start-randomizer').querySelector('span').innerText = "GÉNÉRER LA ROM RANDOMISÉE";
   } else {
     document.getElementById('i18n-app-subtitle').innerText = "Mods, Multiplayer & Randomizer Manager for Pokémon Platinum";
     document.getElementById('i18n-tab-patcher').innerText = "MODS & MULTI";
@@ -126,8 +146,8 @@ function updateLangUI() {
     document.getElementById('i18n-btn-browse-dst').innerText = "Save As...";
     document.getElementById('i18n-card-mods-title').innerText = "2. MULTIPLAYER BASE & GAMEPLAY MODS";
     document.getElementById('i18n-card-visual-title').innerText = "3. GRAPHICS & ENHANCEMENTS (VISUAL+)";
-    document.getElementById('btn-start-patch').innerText = "⚡ APPLY PATCHES TO ROM";
-    document.getElementById('btn-start-randomizer').innerText = "🎲 GENERATE RANDOMIZED ROM";
+    document.getElementById('btn-start-patch').querySelector('span').innerText = "APPLY PATCHES TO ROM";
+    document.getElementById('btn-start-randomizer').querySelector('span').innerText = "GENERATE RANDOMIZED ROM";
   }
 }
 
@@ -517,14 +537,14 @@ window.onUpdateCheckResult = (data) => {
   if (data.available) {
     box.innerHTML = `
       <div style="background-color: #064e3b; border: 1px solid #10b981; padding: 10px; border-radius: 4px; color: #a7f3d0;">
-        <strong>🎉 Nouvelle version disponible : ${data.latest} !</strong> (Version actuelle : ${data.current})<br>
+        <strong>Nouvelle version disponible : ${data.latest} !</strong> (Version actuelle : ${data.current})<br>
         <button class="pixel-btn primary mini mt-2" onclick="window.pywebview.api.open_external_url('${data.url}')">Télécharger la mise à jour</button>
       </div>
     `;
   } else {
     box.innerHTML = `
       <div style="background-color: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 4px; color: #94a3b8;">
-        ✅ Vous disposez de la dernière version (${data.current}).
+        Vous disposez de la dernière version (${data.current}).
       </div>
     `;
   }

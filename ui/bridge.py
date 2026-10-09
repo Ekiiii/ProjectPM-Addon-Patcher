@@ -14,6 +14,7 @@ import json
 import random
 import threading
 import webbrowser
+import ctypes
 from typing import Dict, Any, Optional
 
 import webview
@@ -93,6 +94,7 @@ class PatcherBridge:
             "version": CURRENT_VERSION,
             "lang": cur_lang,
             "translations": trans,
+            "pokemon_names": self.get_pokemon_names(cur_lang),
             "initial_coop": {
                 "seed": coop_seed,
                 "code": init_coop_code
@@ -104,13 +106,71 @@ class PatcherBridge:
             "app_root": self.root_dir.replace("\\", "/")
         }
 
-    def set_language(self, lang: str) -> Dict[str, str]:
-        """Switches UI language and returns updated translations."""
+    def get_pokemon_names(self, lang: str = "fr") -> Dict[str, str]:
+        """Loads Pokémon names dictionary directly without frontend fetch CORS."""
+        json_file = f"pokemon_names_{lang}.json"
+        path = os.path.join(self.root_dir, "ui", "web", "assets", json_file)
+        if not os.path.isfile(path):
+            path = os.path.join(self.root_dir, "ui", "web", "assets", "pokemon_names_fr.json")
+        if os.path.isfile(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {}
+
+    def set_language(self, lang: str) -> Dict[str, Any]:
+        """Switches UI language and returns updated translations and names."""
         set_lang(lang)
         trans = {}
         for key, dict_val in TRANSLATIONS.items():
             trans[key] = dict_val.get(lang, dict_val.get("en", key))
-        return trans
+        return {
+            "translations": trans,
+            "pokemon_names": self.get_pokemon_names(lang)
+        }
+
+    # =========================================================================
+    # NATIVE WINDOW CONTROLS & SEAMLESS DRAG
+    # =========================================================================
+    def window_drag(self):
+        """Native Windows window drag without message loop lock or IPC flooding."""
+        try:
+            if self.window and hasattr(self.window, 'native') and self.window.native:
+                hwnd = int(self.window.native.Handle.ToInt64())
+                user32 = ctypes.windll.user32
+                user32.ReleaseCapture()
+                user32.SendMessageW(hwnd, 0x0112, 0xF012, 0)
+        except Exception as e:
+            print(f"[Window Drag Error] {e}")
+
+    def window_minimize(self):
+        """Minimizes the application window."""
+        try:
+            if self.window:
+                self.window.minimize()
+        except Exception as e:
+            print(f"[Window Minimize Error] {e}")
+
+    def window_toggle_maximize(self):
+        """Toggles between maximized and restored window state."""
+        try:
+            if self.window:
+                if getattr(self.window, 'maximized', False):
+                    self.window.restore()
+                else:
+                    self.window.maximize()
+        except Exception as e:
+            print(f"[Window Maximize Error] {e}")
+
+    def window_close(self):
+        """Closes the application."""
+        try:
+            if self.window:
+                self.window.destroy()
+        except Exception as e:
+            print(f"[Window Close Error] {e}")
 
     # =========================================================================
     # FILE DIALOGS

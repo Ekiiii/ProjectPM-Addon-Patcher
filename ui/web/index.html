@@ -7,41 +7,136 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- SVG ICON DEFS (FLAT VECTOR PIXEL ART ICONS) -->
+  <svg style="display: none;">
+    <defs>
+      <!-- Pokeball Icon -->
+      <g id="icon-pokeball">
+        <circle cx="8" cy="8" r="7" fill="#ef4444" stroke="#000" stroke-width="1.5"/>
+        <path d="M1 8h14v7H1z" fill="#f8fafc" stroke="#000" stroke-width="1.5"/>
+        <line x1="1" y1="8" x2="15" y2="8" stroke="#000" stroke-width="1.5"/>
+        <circle cx="8" cy="8" r="2.5" fill="#f8fafc" stroke="#000" stroke-width="1.5"/>
+        <circle cx="8" cy="8" r="1" fill="#000"/>
+      </g>
+      <!-- Lightning (Mods & Multi) -->
+      <g id="icon-lightning">
+        <path fill="currentColor" d="M9 1L3 9h5l-2 6 8-9H9l2-5z"/>
+      </g>
+      <!-- Dice (Randomizer) -->
+      <g id="icon-dice">
+        <rect x="2" y="2" width="12" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="4" y="4" width="2" height="2" fill="currentColor"/>
+        <rect x="10" y="4" width="2" height="2" fill="currentColor"/>
+        <rect x="7" y="7" width="2" height="2" fill="currentColor"/>
+        <rect x="4" y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="10" y="10" width="2" height="2" fill="currentColor"/>
+      </g>
+      <!-- Floppy Disk (Saves) -->
+      <g id="icon-save">
+        <path fill="currentColor" d="M2 2h9l3 3v9H2V2zm2 2v3h6V4H4zm0 5v4h8V9H4z"/>
+      </g>
+      <!-- Info 'i' -->
+      <g id="icon-info">
+        <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="7" y="4" width="2" height="2" fill="currentColor"/>
+        <rect x="7" y="7" width="2" height="5" fill="currentColor"/>
+      </g>
+      <!-- Warning Triangle -->
+      <g id="icon-warning">
+        <path fill="#f59e0b" d="M8 2L1 14h14L8 2zm0 4l.5 4h-1L8 6zm0 5a1 1 0 110 2 1 1 0 010-2z"/>
+      </g>
+      <!-- Copy / Clipboard -->
+      <g id="icon-copy">
+        <path fill="currentColor" d="M4 2h8v2H4V2zm-2 3h10v9H2V5zm2 2v5h6V7H4zm10-3h2v9h-2V4z"/>
+      </g>
+      <!-- Paste / Download -->
+      <g id="icon-paste">
+        <path fill="currentColor" d="M5 2h6v2H5V2zM3 4h2v2h6V4h2v10H3V4zm5 3v4H6l2 2 2-2H9V7H8z"/>
+      </g>
+      <!-- Reroll / Dice Roll -->
+      <g id="icon-reroll">
+        <path fill="currentColor" d="M8 2a6 6 0 105.2 3h-2.2A4 4 0 118 4c1 0 1.9.4 2.6 1H8v2h5V2h-2l-.3.4A5.9 5.9 0 008 2z"/>
+      </g>
+      <!-- Leaf / Nature -->
+      <g id="icon-leaf">
+        <path fill="currentColor" d="M8 1c3.5 0 6 3 6 7 0 3-2 6-6 7-4-1-6-4-6-7 0-4 2.5-7 6-7zm0 2C5.5 3 4 5 4 8c0 2.5 1.5 4.5 4 5.5 2.5-1 4-3 4-5.5 0-3-1.5-5-4-5zm0 2v6H7V5h1z"/>
+      </g>
+      <!-- Sparkle / Star -->
+      <g id="icon-sparkle">
+        <path fill="currentColor" d="M8 1l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4zm5 9l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
+      </g>
+      <!-- Backpack -->
+      <g id="icon-backpack">
+        <path fill="currentColor" d="M4 2h8v3h2v9H2V5h2V2zm2 2h4V3H6v1zm-2 3v5h8V7H4zm1 1h6v3H5V8z"/>
+      </g>
+      <!-- Refresh / Sync -->
+      <g id="icon-refresh">
+        <path fill="currentColor" d="M8 2v2a4 4 0 11-4 4H2a6 6 0 106-8zm-2 0H2v4l1.5-1.5L6 6V2z"/>
+      </g>
+      <!-- Checkmark -->
+      <g id="icon-check">
+        <path fill="#10b981" d="M13.5 3.5l-7 7-3.5-3.5-1.5 1.5 5 5 8.5-8.5-1.5-1.5z"/>
+      </g>
+    </defs>
+  </svg>
+
   <div class="app-container">
-    <!-- TOP BAR / HEADER -->
-    <header class="app-header">
-      <div class="header-left">
-        <div class="pixel-pokeball-icon"></div>
-        <div class="title-group">
-          <h1 class="app-title">PROJECT PM <span class="title-accent">PATCHER & RANDOMIZER</span></h1>
-          <p class="app-subtitle" id="i18n-app-subtitle">Gestionnaire de Mods, Multijoueur & Randomizer pour Pokémon Platine</p>
-        </div>
-      </div>
-      <div class="header-right">
+    
+    <!-- CUSTOM PIXEL ART TITLE BAR (DRAGGABLE & PIXEL CONTROLS) -->
+    <div class="custom-titlebar" onmousedown="startWindowDrag(event)" ondblclick="windowToggleMaximize()">
+      <div class="titlebar-left">
+        <svg class="titlebar-pokeball-svg" viewBox="0 0 16 16"><use href="#icon-pokeball"></use></svg>
+        <span class="titlebar-app-name">PROJECT PM <span class="title-accent">PATCHER & RANDOMIZER</span></span>
         <span class="version-pill" id="app-version">v1.0.3</span>
+      </div>
+
+      <div class="titlebar-center">
+        <!-- Spacer for dragging -->
+      </div>
+
+      <div class="titlebar-right">
+        <!-- Language Switcher -->
         <div class="lang-switch">
           <button class="pixel-btn lang-btn active" id="btn-lang-fr" onclick="changeLang('fr')">FR</button>
           <button class="pixel-btn lang-btn" id="btn-lang-en" onclick="changeLang('en')">EN</button>
         </div>
+
+        <!-- Custom Pixel Art Window Controls -->
+        <div class="window-controls">
+          <button class="win-btn win-btn-minimize" onclick="windowMinimize()" title="Réduire">
+            <svg viewBox="0 0 12 12" class="win-svg"><rect x="2" y="9" width="8" height="2" fill="currentColor"/></svg>
+          </button>
+          <button class="win-btn win-btn-maximize" onclick="windowToggleMaximize()" title="Agrandir / Restaurer">
+            <svg viewBox="0 0 12 12" class="win-svg"><rect x="2" y="2" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          </button>
+          <button class="win-btn win-btn-close" onclick="windowClose()" title="Fermer">
+            <svg viewBox="0 0 12 12" class="win-svg"><path fill="currentColor" d="M2.5 1.5L6 5l3.5-3.5 1 1L7 6l3.5 3.5-1 1L6 7l-3.5 3.5-1-1L5 6 1.5 2.5l1-1z"/></svg>
+          </button>
+        </div>
       </div>
-    </header>
+    </div>
+
+    <!-- SUBTITLE STRIP -->
+    <div class="header-strip">
+      <p class="app-subtitle" id="i18n-app-subtitle">Gestionnaire de Mods, Multijoueur & Randomizer pour Pokémon Platine</p>
+    </div>
 
     <!-- NAVIGATION TABS -->
     <nav class="nav-tabs">
       <button class="nav-tab active" id="tab-btn-patcher" onclick="switchTab('patcher')">
-        <span class="tab-icon">⚡</span>
+        <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
         <span class="tab-label" id="i18n-tab-patcher">MODS & MULTI</span>
       </button>
       <button class="nav-tab" id="tab-btn-randomizer" onclick="switchTab('randomizer')">
-        <span class="tab-icon">🎲</span>
+        <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-dice"></use></svg>
         <span class="tab-label" id="i18n-tab-randomizer">RANDOMIZER CO-OP</span>
       </button>
       <button class="nav-tab" id="tab-btn-saves" onclick="switchTab('saves')">
-        <span class="tab-icon">💾</span>
+        <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-save"></use></svg>
         <span class="tab-label" id="i18n-tab-saves">SAUVEGARDES</span>
       </button>
       <button class="nav-tab" id="tab-btn-about" onclick="switchTab('about')">
-        <span class="tab-icon">ℹ️</span>
+        <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-info"></use></svg>
         <span class="tab-label" id="i18n-tab-about">OPTIONS & INFOS</span>
       </button>
     </nav>
@@ -207,7 +302,8 @@
         <!-- ACTION BUTTON & PROGRESS -->
         <div class="action-footer mt-4">
           <button class="pixel-btn primary large-btn w-100" id="btn-start-patch" onclick="startPatching()">
-            ⚡ APPLIQUER LES PATCHS SUR LA ROM
+            <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
+            <span>APPLIQUER LES PATCHS SUR LA ROM</span>
           </button>
         </div>
 
@@ -236,11 +332,11 @@
         <!-- SEED & MULTIPLAYER SYNC CARD -->
         <div class="pixel-card highlight-card">
           <div class="card-header">
-            <span class="card-title">🔑 GRAINES & CODES DE SYNCHRONISATION MULTIJOUEUR</span>
+            <span class="card-title">GRAINES & CODES DE SYNCHRONISATION MULTIJOUEUR</span>
           </div>
           <div class="card-body">
             <div class="sync-alert-banner">
-              <span class="alert-icon">⚠️</span>
+              <svg class="alert-svg" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg>
               <div class="alert-text">
                 <strong>RÈGLE MULTIJOUEUR CRITIQUE :</strong> Pour jouer ensemble sans désynchronisation, 
                 le <strong>Code Co-op (PMC-...)</strong> DOIT être <strong>strictement identique</strong> entre tous les joueurs. 
@@ -257,9 +353,15 @@
                 </div>
                 <div class="code-input-group">
                   <input type="text" id="input-coop-code" class="pixel-input code-input" placeholder="PMC-..." onchange="onCoopCodeChanged()">
-                  <button class="pixel-btn" onclick="copyCoopCode()" title="Copier le code">📋</button>
-                  <button class="pixel-btn" onclick="pasteCoopCode()" title="Coller un code">📥</button>
-                  <button class="pixel-btn" onclick="generateNewCoopCode()" title="Générer une nouvelle seed">🎲</button>
+                  <button class="pixel-btn icon-btn" onclick="copyCoopCode()" title="Copier le code">
+                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-copy"></use></svg>
+                  </button>
+                  <button class="pixel-btn icon-btn" onclick="pasteCoopCode()" title="Coller un code">
+                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-paste"></use></svg>
+                  </button>
+                  <button class="pixel-btn icon-btn" onclick="generateNewCoopCode()" title="Générer une nouvelle seed">
+                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-reroll"></use></svg>
+                  </button>
                 </div>
                 <div class="code-footer">
                   <span class="seed-preview" id="preview-coop-seed">Seed: --------</span>
@@ -274,9 +376,15 @@
                 </div>
                 <div class="code-input-group">
                   <input type="text" id="input-world-code" class="pixel-input code-input" placeholder="PMW-..." onchange="onWorldCodeChanged()">
-                  <button class="pixel-btn" onclick="copyWorldCode()" title="Copier le code">📋</button>
-                  <button class="pixel-btn" onclick="pasteWorldCode()" title="Coller un code">📥</button>
-                  <button class="pixel-btn" onclick="generateNewWorldCode()" title="Générer une nouvelle seed">🎲</button>
+                  <button class="pixel-btn icon-btn" onclick="copyWorldCode()" title="Copier le code">
+                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-copy"></use></svg>
+                  </button>
+                  <button class="pixel-btn icon-btn" onclick="pasteWorldCode()" title="Coller un code">
+                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-paste"></use></svg>
+                  </button>
+                  <button class="pixel-btn icon-btn" onclick="generateNewWorldCode()" title="Générer une nouvelle seed">
+                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-reroll"></use></svg>
+                  </button>
                 </div>
                 <div class="code-footer">
                   <span class="seed-preview" id="preview-world-seed">Seed: --------</span>
@@ -289,7 +397,10 @@
         <!-- STARTERS SELECTION CARD -->
         <div class="pixel-card mt-4">
           <div class="card-header">
-            <span class="card-title">🎒 TRIO DE STARTERS DANS LA VALISE</span>
+            <div class="card-header-with-icon">
+              <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-backpack"></use></svg>
+              <span class="card-title">TRIO DE STARTERS DANS LA VALISE</span>
+            </div>
           </div>
           <div class="card-body">
             <div class="starters-mode-selector">
@@ -337,7 +448,10 @@
           <!-- WILD ENCOUNTERS & TRAINERS -->
           <div class="pixel-card">
             <div class="card-header">
-              <span class="card-title">🌿 RENCONTRES SAUVAGES & DRESSEURS</span>
+              <div class="card-header-with-icon">
+                <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-leaf"></use></svg>
+                <span class="card-title">RENCONTRES SAUVAGES & DRESSEURS</span>
+              </div>
             </div>
             <div class="card-body">
               <!-- Wilds Toggle -->
@@ -406,7 +520,10 @@
           <!-- SPECIES DATA, STATICS & SHINY -->
           <div class="pixel-card">
             <div class="card-header">
-              <span class="card-title">✨ DONNÉES ESPÈCES, STATIQUES & SHINY</span>
+              <div class="card-header-with-icon">
+                <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-sparkle"></use></svg>
+                <span class="card-title">DONNÉES ESPÈCES, STATIQUES & SHINY</span>
+              </div>
             </div>
             <div class="card-body">
               <!-- Types Randomizer -->
@@ -468,7 +585,7 @@
               <!-- SHINY ODDS SLIDER -->
               <div class="shiny-slider-card mt-3">
                 <div class="slider-header">
-                  <span class="slider-label">✨ CHANCES DE SHINY (PROBABILITÉ ARM9) :</span>
+                  <span class="slider-label">CHANCES DE SHINY (PROBABILITÉ ARM9) :</span>
                   <span class="shiny-badge" id="shiny-odds-display">~1/1024 (x8)</span>
                 </div>
                 <input type="range" id="slider-shiny" min="1" max="7" value="4" class="pixel-slider" oninput="onShinySliderChange()">
@@ -489,7 +606,8 @@
         <!-- RANDOMIZER ACTION FOOTER -->
         <div class="action-footer mt-4">
           <button class="pixel-btn primary large-btn w-100" id="btn-start-randomizer" onclick="startRandomizer()">
-            🎲 GÉNÉRER LA ROM RANDOMISÉE
+            <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-dice"></use></svg>
+            <span>GÉNÉRER LA ROM RANDOMISÉE</span>
           </button>
         </div>
 
@@ -513,7 +631,10 @@
       <section class="tab-content" id="tab-saves">
         <div class="pixel-card">
           <div class="card-header">
-            <span class="card-title">💾 GESTIONNAIRE DE SAUVEGARDES AUTOMATIQUES</span>
+            <div class="card-header-with-icon">
+              <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-save"></use></svg>
+              <span class="card-title">GESTIONNAIRE DE SAUVEGARDES AUTOMATIQUES</span>
+            </div>
           </div>
           <div class="card-body">
             <p>Lorsque vous appliquez un patch ou modifiez votre ROM, le patcher sauvegarde et synchronise automatiquement vos fichiers <code>.sav</code> et <code>.dsv</code> (melonDS / DeSmuME) pour éviter toute perte de progression.</p>
@@ -531,7 +652,10 @@
       <section class="tab-content" id="tab-about">
         <div class="pixel-card">
           <div class="card-header">
-            <span class="card-title">ℹ️ À PROPOS DE PROJECT PM ADDON PATCHER</span>
+            <div class="card-header-with-icon">
+              <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-info"></use></svg>
+              <span class="card-title">À PROPOS DE PROJECT PM ADDON PATCHER</span>
+            </div>
           </div>
           <div class="card-body">
             <div class="about-hero">
@@ -546,7 +670,10 @@
             </div>
 
             <div class="about-actions mt-4">
-              <button class="pixel-btn primary" onclick="checkForUpdates()">🔄 Vérifier les mises à jour</button>
+              <button class="pixel-btn primary" onclick="checkForUpdates()">
+                <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-refresh"></use></svg>
+                <span>Vérifier les mises à jour</span>
+              </button>
               <button class="pixel-btn ml-3" onclick="openGitHub()">GitHub Officiel</button>
             </div>
             <div class="update-result-box mt-3" id="update-result-box" style="display: none;"></div>
