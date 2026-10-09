@@ -26,7 +26,7 @@ from core.smart_injector import apply_soullocke, restore_clean_projectpm
 from core.visual_patcher import apply_battle_bg_patch, apply_camera_patch
 from core.xdelta_engine import apply_xdelta
 from core.save_manager import backup_and_sync_save
-from core.updater import check_for_updates_async, CURRENT_VERSION
+from core.updater import check_for_updates_async, CURRENT_VERSION, download_update_chunked, apply_update_and_restart
 from core.rand_manager import extract_randomizer_data, clean_vanilla_for_xdelta, restore_randomizer_data
 from core.addon_registry import (
     MULTIPLAYER_VERSIONS,
@@ -92,6 +92,8 @@ class MainWindow(tk.Tk):
         self.var_custom_patch_enabled = tk.BooleanVar(value=False)
         self.var_backup_save = tk.BooleanVar(value=True)
         self.output_manually_edited = False
+        self.update_info = None
+        self.is_updating = False
 
         # Image cache
         self.img_cache = {}
@@ -168,17 +170,32 @@ class MainWindow(tk.Tk):
         self.banner_update = tk.Frame(self, bg="#332B10", highlightbackground=COLOR_GOLD, highlightthickness=1)
         self.lbl_update_text = tk.Label(self.banner_update, text="", bg="#332B10", fg=COLOR_GOLD, font=get_font(10, bold=True))
         self.lbl_update_text.pack(side="left", padx=15, pady=6)
-        self.btn_update_action = PixelButton(
-            self.banner_update,
-            text="Update",
+        self.update_btns_frame = tk.Frame(self.banner_update, bg="#332B10")
+        self.update_btns_frame.pack(side="right", padx=15, pady=6)
+
+        self.btn_update_notes = PixelButton(
+            self.update_btns_frame,
+            text=t("update_btn_notes"),
             command=self._open_update_link,
+            bg_color="#4A3F19",
+            fg_color=COLOR_GOLD,
+            font_size=9,
+            padx=8,
+            pady=3
+        )
+        self.btn_update_notes.pack(side="right", padx=(8, 0))
+
+        self.btn_update_auto = PixelButton(
+            self.update_btns_frame,
+            text=t("update_btn_auto"),
+            command=self._start_auto_update,
             bg_color=COLOR_GOLD,
             fg_color="#101010",
             font_size=9,
             padx=8,
             pady=3
         )
-        self.btn_update_action.pack(side="right", padx=15, pady=6)
+        self.btn_update_auto.pack(side="right")
 
     def _build_scrollable_container(self):
         container = tk.Frame(self, bg=BG_DARK)
@@ -1016,6 +1033,12 @@ class MainWindow(tk.Tk):
         self.btn_apply.config(text=t("btn_apply"))
         self.lbl_footer.config(text=t("disclaimer"))
 
+        if hasattr(self, "update_info") and self.update_info and not self.is_updating:
+            tag = self.update_info[0]
+            self.lbl_update_text.config(text=t("update_available", tag))
+            self.btn_update_auto.config(text=t("update_btn_auto"))
+            self.btn_update_notes.config(text=t("update_btn_notes"))
+
         if self.current_rom_info:
             self._update_rom_display(self.current_rom_info)
         else:
@@ -1253,14 +1276,86 @@ class MainWindow(tk.Tk):
                     w["badge"].pack_forget()
                     w["btn_uninstall"].pack_forget()
 
-    def _on_update_found(self, tag, url):
-        self.update_info = (tag, url)
+    def _on_update_found(self, tag, url, asset_url=None, asset_size=0):
+        self.update_info = (tag, url, asset_url, asset_size)
         self.lbl_update_text.config(text=t("update_available", tag))
+        self.btn_update_auto.config(text=t("update_btn_auto"), state="normal")
+        self.btn_update_notes.config(text=t("update_btn_notes"))
         self.banner_update.pack(fill="x", padx=20, pady=(0, 6), before=self.header_frame)
 
     def _open_update_link(self):
         if self.update_info:
             webbrowser.open(self.update_info[1])
+
+    def _start_auto_update(self):
+        if not self.update_info or self.is_updating:
+            return
+        tag, url, asset_url, asset_size = self.update_info
+
+        if not getattr(sys, "frozen", False):
+            # Development mode safety notice
+            messagebox.showinfo(
+                t("update_ready_title"),
+                t("update_dev_mode")
+            )
+            webbrowser.open(url)
+            return
+
+        if not asset_url:
+            webbrowser.open(url)
+            return
+
+        self.is_updating = True
+        self.btn_update_auto.config(state="disabled")
+
+        init_mb = (asset_size or 0) / (1024 * 1024)
+        self.lbl_update_text.config(text=t("update_downloading", 0, 0.0, init_mb))
+
+        current_exe = os.path.abspath(sys.executable)
+        target_dir = os.path.dirname(current_exe)
+        target_update_exe = os.path.join(target_dir, "ProjectPM-Addon-Patcher.update.exe")
+
+        def _progress(downloaded, total, percent):
+            mb_done = downloaded / (1024 * 1024)
+            mb_total = total / (1024 * 1024) if total > 0 else mb_done
+            msg = t("update_downloading", percent, mb_done, mb_total)
+            self.after(0, lambda: self.lbl_update_text.config(text=msg))
+
+        def _bg_download():
+            success, err = download_update_chunked(
+                asset_url=asset_url,
+                target_path=target_update_exe,
+                expected_size=asset_size,
+                progress_cb=_progress
+            )
+            self.after(0, lambda: self._on_download_complete(success, err, tag, target_update_exe))
+
+        t_dl = threading.Thread(target=_bg_download, daemon=True)
+        t_dl.start()
+
+    def _on_download_complete(self, success, err, tag, target_update_exe):
+        self.is_updating = False
+        self.btn_update_auto.config(state="normal")
+        if success:
+            ans = messagebox.askyesno(
+                t("update_ready_title"),
+                t("update_ready_msg", tag)
+            )
+            if ans:
+                ok, restart_err = apply_update_and_restart(target_update_exe)
+                if not ok:
+                    messagebox.showerror(
+                        t("update_err_title"),
+                        f"Failed to restart application: {restart_err}"
+                    )
+        else:
+            messagebox.showerror(
+                t("update_err_title"),
+                t("update_err_msg", err or "Unknown error")
+            )
+            if self.update_info:
+                webbrowser.open(self.update_info[1])
+            self.lbl_update_text.config(text=t("update_available", tag))
 
     def _log_msg(self, msg):
         self.lbl_status.config(text=msg)

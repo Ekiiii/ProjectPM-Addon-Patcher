@@ -347,6 +347,38 @@ TRANSLATIONS = {
         "en": "Download Update",
         "fr": "Télécharger la mise à jour"
     },
+    "update_btn_auto": {
+        "en": "Update Now",
+        "fr": "Mettre à jour"
+    },
+    "update_btn_notes": {
+        "en": "Changelog",
+        "fr": "Notes de version"
+    },
+    "update_downloading": {
+        "en": "Downloading update... %d%% (%.1f / %.1f MB)",
+        "fr": "Téléchargement de la mise à jour... %d%% (%.1f / %.1f Mo)"
+    },
+    "update_ready_title": {
+        "en": "Update Ready",
+        "fr": "Mise à jour prête"
+    },
+    "update_ready_msg": {
+        "en": "Version %s has been downloaded successfully.\nThe application will now restart to apply the update.",
+        "fr": "La version %s a été téléchargée avec succès.\nL'application va redémarrer pour appliquer la mise à jour."
+    },
+    "update_err_title": {
+        "en": "Update Failed",
+        "fr": "Échec de la mise à jour"
+    },
+    "update_err_msg": {
+        "en": "Failed to download update (%s).\nOpening the release page in your browser instead.",
+        "fr": "Échec du téléchargement (%s).\nOuverture de la page GitHub dans votre navigateur."
+    },
+    "update_dev_mode": {
+        "en": "Development mode detected (running from Python source).\nAutomatic update is only active for compiled .exe versions.",
+        "fr": "Mode développement actif (exécution depuis les sources Python).\nLa mise à jour automatique est réservée aux versions .exe compilées."
+    },
     "disclaimer": {
         "en": "Unofficial Community Mod Manager by Ekiiii. Not affiliated with the official Project PM team.",
         "fr": "Gestionnaire de Mods communautaire par Ekiiii. Non affilié à l'équipe officielle Project PM."
