@@ -17,6 +17,7 @@ import hashlib
 import struct
 import base64
 import ndspy.rom
+import ndspy.narc
 
 KNOWN_HASHES = {
     # Vanilla Platinum
@@ -143,19 +144,44 @@ class RomInfo:
                 self.has_multiplayer = True
                 self.category = "projectpm"
 
-            # Determine Language precisely
-            if len(rom.files) > 158 and rom.files[158]:
-                h_ui = hashlib.sha1(rom.files[158]).hexdigest()
-                if h_ui == FR_BATTLE_UI_HASH or "CPUF" in self.game_code:
-                    self.lang = "fr"
-                    self.is_france = True
-                elif "CPUE" in self.game_code and not ("fr" in self.filename.lower() or "france" in self.filename.lower()):
-                    self.lang = "en"
-                    if self.rom_version == 1:
-                        self.is_usa_rev1 = True
-                elif "fr" in self.filename.lower() or "france" in self.filename.lower():
-                    self.lang = "fr"
-                    self.is_france = True
+            # Determine Language precisely via internal text bank (msgdata/pl_msg.narc file 412)
+            detected_lang = None
+            try:
+                msg_data = rom.getFileByName("msgdata/pl_msg.narc")
+                if msg_data:
+                    narc = ndspy.narc.NARC(msg_data)
+                    if len(narc.files) > 412:
+                        raw = narc.files[412]
+                        count, seed = struct.unpack("<HH", raw[:4])
+                        if count >= 2:
+                            off, length = struct.unpack("<II", raw[12:20])
+                            s = (seed * 765 * 2) & 0xFFFF
+                            s |= (s << 16)
+                            length ^= s
+                            if length == 11:
+                                detected_lang = "fr"
+                            elif length == 10:
+                                detected_lang = "en"
+            except Exception:
+                pass
+
+            if detected_lang:
+                self.lang = detected_lang
+                self.is_france = (detected_lang == "fr")
+                self.is_usa_rev1 = (detected_lang == "en" and self.rom_version == 1)
+            elif "CPUF" in self.game_code:
+                self.lang = "fr"
+                self.is_france = True
+            elif len(rom.files) > 158 and rom.files[158] and hashlib.sha1(rom.files[158]).hexdigest() == FR_BATTLE_UI_HASH:
+                self.lang = "fr"
+                self.is_france = True
+            elif "fr" in self.filename.lower() or "france" in self.filename.lower() or "french" in self.filename.lower():
+                self.lang = "fr"
+                self.is_france = True
+            elif "CPUE" in self.game_code:
+                self.lang = "en"
+                if self.rom_version == 1:
+                    self.is_usa_rev1 = True
 
             self.mp_lang = self.lang
 

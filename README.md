@@ -16,13 +16,13 @@
 **ProjectPM Addon Patcher** allows players to easily install, configure, and manage community addons for Pokémon Platinum multiplayer (Project PM), without risking ROM corruption or dealing with fragile xDelta checksum mismatch errors.
 
 ### Features
-- **Smart Direct Injection Engine**: Injects C mods cleanly into the Nitro-SDK Autoload Table and high arena memory. Zero xDelta checksum mismatch errors, works across any ROM configuration!
+- **Smart Direct Injection Engine**: Directly patches internal ROM code and file archives without relying on rigid full-ROM checksums. No xDelta hash mismatches: works seamlessly whether using a clean vanilla ROM or an existing modified/randomized ROM!
 - **SoulLocke Edition**: Full multiplayer support for synchronized fainting, automated graveyard PC boxes (Box 18), single shared catch per area, and live streamer overlay.
 - **Visual+ Graphics Options**:
-  - *Visual+ Battle Backgrounds*: High-definition redrawn battle scenes (`Enable` / `Disable` / `Keep As-Is`).
+  - *Visual+ Battle Backgrounds*: Redrawn, high-detail battle scenes (`Enable` / `Disable` / `Keep As-Is`).
   - *Visual+ 3D Camera*: Closer overworld perspective for an enhanced 3D look (`Enable` / `Disable` / `Keep As-Is`).
 - **One-Click Reversible**: Easily uninstall addons to revert to clean stock ProjectPM at any time.
-- **Save & Randomizer Protection**: Automatically backs up and synchronizes companion save files (`.sav` and `.dsv`) into `PMBackups/`. Automatically preserves and re-applies randomizer seeds (`.rand.txt`).
+- **Save & Randomizer Protection**: Automatically backs up and synchronizes companion save files (`.sav` and `.dsv`) into `PMBackups/`. Automatically preserves and re-applies randomizer tables (`.rand.txt`).
 - **Additional Custom Patches**: Apply an optional external `.xdelta` patch after all other mods are applied.
 - **Bilingual Interface**: Full English and French support with instant in-app switching and sleek Dark Modern UI.
 - **Standalone Portable `.exe`**: No Python installation required for players!
@@ -42,16 +42,16 @@
 **ProjectPM Addon Patcher** permet aux joueurs d'installer, configurer et gérer facilement les addons communautaires pour Pokémon Platine Multijoueur (Project PM), sans conflit d'empreinte de ROM ni erreur de checksum xDelta.
 
 ### Fonctionnalités
-- **Moteur d'Injection Directe Intelligent** : Injecte proprement le code C via la table d'Autoload du SDK Nitro et la mémoire haute de l'arène. Zéro erreur de checksum, compatible avec toutes les ROMs existantes !
-- **Édition SoulLocke** : Destins liés en multijoueur, mort synchronisée, boîtes cimetière automatiques (boîte 18), 1 capture partagée par zone et overlay streamer en direct.
+- **Moteur d'Injection Directe Intelligent** : Modifie directement le code et les fichiers internes de la ROM sans dépendre d'un patch xDelta rigide. Fini les erreurs de checksum : fonctionne aussi bien sur une ROM originale (Vanilla) que sur une ROM déjà patchée ou randomisée !
+- **Édition SoulLocke** : Destins liés en multijoueur, mort synchronisée, mise au cimetière automatique (boîte PC 18), règle d'une seule capture partagée par zone et overlay streamer en direct.
 - **Options Graphiques Visual+** :
-  - *Arrière-plans de combat HD* (`Activer` / `Désactiver` / `Conserver`).
+  - *Arrière-plans de combat détaillés (style HGSS)* (`Activer` / `Désactiver` / `Conserver`).
   - *Caméra 3D Rapprochée* (`Activer` / `Désactiver` / `Conserver`).
-- **Restauration en 1 clic** : Retirez les addons pour revenir à la version ProjectPM classique propre à tout moment.
-- **Protection des Sauvegardes & Randomisation** : Synchronisation et backup automatiques des sauvegardes (`.sav` et `.dsv`) dans `PMBackups/`. Préservation et réapplication automatique des tables de randomisation (`.rand.txt`).
-- **Patchs Personnalisés XDelta** : Appliquez un patch externe optionnel en étape finale.
+- **Restauration en 1 clic** : Retirez les addons à tout moment pour revenir instantanément à la version ProjectPM classique d'origine.
+- **Protection des Sauvegardes & Randomisation** : Copie de secours automatique de vos sauvegardes (`.sav` et `.dsv`) dans `PMBackups/`. Préservation et réapplication automatique des tables de randomisation (`.rand.txt`).
+- **Patchs Personnalisés XDelta** : Possibilité d'appliquer un patch externe optionnel de votre choix en étape finale.
 - **Interface Bilingue & Moderne** : Français et Anglais avec bascule instantanée et thème sombre soigné.
-- **Exécutable `.exe` Autonome** : Aucune installation de Python requise pour les joueurs !
+- **Exécutable .exe Autonome** : Aucune installation de Python requise pour les joueurs !
 
 ### Démarrage Rapide
 1. Téléchargez `ProjectPM-Addon-Patcher.exe` depuis la [dernière Release](https://github.com/Ekiiii/ProjectPM-Addon-Patcher/releases/latest).
