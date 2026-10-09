@@ -68,7 +68,7 @@ TRANSLATIONS = {
         "fr": "SoulLocke Actif"
     },
     "badge_sl_none": {
-        "en": "No SoulLocke",
+        "en": "SoulLocke Inactive",
         "fr": "SoulLocke Inactif"
     },
     "badge_rand_yes": {
@@ -124,7 +124,7 @@ TRANSLATIONS = {
         "fr": "Le multijoueur ProjectPM est déjà intégré à cette ROM (Sélection verrouillée)."
     },
     "mp_vanilla_desc": {
-        "en": "Activate ProjectPM Multiplayer on your Vanilla ROM and choose the version:",
+        "en": "Enable ProjectPM Multiplayer on your Vanilla ROM and choose a version:",
         "fr": "Activez le Multijoueur ProjectPM sur votre ROM Vanilla et choisissez la version :"
     },
     "mp_enable_checkbox": {
@@ -224,7 +224,7 @@ TRANSLATIONS = {
         "fr": "Édition SoulLocke (English)"
     },
     "addon_soullocke_desc": {
-        "en": "Shared fates with partners: synchronized faint/graveyard, 1 shared catch per area, streamer overlay.",
+        "en": "Shared fate with partner: synchronized faints/graveyard, 1 shared catch per area, streamer overlay.",
         "fr": "Destins liés : mort partagée, boîte cimetière auto, 1 capture partagée par zone, overlay streamers."
     },
     "addon_none": {
@@ -240,7 +240,7 @@ TRANSLATIONS = {
         "fr": "Remet la ROM multijoueur propre, retire les hooks SoulLocke."
     },
     "section_visual": {
-        "en": "4. VISUAL+ GRAPHIC OPTIONS",
+        "en": "4. VISUAL+ GRAPHICS OPTIONS",
         "fr": "4. OPTIONS GRAPHIQUES VISUAL+"
     },
     "visual_battle_bg": {
@@ -248,7 +248,7 @@ TRANSLATIONS = {
         "fr": "Visual+ Arrière-plans de Combat"
     },
     "visual_battle_bg_desc": {
-        "en": "Replaces the battle backgrounds with redrawn, high-detail art.",
+        "en": "Replaces the battle backgrounds with redrawn, high-detail illustrations.",
         "fr": "Remplace les arrière-plans de combat par des illustrations détaillées en HD."
     },
     "visual_camera": {
@@ -260,11 +260,11 @@ TRANSLATIONS = {
         "fr": "Rapproche la caméra en extérieur pour un effet 3D renforcé."
     },
     "opt_builtin": {
-        "en": "Activate",
+        "en": "Enable",
         "fr": "Activer"
     },
     "opt_off": {
-        "en": "Deactivate",
+        "en": "Disable",
         "fr": "Désactiver"
     },
     "opt_keep": {
@@ -304,7 +304,7 @@ TRANSLATIONS = {
         "fr": "6. SAUVEGARDE & BACKUPS"
     },
     "save_preserve_checkbox": {
-        "en": "Automatically backup and preserve companion save files (.dsv / .sav)",
+        "en": "Automatically back up and preserve companion save files (.dsv / .sav)",
         "fr": "Sauvegarder et conserver automatiquement les fichiers de sauvegarde (.dsv / .sav)"
     },
     "save_detected": {
@@ -348,7 +348,7 @@ TRANSLATIONS = {
         "fr": "Télécharger la mise à jour"
     },
     "disclaimer": {
-        "en": "Unofficial Community Mod Manager by Ekiiii. Not affiliated with official Project PM team.",
+        "en": "Unofficial Community Mod Manager by Ekiiii. Not affiliated with the official Project PM team.",
         "fr": "Gestionnaire de Mods communautaire par Ekiiii. Non affilié à l'équipe officielle Project PM."
     }
 }
