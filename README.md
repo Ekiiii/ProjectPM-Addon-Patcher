@@ -10,12 +10,12 @@
 
 ---
 
-## 🇬🇧 English
+## English (EN)
 
 ### Overview
 **ProjectPM Addon Patcher** allows players to easily install, configure, and manage community addons for Pokémon Platinum multiplayer (Project PM), without risking ROM corruption or dealing with fragile xDelta checksum mismatch errors.
 
-### ✨ Features
+### Features
 - **Smart Direct Injection Engine**: Injects C mods cleanly into the Nitro-SDK Autoload Table and high arena memory. Zero xDelta checksum mismatch errors, works across any ROM configuration!
 - **SoulLocke Edition**: Full multiplayer support for synchronized fainting, automated graveyard PC boxes (Box 18), single shared catch per area, and live streamer overlay.
 - **Visual+ Graphics Options**:
@@ -27,7 +27,7 @@
 - **Bilingual Interface**: Full English and French support with instant in-app switching and sleek Dark Modern UI.
 - **Standalone Portable `.exe`**: No Python installation required for players!
 
-### 🚀 Quick Start
+### Quick Start
 1. Download `ProjectPM-Addon-Patcher.exe` from the [Latest Release](https://github.com/Ekiiii/ProjectPM-Addon-Patcher/releases/latest).
 2. Launch the application.
 3. Select your source ROM (Vanilla Platinum USA Rev 1, Platine France, or ProjectPM 0.4.5).
@@ -36,12 +36,12 @@
 
 ---
 
-## 🇫🇷 Français
+## Français (FR)
 
 ### Vue d'ensemble
 **ProjectPM Addon Patcher** permet aux joueurs d'installer, configurer et gérer facilement les addons communautaires pour Pokémon Platine Multijoueur (Project PM), sans conflit d'empreinte de ROM ni erreur de checksum xDelta.
 
-### ✨ Fonctionnalités
+### Fonctionnalités
 - **Moteur d'Injection Directe Intelligent** : Injecte proprement le code C via la table d'Autoload du SDK Nitro et la mémoire haute de l'arène. Zéro erreur de checksum, compatible avec toutes les ROMs existantes !
 - **Édition SoulLocke** : Destins liés en multijoueur, mort synchronisée, boîtes cimetière automatiques (boîte 18), 1 capture partagée par zone et overlay streamer en direct.
 - **Options Graphiques Visual+** :
@@ -53,7 +53,7 @@
 - **Interface Bilingue & Moderne** : Français et Anglais avec bascule instantanée et thème sombre soigné.
 - **Exécutable `.exe` Autonome** : Aucune installation de Python requise pour les joueurs !
 
-### 🚀 Démarrage Rapide
+### Démarrage Rapide
 1. Téléchargez `ProjectPM-Addon-Patcher.exe` depuis la [dernière Release](https://github.com/Ekiiii/ProjectPM-Addon-Patcher/releases/latest).
 2. Lancez l'exécutable.
 3. Sélectionnez votre ROM source (Platine France, Platinum USA Rev 1 ou ProjectPM 0.4.5).
@@ -62,13 +62,13 @@
 
 ---
 
-## 📜 License / Licence
+## License / Licence
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Credits & Acknowledgements / Remerciements
+## Credits & Acknowledgements / Remerciements
 
 - **[ndspy](https://github.com/RoadrunnerWMC/ndspy)** by RoadrunnerWMC - Nintendo DS ROM inspection and manipulation library.
 - **[xdelta3](https://github.com/jmacd/xdelta)** by Josh MacDonald - Binary differential compression tool.
@@ -77,7 +77,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## ⚖️ Legal Disclaimer / Avertissement Légal
+## Legal Disclaimer / Avertissement Légal
 
 - *This is an unofficial community project developed by Ekiiii. It is not affiliated with, endorsed by, or sponsored by Nintendo, The Pokémon Company, Game Freak, or the core Project PM team.*  
 - *Pokémon and Nintendo DS are registered trademarks of Nintendo, Creatures Inc., and GAME FREAK inc.*  
