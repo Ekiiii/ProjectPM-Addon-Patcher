@@ -37,21 +37,22 @@ from core.updater import CURRENT_VERSION, check_for_updates_async
 
 class PatcherBridge:
     def __init__(self, root_dir: str):
-        self.root_dir = root_dir
-        self.assets_dir = os.path.join(root_dir, "assets")
-        self.payloads_dir = os.path.join(root_dir, "payloads")
-        self.window: Optional[webview.Window] = None
+        self._root_dir = root_dir
+        self._assets_dir = os.path.join(root_dir, "assets")
+        self._payloads_dir = os.path.join(root_dir, "payloads")
+        self._window: Optional[webview.Window] = None
+        self._is_maximized = False
         self._is_patching = False
         self._is_randomizing = False
 
     def set_window(self, window: webview.Window):
-        self.window = window
+        self._window = window
 
     def _eval_js(self, js: str):
         """Safely evaluates JavaScript in the active webview window."""
-        if self.window:
+        if self._window:
             try:
-                self.window.evaluate_js(js)
+                self._window.evaluate_js(js)
             except Exception as e:
                 print(f"[Bridge JS Error] {e}")
 
@@ -103,15 +104,15 @@ class PatcherBridge:
                 "seed": world_seed,
                 "code": init_world_code
             },
-            "app_root": self.root_dir.replace("\\", "/")
+            "app_root": self._root_dir.replace("\\", "/")
         }
 
     def get_pokemon_names(self, lang: str = "fr") -> Dict[str, str]:
         """Loads Pokémon names dictionary directly without frontend fetch CORS."""
         json_file = f"pokemon_names_{lang}.json"
-        path = os.path.join(self.root_dir, "ui", "web", "assets", json_file)
+        path = os.path.join(self._root_dir, "ui", "web", "assets", json_file)
         if not os.path.isfile(path):
-            path = os.path.join(self.root_dir, "ui", "web", "assets", "pokemon_names_fr.json")
+            path = os.path.join(self._root_dir, "ui", "web", "assets", "pokemon_names_fr.json")
         if os.path.isfile(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
@@ -135,40 +136,35 @@ class PatcherBridge:
     # NATIVE WINDOW CONTROLS & SEAMLESS DRAG
     # =========================================================================
     def window_drag(self):
-        """Native Windows window drag without message loop lock or IPC flooding."""
-        try:
-            if self.window and hasattr(self.window, 'native') and self.window.native:
-                hwnd = int(self.window.native.Handle.ToInt64())
-                user32 = ctypes.windll.user32
-                user32.ReleaseCapture()
-                user32.SendMessageW(hwnd, 0x0112, 0xF012, 0)
-        except Exception as e:
-            print(f"[Window Drag Error] {e}")
+        """No-op: pywebview-drag-region provides smooth native window dragging."""
+        pass
 
     def window_minimize(self):
         """Minimizes the application window."""
         try:
-            if self.window:
-                self.window.minimize()
+            if self._window:
+                self._window.minimize()
         except Exception as e:
             print(f"[Window Minimize Error] {e}")
 
     def window_toggle_maximize(self):
         """Toggles between maximized and restored window state."""
         try:
-            if self.window:
-                if getattr(self.window, 'maximized', False):
-                    self.window.restore()
+            if self._window:
+                if self._is_maximized:
+                    self._window.restore()
+                    self._is_maximized = False
                 else:
-                    self.window.maximize()
+                    self._window.maximize()
+                    self._is_maximized = True
         except Exception as e:
             print(f"[Window Maximize Error] {e}")
 
     def window_close(self):
         """Closes the application."""
         try:
-            if self.window:
-                self.window.destroy()
+            if self._window:
+                self._window.destroy()
         except Exception as e:
             print(f"[Window Close Error] {e}")
 
@@ -177,10 +173,10 @@ class PatcherBridge:
     # =========================================================================
     def browse_source_rom(self) -> Optional[str]:
         """Opens native file picker for selecting source Nintendo DS ROM."""
-        if not self.window:
+        if not self._window:
             return None
         file_types = ('Nintendo DS ROMs (*.nds)', 'All Files (*.*)')
-        result = self.window.create_file_dialog(
+        result = self._window.create_file_dialog(
             webview.OPEN_DIALOG,
             allow_multiple=False,
             file_types=file_types
@@ -191,10 +187,10 @@ class PatcherBridge:
 
     def browse_save_rom(self, default_name: str = "") -> Optional[str]:
         """Opens native save file picker for destination ROM."""
-        if not self.window:
+        if not self._window:
             return None
         file_types = ('Nintendo DS ROM (*.nds)',)
-        result = self.window.create_file_dialog(
+        result = self._window.create_file_dialog(
             webview.SAVE_DIALOG,
             save_filename=default_name or "ProjectPM_modded.nds",
             file_types=file_types
@@ -208,10 +204,10 @@ class PatcherBridge:
 
     def browse_patch_file(self) -> Optional[str]:
         """Opens native file picker for xDelta patch files."""
-        if not self.window:
+        if not self._window:
             return None
         file_types = ('xDelta Patches (*.xdelta)', 'All Files (*.*)')
-        result = self.window.create_file_dialog(
+        result = self._window.create_file_dialog(
             webview.OPEN_DIALOG,
             allow_multiple=False,
             file_types=file_types
@@ -360,8 +356,8 @@ class PatcherBridge:
                     rom_path=in_rom,
                     output_rom=out_rom,
                     options=options,
-                    assets_dir=self.assets_dir,
-                    payloads_dir=self.payloads_dir,
+                    assets_dir=self._assets_dir,
+                    payloads_dir=self._payloads_dir,
                     log_cb=_log,
                     progress_cb=_prog
                 )

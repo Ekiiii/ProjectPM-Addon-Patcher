@@ -45,6 +45,47 @@
   margin: 0;
   padding: 0;
   user-select: none;
+  scrollbar-width: thin;
+  scrollbar-color: #1e2c44 #080d16;
+}
+
+/* ==========================================================================
+   RETRO PIXEL ART SCROLLBAR (DS POKÉMON PLATINUM THEME)
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background-color: #080d16;
+}
+
+::-webkit-scrollbar-track {
+  background: #080d16;
+  border-left: 2px solid #000;
+  box-shadow: inset 1px 0 0 #151e30;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1b263b;
+  border: 2px solid #000;
+  border-radius: 0;
+  box-shadow: inset 1px 1px 0 #38bdf8, inset -1px -1px 0 #0b101b;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #253754;
+  box-shadow: inset 1px 1px 0 #7dd3fc, inset -1px -1px 0 #0b101b;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #0284c7;
+  box-shadow: inset 1px 1px 0 #bae6fd, inset -1px -1px 0 #0369a1;
+}
+
+::-webkit-scrollbar-corner {
+  background: #080d16;
+  border: 2px solid #000;
 }
 
 body {
@@ -79,8 +120,10 @@ body {
   background-color: var(--bg-titlebar);
   border-bottom: 2px solid #000;
   padding: 0 10px 0 12px;
+  -webkit-app-region: drag;
   cursor: grab;
   z-index: 100;
+  user-select: none;
 }
 
 .custom-titlebar:active {
@@ -120,8 +163,15 @@ body {
 .titlebar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: default;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-right button,
+.titlebar-right .lang-switch,
+.titlebar-right .window-controls {
+  -webkit-app-region: no-drag;
 }
 
 .version-pill {
@@ -131,53 +181,65 @@ body {
   color: var(--color-gold);
   padding: 3px 6px;
   border: 1px solid #334155;
-  border-radius: 3px;
+  border-radius: 0;
+  box-shadow: inset 1px 1px 0 #1e293b;
 }
 
-/* Window Control Buttons (Pixel Art) */
+/* Window Control Buttons (Authentic DS Pixel Art) */
 .window-controls {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   align-items: center;
 }
 
 .win-btn {
-  width: 28px;
+  width: 26px;
   height: 22px;
-  background-color: #1e293b;
-  border: 1px solid #000;
-  border-radius: 2px;
-  color: var(--text-muted);
+  background-color: #172338;
+  border: 2px solid #000;
+  border-radius: 0;
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 0 #000;
-  transition: all 0.05s ease;
+  box-shadow: inset 1px 1px 0 #38bdf8, inset -1px -1px 0 #0d1524, 0 2px 0 #000;
+  transition: none;
+  image-rendering: pixelated;
 }
 
 .win-btn:hover {
-  background-color: #334155;
-  color: #fff;
+  background-color: #233554;
+  color: #f8fafc;
+  box-shadow: inset 1px 1px 0 #7dd3fc, inset -1px -1px 0 #0d1524, 0 2px 0 #000;
 }
 
 .win-btn:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 #000;
+  transform: translateY(2px);
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #38bdf8, 0 0 0 #000;
+}
+
+.win-btn-close {
+  background-color: #2b1418;
+  box-shadow: inset 1px 1px 0 #f87171, inset -1px -1px 0 #0d1524, 0 2px 0 #000;
+  color: #fca5a5;
 }
 
 .win-btn-close:hover {
-  background-color: #ef4444 !important;
+  background-color: #dc2626 !important;
   color: #fff !important;
+  box-shadow: inset 1px 1px 0 #fca5a5, inset -1px -1px 0 #7f1d1d, 0 2px 0 #000 !important;
 }
 
 .win-btn-close:active {
-  background-color: #b91c1c !important;
+  background-color: #991b1b !important;
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #f87171, 0 0 0 #000 !important;
 }
 
 .win-svg {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
+  shape-rendering: crispEdges;
 }
 
 /* Header Strip */

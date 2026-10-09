@@ -83,7 +83,7 @@
   <div class="app-container">
     
     <!-- CUSTOM PIXEL ART TITLE BAR (DRAGGABLE & PIXEL CONTROLS) -->
-    <div class="custom-titlebar" onmousedown="startWindowDrag(event)" ondblclick="windowToggleMaximize()">
+    <header class="custom-titlebar pywebview-drag-region" ondblclick="windowToggleMaximize()">
       <div class="titlebar-left">
         <svg class="titlebar-pokeball-svg" viewBox="0 0 16 16"><use href="#icon-pokeball"></use></svg>
         <span class="titlebar-app-name">PROJECT PM <span class="title-accent">PATCHER & RANDOMIZER</span></span>
@@ -97,24 +97,41 @@
       <div class="titlebar-right">
         <!-- Language Switcher -->
         <div class="lang-switch">
-          <button class="pixel-btn lang-btn active" id="btn-lang-fr" onclick="changeLang('fr')">FR</button>
-          <button class="pixel-btn lang-btn" id="btn-lang-en" onclick="changeLang('en')">EN</button>
+          <button class="pixel-btn lang-btn active" id="btn-lang-fr" onmousedown="event.stopPropagation()" onclick="changeLang('fr')">FR</button>
+          <button class="pixel-btn lang-btn" id="btn-lang-en" onmousedown="event.stopPropagation()" onclick="changeLang('en')">EN</button>
         </div>
 
         <!-- Custom Pixel Art Window Controls -->
         <div class="window-controls">
-          <button class="win-btn win-btn-minimize" onclick="windowMinimize()" title="Réduire">
-            <svg viewBox="0 0 12 12" class="win-svg"><rect x="2" y="9" width="8" height="2" fill="currentColor"/></svg>
+          <button class="win-btn win-btn-minimize" onmousedown="event.stopPropagation()" onclick="windowMinimize()" title="Réduire">
+            <svg viewBox="0 0 10 10" class="win-svg">
+              <rect x="1" y="7" width="8" height="2" fill="currentColor"/>
+            </svg>
           </button>
-          <button class="win-btn win-btn-maximize" onclick="windowToggleMaximize()" title="Agrandir / Restaurer">
-            <svg viewBox="0 0 12 12" class="win-svg"><rect x="2" y="2" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <button class="win-btn win-btn-maximize" onmousedown="event.stopPropagation()" onclick="windowToggleMaximize()" title="Agrandir / Restaurer">
+            <svg viewBox="0 0 10 10" class="win-svg">
+              <rect x="1" y="1" width="8" height="2" fill="currentColor"/>
+              <rect x="1" y="1" width="2" height="8" fill="currentColor"/>
+              <rect x="7" y="1" width="2" height="8" fill="currentColor"/>
+              <rect x="1" y="7" width="8" height="2" fill="currentColor"/>
+            </svg>
           </button>
-          <button class="win-btn win-btn-close" onclick="windowClose()" title="Fermer">
-            <svg viewBox="0 0 12 12" class="win-svg"><path fill="currentColor" d="M2.5 1.5L6 5l3.5-3.5 1 1L7 6l3.5 3.5-1 1L6 7l-3.5 3.5-1-1L5 6 1.5 2.5l1-1z"/></svg>
+          <button class="win-btn win-btn-close" onmousedown="event.stopPropagation()" onclick="windowClose()" title="Fermer">
+            <svg viewBox="0 0 10 10" class="win-svg">
+              <rect x="1" y="1" width="2" height="2" fill="currentColor"/>
+              <rect x="7" y="1" width="2" height="2" fill="currentColor"/>
+              <rect x="3" y="3" width="1" height="1" fill="currentColor"/>
+              <rect x="6" y="3" width="1" height="1" fill="currentColor"/>
+              <rect x="4" y="4" width="2" height="2" fill="currentColor"/>
+              <rect x="3" y="6" width="1" height="1" fill="currentColor"/>
+              <rect x="6" y="6" width="1" height="1" fill="currentColor"/>
+              <rect x="1" y="7" width="2" height="2" fill="currentColor"/>
+              <rect x="7" y="7" width="2" height="2" fill="currentColor"/>
+            </svg>
           </button>
         </div>
       </div>
-    </div>
+    </header>
 
     <!-- SUBTITLE STRIP -->
     <div class="header-strip">

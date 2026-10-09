@@ -21,13 +21,7 @@ const SHINY_STEPS = {
 // WINDOW CONTROLS & SEAMLESS DRAG
 // ============================================================================
 function startWindowDrag(e) {
-  // If clicked a button, input, or control, ignore
-  if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) {
-    return;
-  }
-  if (window.pywebview && window.pywebview.api && window.pywebview.api.window_drag) {
-    window.pywebview.api.window_drag();
-  }
+  // Handled natively by .pywebview-drag-region and CSS -webkit-app-region: drag
 }
 
 function windowMinimize() {
