@@ -83,6 +83,12 @@ class PatcherBridge:
             'noleg': True,
             'starters': True,
             'statics': True,
+            'battles': True,
+            'gifts': True,
+            'trade_get': True,
+            'trade_want': True,
+            'wild_special': True,
+            'gba_slots': True,
             'shiny': 64
         })
 

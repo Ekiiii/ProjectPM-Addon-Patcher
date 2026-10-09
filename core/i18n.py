@@ -382,10 +382,475 @@ TRANSLATIONS = {
     "disclaimer": {
         "en": "Unofficial Community Mod Manager by Ekiii. Not affiliated with the official Project PM team.",
         "fr": "Gestionnaire de Mods communautaire par Ekiii. Non affilié à l'équipe officielle Project PM."
+    },
+    # --- NAVIGATION & APP ---
+    "tab_patcher": {
+        "en": "MODS & MULTI",
+        "fr": "MODS & MULTI"
+    },
+    "tab_randomizer": {
+        "en": "RANDOMIZER",
+        "fr": "RANDOMIZER"
+    },
+    "tab_saves": {
+        "en": "SAVED GAMES",
+        "fr": "SAUVEGARDES"
+    },
+    "tab_about": {
+        "en": "OPTIONS & ABOUT",
+        "fr": "OPTIONS & INFOS"
+    },
+    "app_subtitle": {
+        "en": "Mods, Multiplayer & Randomizer Manager for Pokémon Platinum",
+        "fr": "Gestionnaire de Mods, Multijoueur & Randomizer pour Pokémon Platine"
+    },
+    # --- SECTION 1: ROM SELECTION ---
+    "card_rom_title": {
+        "en": "1. SELECT SOURCE ROM & DESTINATION",
+        "fr": "1. SÉLECTION DE LA ROM SOURCE & DESTINATION"
+    },
+    "label_src_rom": {
+        "en": "Source ROM (Pokémon Platinum NDS):",
+        "fr": "ROM Source (Pokémon Platine NDS) :"
+    },
+    "label_dst_rom": {
+        "en": "Destination ROM (Where to save):",
+        "fr": "ROM de destination (Où enregistrer) :"
+    },
+    "btn_browse_src": {
+        "en": "Browse...",
+        "fr": "Parcourir..."
+    },
+    "btn_browse_dst": {
+        "en": "Save As...",
+        "fr": "Enregistrer sous..."
+    },
+    # --- SECTION 2: MULTIPLAYER & MODS ---
+    "card_mods_title": {
+        "en": "2. MULTIPLAYER BASE & GAMEPLAY MODS",
+        "fr": "2. BASE MULTI ET MODES DE JEU"
+    },
+    "label_mp_base": {
+        "en": "Project PM Multiplayer Base:",
+        "fr": "Base Multijoueur Project PM :"
+    },
+    "opt_mp_auto": {
+        "en": "Automatic Detection (Recommended)",
+        "fr": "Détection Automatique (Recommandé)"
+    },
+    "opt_mp_fr": {
+        "en": "Force French Multiplayer (v0.4.5)",
+        "fr": "Forcer Project PM Multijoueur Français (v0.4.5)"
+    },
+    "opt_mp_en": {
+        "en": "Force USA Multiplayer (v0.4.5)",
+        "fr": "Forcer Project PM Multiplayer USA (v0.4.5)"
+    },
+    "opt_mp_none": {
+        "en": "None (Keep Base ROM)",
+        "fr": "Aucun (Garder ROM de base)"
+    },
+    "help_mp_base": {
+        "en": "If your ROM is Vanilla, the multiplayer patch will be applied automatically.",
+        "fr": "Si votre ROM est une version originale (Vanilla), le patch multijoueur sera appliqué automatiquement."
+    },
+    "label_addon_mode": {
+        "en": "Additional Gameplay Mode:",
+        "fr": "Mode de Jeu Additionnel :"
+    },
+    "addon_standard_title": {
+        "en": "Standard / Official",
+        "fr": "Standard / Officiel"
+    },
+    "addon_standard_desc": {
+        "en": "Classic Project PM multiplayer experience without restrictions.",
+        "fr": "Expérience multijoueur Project PM classique sans règles restrictives."
+    },
+    "addon_soullink_title": {
+        "en": "Soul Link & SoulLocke",
+        "fr": "Soul Link & SoulLocke"
+    },
+    "addon_soullink_desc": {
+        "en": "Linked souls: shared deaths, 1 catch per area, automatic graveyard box.",
+        "fr": "Âmes liées entre joueurs : mort partagée, capture unique par zone, cimetière automatique."
+    },
+    "addon_restore_title": {
+        "en": "Restore Clean ROM",
+        "fr": "Restaurer ROM Propre"
+    },
+    "addon_restore_desc": {
+        "en": "Uninstalls SoulLocke mod and restores clean multiplayer ROM.",
+        "fr": "Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre."
+    },
+    # --- SECTION 3: VISUAL+ & PREVIEWS ---
+    "card_visual_title": {
+        "en": "3. GRAPHICS & ENHANCEMENTS (VISUAL+)",
+        "fr": "3. GRAPHISMES & CONFORT (VISUAL+)"
+    },
+    "visual_bg_title": {
+        "en": "HD Battle Backgrounds (Visual+)",
+        "fr": "Décors de combat HD (Visual+)"
+    },
+    "visual_bg_desc": {
+        "en": "Replaces 2D battle arenas with high-detail 3D textured scenery.",
+        "fr": "Remplace les arènes de combat 2D pixelisées par des décors 3D texturés fidèles."
+    },
+    "visual_bg_caption": {
+        "en": "Preview: High-resolution 3D battle arena",
+        "fr": "Aperçu : Arène de combat 3D en haute résolution"
+    },
+    "visual_cam_title": {
+        "en": "Extended 3D Camera (Visual+)",
+        "fr": "Caméra 3D Élargie (Visual+)"
+    },
+    "visual_cam_desc": {
+        "en": "Closer overworld camera angle in towns and routes for stronger 3D depth.",
+        "fr": "Angle de vue optimisé dans les villes et les routes pour une meilleure immersion."
+    },
+    "visual_cam_town": {
+        "en": "Overworld / Town",
+        "fr": "Vue Extérieure / Ville"
+    },
+    "visual_cam_center": {
+        "en": "Pokémon Center",
+        "fr": "Centre Pokémon"
+    },
+    "backup_title": {
+        "en": "Automatic Save Backup (.sav / .dsv)",
+        "fr": "Sauvegarde Automatique (.sav / .dsv)"
+    },
+    "backup_desc": {
+        "en": "Keeps a timestamped backup copy of your save data before patching.",
+        "fr": "Conserve une copie de sécurité horodatée de vos données de sauvegarde avant patch."
+    },
+    "btn_execute_patch": {
+        "en": "APPLY PATCHES & MODS",
+        "fr": "APPLIQUER LES PATCHS & MODS"
+    },
+    # --- SECTION 4: RANDOMIZER TAB ---
+    "rand_rom_title": {
+        "en": "1. ROM TO RANDOMIZE",
+        "fr": "1. ROM À RANDOMISER"
+    },
+    "rand_label_src": {
+        "en": "Target ROM (Patched Project PM or Vanilla):",
+        "fr": "ROM Cible (Project PM patchée ou Vanilla) :"
+    },
+    "rand_label_dst": {
+        "en": "Destination ROM (Where to save):",
+        "fr": "ROM de destination (Où enregistrer) :"
+    },
+    "rand_world_col_title": {
+        "en": "YOUR WORLD (INDIVIDUAL & ADVENTURE)",
+        "fr": "VOTRE MONDE (INDIVIDUEL & AVENTURE)"
+    },
+    "rand_world_col_desc": {
+        "en": "These options customize your personal world. Sharing the World Code is optional.",
+        "fr": "Ces options personnalisent votre monde. Le partage du Code Monde est optionnel."
+    },
+    "rand_coop_col_title": {
+        "en": "CO-OP MODE (MULTIPLAYER SYNC)",
+        "fr": "MODE CO-OP (SYNCHRONISATION MULTIJOUEUR)"
+    },
+    "rand_coop_alert": {
+        "en": "CRITICAL MULTIPLAYER RULE: This code MUST match exactly across all players who battle together to prevent desyncs in double and gym battles.",
+        "fr": "RÈGLE MULTIJOUEUR CRITIQUE : Ce code DOIT être strictement identique entre tous les joueurs qui combattent ensemble pour éviter les désynchronisations en combat double ou en arène."
+    },
+    # World categories
+    "rand_cat_wilds": {
+        "en": "Wild Encounters (187 Sinnoh Areas)",
+        "fr": "Rencontres Sauvages (187 zones de Sinnoh)"
+    },
+    "rand_cat_wilds_desc": {
+        "en": "Modifies tall grass, surfing, fishing, and radar encounters.",
+        "fr": "Modifie les hautes herbes, surf, pêche et rencontres radar."
+    },
+    "rand_cat_starters": {
+        "en": "Briefcase Starter Trio",
+        "fr": "Trio de Starters dans la Valise"
+    },
+    "rand_starters_evolving": {
+        "en": "Evolving Starters Only (3-stage families - Recommended)",
+        "fr": "Starters évolutifs uniquement (Familles à 3 stades - Recommandé)"
+    },
+    "rand_starters_any": {
+        "en": "Completely Random (Any basic Pokémon)",
+        "fr": "Totalement aléatoire (Tout Pokémon niveau de base)"
+    },
+    "rand_starters_vanilla": {
+        "en": "Vanilla Starters (Turtwig, Chimchar, Piplup)",
+        "fr": "Starters Vanilla (Tortipouss, Ouisticram, Tiplouf)"
+    },
+    "rand_starter_slot_left": {
+        "en": "LEFT STARTER",
+        "fr": "STARTER GAUCHE"
+    },
+    "rand_starter_slot_mid": {
+        "en": "MIDDLE STARTER",
+        "fr": "STARTER MILIEU"
+    },
+    "rand_starter_slot_right": {
+        "en": "RIGHT STARTER",
+        "fr": "STARTER DROITE"
+    },
+    "rand_cat_honey_eggs": {
+        "en": "Honey Trees & Gift Eggs",
+        "fr": "Arbres à Miel & Œufs Offerts"
+    },
+    "rand_cat_statics": {
+        "en": "Static & Legendary Encounters",
+        "fr": "Rencontres Fixes & Légendaires"
+    },
+    "rand_cat_special": {
+        "en": "Special Wild Encounters (Feebas, Marsh...)",
+        "fr": "Rencontres Sauvages Spéciales (Barpau, Grand Marais...)"
+    },
+    "rand_cat_gba": {
+        "en": "GBA Dual-Slot Encounters",
+        "fr": "Rencontres Cartouches GBA insérées"
+    },
+    "rand_cat_gifts": {
+        "en": "NPC Gift Pokémon (Eevee, Porygon...)",
+        "fr": "Pokémon Cadeaux des PNJ (Évoli, Porygon...)"
+    },
+    "rand_cat_trades": {
+        "en": "In-Game NPC Trades",
+        "fr": "Échanges Internes avec les PNJ"
+    },
+    # Wild options
+    "rand_wild_opts_title": {
+        "en": "Wild Encounter Options",
+        "fr": "Options des Rencontres Sauvages"
+    },
+    "rand_mode_label": {
+        "en": "Replacement Mode:",
+        "fr": "Mode de substitution :"
+    },
+    "rand_mode_area": {
+        "en": "Area 1-to-1 (Coherent species per zone - Recommended)",
+        "fr": "Zone 1-pour-1 (Équivalence cohérente par zone - Recommandé)"
+    },
+    "rand_mode_global": {
+        "en": "Global 1-to-1 (One species replaces another everywhere)",
+        "fr": "Global 1-pour-1 (Une espèce remplace une espèce dans tout Sinnoh)"
+    },
+    "rand_mode_random": {
+        "en": "Completely Random (Each slot rolled independently)",
+        "fr": "Totalement Aléatoire (Chaque slot est indépendant)"
+    },
+    "rand_rule_label": {
+        "en": "Strength Rule:",
+        "fr": "Règle de force :"
+    },
+    "rand_rule_similar": {
+        "en": "Similar Strength (BST ±15% - Balanced)",
+        "fr": "Force Similaire (BST ±15% - Équilibré)"
+    },
+    "rand_rule_type": {
+        "en": "Type Theme (Keep element affinity)",
+        "fr": "Thème par Type (Conserver affinité élémentaire)"
+    },
+    "rand_rule_none": {
+        "en": "None (Completely unconstrained)",
+        "fr": "Aucune (Totalement libre)"
+    },
+    "rand_noleg": {
+        "en": "No Legendaries in the wild (Excludes 35 Legendaries)",
+        "fr": "Exclure les 35 Pokémon Légendaires de la nature"
+    },
+    # ROM Tweaks
+    "rand_tweaks_title": {
+        "en": "ROM Tweaks",
+        "fr": "Ajustements ROM"
+    },
+    "rand_shiny_label": {
+        "en": "Shiny Encounter Odds:",
+        "fr": "Taux d'apparition des Shiny :"
+    },
+    # World Seed & Code
+    "rand_world_seed_title": {
+        "en": "Your World Seed & Code",
+        "fr": "Graine & Code Monde"
+    },
+    "rand_world_seed_desc": {
+        "en": "This code is OPTIONAL to share. Import a friend's only if you want an identical world.",
+        "fr": "Ce code est OPTIONNEL à partager. Importez le code d'un ami uniquement si vous voulez un monde identique."
+    },
+    "rand_world_seed_label": {
+        "en": "World Seed:",
+        "fr": "Graine Monde :"
+    },
+    "rand_world_code_label": {
+        "en": "World Code:",
+        "fr": "Code Monde :"
+    },
+    # Co-Op categories
+    "rand_coop_categories_title": {
+        "en": "Synchronized Co-Op Features",
+        "fr": "Fonctionnalités Co-Op Synchronisées"
+    },
+    "rand_trainers": {
+        "en": "Trainer Teams (973 battles)",
+        "fr": "Équipes des Dresseurs & Champions (973 combats)"
+    },
+    "rand_trainers_simstr": {
+        "en": "Similar Strength (Trainer Teams)",
+        "fr": "Force Similaire (Équipes de Dresseurs)"
+    },
+    "rand_trainers_noleg": {
+        "en": "No Legendaries (Trainer Teams)",
+        "fr": "Exclure les Légendaires (Dresseurs)"
+    },
+    "rand_types": {
+        "en": "Pokémon Types",
+        "fr": "Types Élémentaires des Pokémon"
+    },
+    "rand_types_desc": {
+        "en": "Rerolls types for all 493 Pokémon (Dual types preserved).",
+        "fr": "Reroll les types élémentaires (double-types cohérents)."
+    },
+    "rand_abilities": {
+        "en": "Abilities",
+        "fr": "Talents des Pokémon (Abilities)"
+    },
+    "rand_abilities_desc": {
+        "en": "Rerolls passive abilities among all species.",
+        "fr": "Reroll les 123 talents passifs parmi les Pokémon."
+    },
+    "rand_movesets": {
+        "en": "Movesets (Learned by Level)",
+        "fr": "Attaques apprises par Niveau (Movesets)"
+    },
+    "rand_movesets_desc": {
+        "en": "Rerolls moves learned while leveling up.",
+        "fr": "Reroll les attaques apprises tout en conservant les paliers."
+    },
+    # Co-Op Seed & Code
+    "rand_coop_seed_title": {
+        "en": "Co-Op Seed & Code",
+        "fr": "Graine & Code Co-Op"
+    },
+    "rand_coop_seed_desc": {
+        "en": "Everyone who battles together MUST import this exact same code.",
+        "fr": "Tous ceux qui jouent ensemble DOIVENT importer exactement ce même code."
+    },
+    "rand_coop_seed_label": {
+        "en": "Co-Op Seed:",
+        "fr": "Graine Co-Op :"
+    },
+    "rand_coop_code_label": {
+        "en": "Co-Op Code:",
+        "fr": "Code Co-Op :"
+    },
+    # Buttons
+    "btn_roll_seed": {
+        "en": "Roll New Seed",
+        "fr": "Nouveau tirage"
+    },
+    "btn_copy_code": {
+        "en": "Copy",
+        "fr": "Copier"
+    },
+    "btn_paste_code": {
+        "en": "Paste Friend's Code",
+        "fr": "Coller le code d'un ami"
+    },
+    "btn_execute_randomize": {
+        "en": "RANDOMIZE ROM",
+        "fr": "RANDOMISER LA ROM"
+    },
+    # Badges & Statuses
+    "badge_clean_platine": {
+        "en": "Clean Platinum ROM",
+        "fr": "ROM Platine Propre"
+    },
+    "badge_already_rand": {
+        "en": "Already Randomized",
+        "fr": "Déjà Randomisée"
+    },
+    "badge_ready": {
+        "en": "Ready",
+        "fr": "Prêt"
+    },
+    # Terminal & Action Keys
+    "custom_patch_label": {
+        "en": "Additional xDelta patch (Optional):",
+        "fr": "Patch xDelta additionnel (Optionnel) :"
+    },
+    "custom_patch_placeholder": {
+        "en": "Select an external .xdelta patch...",
+        "fr": "Sélectionnez un patch .xdelta externe..."
+    },
+    "terminal_progress": {
+        "en": "PROGRESS CONSOLE",
+        "fr": "CONSOLE DE PROGRESSION"
+    },
+    "terminal_rand_report": {
+        "en": "RANDOMIZATION REPORT",
+        "fr": "RAPPORT DE RANDOMISATION"
+    },
+    "terminal_status_ready": {
+        "en": "Ready",
+        "fr": "Prêt"
+    },
+    "btn_clear": {
+        "en": "Clear",
+        "fr": "Vider"
+    },
+    # Saves & Backups Tab
+    "saves_title": {
+        "en": "AUTOMATIC SAVE BACKUP MANAGER",
+        "fr": "GESTIONNAIRE DE SAUVEGARDES AUTOMATIQUES"
+    },
+    "saves_desc": {
+        "en": "When you apply a patch or modify your ROM, the patcher automatically backs up and syncs your companion .sav and .dsv files (melonDS / DeSmuME) to prevent any loss of progress.",
+        "fr": "Lorsque vous appliquez un patch ou modifiez votre ROM, le patcher sauvegarde et synchronise automatiquement vos fichiers .sav et .dsv (melonDS / DeSmuME) pour éviter toute perte de progression."
+    },
+    "saves_folder_label": {
+        "en": "Backups location:",
+        "fr": "Emplacement des sauvegardes :"
+    },
+    "btn_open_folder": {
+        "en": "Open Folder",
+        "fr": "Ouvrir le dossier"
+    },
+    # About Tab
+    "about_title": {
+        "en": "ABOUT PROJECT PM ADDON PATCHER",
+        "fr": "À PROPOS DE PROJECT PM ADDON PATCHER"
+    },
+    "about_app_name": {
+        "en": "Project PM Addon Patcher & Randomizer",
+        "fr": "Project PM Addon Patcher & Randomizer"
+    },
+    "about_desc": {
+        "en": "All-in-one suite for the Pokémon Platinum community: Co-op Multiplayer, Soul Link / SoulLocke Mod, Visual+ enhancements, and high-compatibility randomizer engine.",
+        "fr": "Outil tout-en-un pour la communauté Pokémon Platine : Multijoueur coopératif, Mod Soul Link / SoulLocke, Améliorations visuelles Visual+, et moteur de randomisation haute compatibilité."
+    },
+    "about_credits": {
+        "en": "Developed with passion by <strong>Ekiii</strong>",
+        "fr": "Développé avec passion par <strong>Ekiii</strong>"
+    },
+    "btn_check_updates": {
+        "en": "Check for Updates",
+        "fr": "Vérifier les mises à jour"
+    },
+    "btn_github": {
+        "en": "Official GitHub",
+        "fr": "GitHub Officiel"
+    },
+    # Footer
+    "footer_status_ready": {
+        "en": "Ready to patch",
+        "fr": "Prêt à patcher"
+    },
+    "footer_community": {
+        "en": "Project PM Platinum Community",
+        "fr": "Communauté Project PM Platine"
     }
 }
 
-CURRENT_LANG = "en"
+CURRENT_LANG = "fr"
 
 def set_lang(lang_code):
     global CURRENT_LANG

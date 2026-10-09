@@ -135,26 +135,26 @@
 
     <!-- SUBTITLE STRIP -->
     <div class="header-strip">
-      <p class="app-subtitle" id="i18n-app-subtitle">Gestionnaire de Mods, Multijoueur & Randomizer pour Pokémon Platine</p>
+      <p class="app-subtitle" id="i18n-app-subtitle" data-i18n="app_subtitle">Gestionnaire de Mods, Multijoueur & Randomizer pour Pokémon Platine</p>
     </div>
 
     <!-- NAVIGATION TABS -->
     <nav class="nav-tabs">
       <button class="nav-tab active" id="tab-btn-patcher" onclick="switchTab('patcher')">
         <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
-        <span class="tab-label" id="i18n-tab-patcher">MODS & MULTI</span>
+        <span class="tab-label" id="i18n-tab-patcher" data-i18n="tab_patcher">MODS & MULTI</span>
       </button>
       <button class="nav-tab" id="tab-btn-randomizer" onclick="switchTab('randomizer')">
         <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-dice"></use></svg>
-        <span class="tab-label" id="i18n-tab-randomizer">RANDOMIZER CO-OP</span>
+        <span class="tab-label" id="i18n-tab-randomizer" data-i18n="tab_randomizer">RANDOMIZER CO-OP</span>
       </button>
       <button class="nav-tab" id="tab-btn-saves" onclick="switchTab('saves')">
         <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-save"></use></svg>
-        <span class="tab-label" id="i18n-tab-saves">SAUVEGARDES</span>
+        <span class="tab-label" id="i18n-tab-saves" data-i18n="tab_saves">SAUVEGARDES</span>
       </button>
       <button class="nav-tab" id="tab-btn-about" onclick="switchTab('about')">
         <svg class="tab-svg" viewBox="0 0 16 16"><use href="#icon-info"></use></svg>
-        <span class="tab-label" id="i18n-tab-about">OPTIONS & INFOS</span>
+        <span class="tab-label" id="i18n-tab-about" data-i18n="tab_about">OPTIONS & INFOS</span>
       </button>
     </nav>
 
@@ -169,15 +169,15 @@
         <!-- ROM SELECTOR CARD -->
         <div class="pixel-card">
           <div class="card-header">
-            <span class="card-title" id="i18n-card-rom-title">1. SÉLECTION DE LA ROM SOURCE & DESTINATION</span>
+            <span class="card-title" id="i18n-card-rom-title" data-i18n="card_rom_title">1. SÉLECTION DE LA ROM SOURCE & DESTINATION</span>
           </div>
           <div class="card-body">
             <!-- Source ROM -->
             <div class="form-group">
-              <label class="form-label" id="i18n-label-src-rom">ROM Source (Pokémon Platine NDS) :</label>
+              <label class="form-label" id="i18n-label-src-rom" data-i18n="label_src_rom">ROM Source (Pokémon Platine NDS) :</label>
               <div class="input-with-button">
-                <input type="text" id="input-source-rom" class="pixel-input" placeholder="Glissez-déposez ou sélectionnez votre ROM Platine (.nds)..." readonly>
-                <button class="pixel-btn primary" onclick="browseSourceRom()" id="i18n-btn-browse-src">Parcourir...</button>
+                <input type="text" id="input-source-rom" class="pixel-input" data-i18n-placeholder="rom_placeholder" placeholder="Glissez-déposez ou sélectionnez votre ROM Platine (.nds)..." readonly>
+                <button class="pixel-btn primary" onclick="browseSourceRom()" id="i18n-btn-browse-src" data-i18n="btn_browse_src">Parcourir...</button>
               </div>
             </div>
 
@@ -194,10 +194,10 @@
 
             <!-- Destination ROM -->
             <div class="form-group mt-3">
-              <label class="form-label" id="i18n-label-dst-rom">ROM de destination (Où enregistrer) :</label>
+              <label class="form-label" id="i18n-label-dst-rom" data-i18n="label_dst_rom">ROM de destination (Où enregistrer) :</label>
               <div class="input-with-button">
                 <input type="text" id="input-dest-rom" class="pixel-input" placeholder="Chemin du fichier patché...">
-                <button class="pixel-btn" onclick="browseDestRom()" id="i18n-btn-browse-dst">Enregistrer sous...</button>
+                <button class="pixel-btn" onclick="browseDestRom()" id="i18n-btn-browse-dst" data-i18n="btn_browse_dst">Enregistrer sous...</button>
               </div>
             </div>
           </div>
@@ -209,46 +209,46 @@
           <!-- MULTIPLAYER BASE & GAMEPLAY MODS -->
           <div class="pixel-card">
             <div class="card-header">
-              <span class="card-title" id="i18n-card-mods-title">2. BASE MULTI ET MODES DE JEU</span>
+              <span class="card-title" id="i18n-card-mods-title" data-i18n="card_mods_title">2. BASE MULTI ET MODES DE JEU</span>
             </div>
             <div class="card-body">
               <!-- Multiplayer Base Selector -->
               <div class="form-group">
-                <label class="form-label" id="i18n-label-mp-base">Base Multijoueur Project PM :</label>
+                <label class="form-label" id="i18n-label-mp-base" data-i18n="label_mp_base">Base Multijoueur Project PM :</label>
                 <select id="select-mp-mode" class="pixel-select" onchange="onMpModeChange()">
-                  <option value="auto">Détection Automatique (Recommandé)</option>
-                  <option value="fr">Forcer Project PM Multijoueur Français (v0.4.5)</option>
-                  <option value="en">Forcer Project PM Multiplayer USA (v0.4.5)</option>
-                  <option value="none">Aucun (Garder ROM de base)</option>
+                  <option value="auto" data-i18n="opt_mp_auto">Détection Automatique (Recommandé)</option>
+                  <option value="fr" data-i18n="opt_mp_fr">Forcer Project PM Multijoueur Français (v0.4.5)</option>
+                  <option value="en" data-i18n="opt_mp_en">Forcer Project PM Multiplayer USA (v0.4.5)</option>
+                  <option value="none" data-i18n="opt_mp_none">Aucun (Garder ROM de base)</option>
                 </select>
-                <p class="help-text" id="i18n-help-mp-base">Si votre ROM est une version originale (Vanilla), le patch multijoueur sera appliqué automatiquement.</p>
+                <p class="help-text" id="i18n-help-mp-base" data-i18n="help_mp_base">Si votre ROM est une version originale (Vanilla), le patch multijoueur sera appliqué automatiquement.</p>
               </div>
 
               <!-- Gameplay Addons -->
               <div class="form-group mt-3">
-                <label class="form-label" id="i18n-label-addon-mode">Mode de Jeu Additionnel :</label>
+                <label class="form-label" id="i18n-label-addon-mode" data-i18n="label_addon_mode">Mode de Jeu Additionnel :</label>
                 <div class="radio-box-group">
                   <label class="pixel-radio-card active">
                     <input type="radio" name="addon-mode" value="none" checked onchange="onAddonModeChange()">
                     <div class="radio-card-content">
-                      <span class="radio-title">Standard / Officiel</span>
-                      <span class="radio-desc">Expérience multijoueur Project PM classique sans règles restrictives.</span>
+                      <span class="radio-title" data-i18n="addon_standard_title">Standard / Officiel</span>
+                      <span class="radio-desc" data-i18n="addon_standard_desc">Expérience multijoueur Project PM classique sans règles restrictives.</span>
                     </div>
                   </label>
 
                   <label class="pixel-radio-card">
                     <input type="radio" name="addon-mode" value="soullink" onchange="onAddonModeChange()">
                     <div class="radio-card-content">
-                      <span class="radio-title">Soul Link & SoulLocke</span>
-                      <span class="radio-desc">Âmes liées entre joueurs : mort partagée, capture unique par zone, cimetière automatique.</span>
+                      <span class="radio-title" data-i18n="addon_soullink_title">Soul Link & SoulLocke</span>
+                      <span class="radio-desc" data-i18n="addon_soullink_desc">Âmes liées entre joueurs : mort partagée, capture unique par zone, cimetière automatique.</span>
                     </div>
                   </label>
 
                   <label class="pixel-radio-card">
                     <input type="radio" name="addon-mode" value="restore" onchange="onAddonModeChange()">
                     <div class="radio-card-content">
-                      <span class="radio-title">Restaurer ROM Propre</span>
-                      <span class="radio-desc">Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre.</span>
+                      <span class="radio-title" data-i18n="addon_restore_title">Restaurer ROM Propre</span>
+                      <span class="radio-desc" data-i18n="addon_restore_desc">Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre.</span>
                     </div>
                   </label>
                 </div>
@@ -259,42 +259,62 @@
           <!-- VISUAL+ & PERFORMANCES -->
           <div class="pixel-card">
             <div class="card-header">
-              <span class="card-title" id="i18n-card-visual-title">3. GRAPHISMES & CONFORT (VISUAL+)</span>
+              <span class="card-title" data-i18n="card_visual_title">3. GRAPHISMES & CONFORT (VISUAL+)</span>
             </div>
             <div class="card-body">
               <!-- Visual+ Battle Backgrounds -->
-              <div class="toggle-card">
-                <div class="toggle-info">
-                  <span class="toggle-title">Décors de combat HD (Visual+)</span>
-                  <span class="toggle-desc">Remplace les arènes de combat 2D pixelisées par des décors 3D texturés fidèles.</span>
+              <div class="toggle-card visual-feature-card">
+                <div class="toggle-header-row">
+                  <div class="toggle-info">
+                    <span class="toggle-title" data-i18n="visual_bg_title">Décors de combat HD (Visual+)</span>
+                    <span class="toggle-desc" data-i18n="visual_bg_desc">Remplace les arènes de combat 2D pixelisées par des décors 3D texturés fidèles.</span>
+                  </div>
+                  <div class="toggle-control">
+                    <label class="pixel-switch">
+                      <input type="checkbox" id="toggle-visual-bg">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
                 </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-visual-bg">
-                    <span class="slider"></span>
-                  </label>
+                <!-- Visual+ Battle BG Preview Image -->
+                <div class="visual-preview-box">
+                  <img src="assets/preview_visualplus_bg.png" alt="Aperçu Décors de combat HD" class="visual-preview-img" onclick="document.getElementById('toggle-visual-bg').click()">
+                  <span class="visual-preview-caption" data-i18n="visual_bg_caption">Aperçu : Arène de combat 3D en haute résolution</span>
                 </div>
               </div>
 
               <!-- Visual+ 3D Camera -->
-              <div class="toggle-card mt-3">
-                <div class="toggle-info">
-                  <span class="toggle-title">Caméra 3D Élargie (Visual+)</span>
-                  <span class="toggle-desc">Angle de vue optimisé dans les villes et les routes pour une meilleure immersion.</span>
+              <div class="toggle-card visual-feature-card mt-3">
+                <div class="toggle-header-row">
+                  <div class="toggle-info">
+                    <span class="toggle-title" data-i18n="visual_cam_title">Caméra 3D Élargie (Visual+)</span>
+                    <span class="toggle-desc" data-i18n="visual_cam_desc">Angle de vue optimisé dans les villes et les routes pour une meilleure immersion.</span>
+                  </div>
+                  <div class="toggle-control">
+                    <label class="pixel-switch">
+                      <input type="checkbox" id="toggle-visual-cam">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
                 </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-visual-cam">
-                    <span class="slider"></span>
-                  </label>
+                <!-- Visual+ 3D Camera Dual Previews -->
+                <div class="visual-preview-box visual-preview-dual">
+                  <div class="dual-thumb">
+                    <img src="assets/preview_visualplus_cam_town.png" alt="Vue Extérieure Ville" class="visual-preview-img" onclick="document.getElementById('toggle-visual-cam').click()">
+                    <span class="visual-preview-subcaption" data-i18n="visual_cam_town">Vue Extérieure / Ville</span>
+                  </div>
+                  <div class="dual-thumb">
+                    <img src="assets/preview_visualplus_cam_center.png" alt="Vue Centre Pokémon" class="visual-preview-img" onclick="document.getElementById('toggle-visual-cam').click()">
+                    <span class="visual-preview-subcaption" data-i18n="visual_cam_center">Centre Pokémon</span>
+                  </div>
                 </div>
               </div>
 
               <!-- Auto Backup Saves -->
               <div class="toggle-card mt-3">
                 <div class="toggle-info">
-                  <span class="toggle-title">Sauvegarde Automatique (.sav / .dsv)</span>
-                  <span class="toggle-desc">Conserve une copie de sécurité horodatée de vos données de sauvegarde avant patch.</span>
+                  <span class="toggle-title" data-i18n="backup_title">Sauvegarde Automatique (.sav / .dsv)</span>
+                  <span class="toggle-desc" data-i18n="backup_desc">Conserve une copie de sécurité horodatée de vos données de sauvegarde avant patch.</span>
                 </div>
                 <div class="toggle-control">
                   <label class="pixel-switch">
@@ -306,9 +326,9 @@
 
               <!-- Custom xDelta patch -->
               <div class="form-group mt-3">
-                <label class="form-label">Patch xDelta additionnel (Optionnel) :</label>
+                <label class="form-label" data-i18n="custom_patch_label">Patch xDelta additionnel (Optionnel) :</label>
                 <div class="input-with-button">
-                  <input type="text" id="input-custom-patch" class="pixel-input" placeholder="Sélectionnez un patch .xdelta externe...">
+                  <input type="text" id="input-custom-patch" class="pixel-input" data-i18n-placeholder="custom_patch_placeholder" placeholder="Sélectionnez un patch .xdelta externe...">
                   <button class="pixel-btn" onclick="browseCustomPatch()">...</button>
                 </div>
               </div>
@@ -320,17 +340,17 @@
         <div class="action-footer mt-4">
           <button class="pixel-btn primary large-btn w-100" id="btn-start-patch" onclick="startPatching()">
             <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
-            <span>APPLIQUER LES PATCHS SUR LA ROM</span>
+            <span data-i18n="btn_execute_patch">APPLIQUER LES PATCHS SUR LA ROM</span>
           </button>
         </div>
 
         <!-- CONSOLE LOG -->
         <div class="terminal-card mt-4" id="patch-terminal-card">
           <div class="terminal-header">
-            <span class="terminal-title">CONSOLE DE PROGRESSION</span>
+            <span class="terminal-title" data-i18n="terminal_progress">CONSOLE DE PROGRESSION</span>
             <div class="terminal-actions">
-              <span class="terminal-status" id="patch-status-text">Prêt</span>
-              <button class="pixel-btn mini" onclick="clearLog('patch-log')">Vider</button>
+              <span class="terminal-status" id="patch-status-text" data-i18n="terminal_status_ready">Prêt</span>
+              <button class="pixel-btn mini" onclick="clearLog('patch-log')" data-i18n="btn_clear">Vider</button>
             </div>
           </div>
           <div class="progress-bar-container">
@@ -342,267 +362,194 @@
       </section>
 
       <!-- ========================================================== -->
-      <!-- TAB 2: CO-OP RANDOMIZER                                    -->
+      <!-- TAB 2: RANDOMIZER (WORLD VS CO-OP SEPARATED)               -->
       <!-- ========================================================== -->
       <section class="tab-content" id="tab-randomizer">
         
-        <!-- SEED & MULTIPLAYER SYNC CARD -->
-        <div class="pixel-card highlight-card">
+        <!-- 1. ROM TO RANDOMIZE CARD -->
+        <div class="pixel-card">
           <div class="card-header">
-            <span class="card-title">GRAINES & CODES DE SYNCHRONISATION MULTIJOUEUR</span>
+            <span class="card-title" data-i18n="rand_rom_title">1. ROM À RANDOMISER</span>
           </div>
           <div class="card-body">
-            <div class="sync-alert-banner">
-              <svg class="alert-svg" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg>
-              <div class="alert-text">
-                <strong>RÈGLE MULTIJOUEUR CRITIQUE :</strong> Pour jouer ensemble sans désynchronisation, 
-                le <strong>Code Co-op (PMC-...)</strong> DOIT être <strong>strictement identique</strong> entre tous les joueurs. 
-                Il synchronise les Dresseurs, Attaques et Types de Pokémon.
+            <div class="grid-2-cols">
+              <div class="form-group">
+                <label class="form-label" data-i18n="rand_label_src">ROM Cible (Project PM patchée ou Vanilla) :</label>
+                <div class="input-with-button">
+                  <input type="text" id="input-rand-source-rom" class="pixel-input" data-i18n-placeholder="rom_placeholder" placeholder="Sélectionnez la ROM à randomiser..." readonly>
+                  <button class="pixel-btn" onclick="browseRandSourceRom()" data-i18n="btn_browse_src">Parcourir...</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="rand_label_dst">ROM de destination (Où enregistrer) :</label>
+                <div class="input-with-button">
+                  <input type="text" id="input-rand-dest-rom" class="pixel-input" placeholder="ProjectPM_Randomized.nds" readonly>
+                  <button class="pixel-btn" onclick="browseRandDestRom()" data-i18n="btn_browse_dst">Enregistrer sous...</button>
+                </div>
               </div>
             </div>
-
-            <div class="grid-2-cols mt-3">
-              <!-- Co-op Code Box -->
-              <div class="code-box">
-                <div class="code-header">
-                  <span class="code-label">CODE CO-OP (À PARTAGER) :</span>
-                  <span class="code-badge">OBLIGATOIRE EN MULTI</span>
-                </div>
-                <div class="code-input-group">
-                  <input type="text" id="input-coop-code" class="pixel-input code-input" placeholder="PMC-..." onchange="onCoopCodeChanged()">
-                  <button class="pixel-btn icon-btn" onclick="copyCoopCode()" title="Copier le code">
-                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-copy"></use></svg>
-                  </button>
-                  <button class="pixel-btn icon-btn" onclick="pasteCoopCode()" title="Coller un code">
-                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-paste"></use></svg>
-                  </button>
-                  <button class="pixel-btn icon-btn" onclick="generateNewCoopCode()" title="Générer une nouvelle seed">
-                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-reroll"></use></svg>
-                  </button>
-                </div>
-                <div class="code-footer">
-                  <span class="seed-preview" id="preview-coop-seed">Seed: --------</span>
-                </div>
-              </div>
-
-              <!-- World / Solo Code Box -->
-              <div class="code-box">
-                <div class="code-header">
-                  <span class="code-label">CODE MONDE / PERSONNEL :</span>
-                  <span class="code-badge secondary">INDIVIDUEL</span>
-                </div>
-                <div class="code-input-group">
-                  <input type="text" id="input-world-code" class="pixel-input code-input" placeholder="PMW-..." onchange="onWorldCodeChanged()">
-                  <button class="pixel-btn icon-btn" onclick="copyWorldCode()" title="Copier le code">
-                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-copy"></use></svg>
-                  </button>
-                  <button class="pixel-btn icon-btn" onclick="pasteWorldCode()" title="Coller un code">
-                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-paste"></use></svg>
-                  </button>
-                  <button class="pixel-btn icon-btn" onclick="generateNewWorldCode()" title="Générer une nouvelle seed">
-                    <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-reroll"></use></svg>
-                  </button>
-                </div>
-                <div class="code-footer">
-                  <span class="seed-preview" id="preview-world-seed">Seed: --------</span>
-                </div>
-              </div>
+            <div class="badges-container mt-2" id="rand-rom-badges">
+              <span class="badge slate" data-i18n="badge_ready">En attente de ROM</span>
             </div>
           </div>
         </div>
 
-        <!-- STARTERS SELECTION CARD -->
-        <div class="pixel-card mt-4">
-          <div class="card-header">
-            <div class="card-header-with-icon">
-              <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-backpack"></use></svg>
-              <span class="card-title">TRIO DE STARTERS DANS LA VALISE</span>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="starters-mode-selector">
-              <label class="pixel-radio">
-                <input type="radio" name="starters-mode" value="balanced" checked onchange="updateStartersPreview()">
-                <span>Trio Aléatoire Équilibré (Familles à 3 évolutions)</span>
-              </label>
-              <label class="pixel-radio ml-3">
-                <input type="radio" name="starters-mode" value="any" onchange="updateStartersPreview()">
-                <span>Totalement Aléatoire (Tout Pokémon niveau de base)</span>
-              </label>
-              <label class="pixel-radio ml-3">
-                <input type="radio" name="starters-mode" value="vanilla" onchange="updateStartersPreview()">
-                <span>Starters Vanilla (Tortipouss, Ouisticram, Tiplouf)</span>
-              </label>
-            </div>
-
-            <!-- STARTERS PREVIEW CARDS -->
-            <div class="starters-preview-grid mt-3" id="starters-preview-container">
-              <div class="starter-card slot-1">
-                <div class="starter-ball"></div>
-                <span class="starter-slot-label">STARTER GAUCHE</span>
-                <span class="starter-name" id="starter-1-name">Aléatoire</span>
-                <span class="starter-id" id="starter-1-id">#???</span>
-              </div>
-              <div class="starter-card slot-2">
-                <div class="starter-ball"></div>
-                <span class="starter-slot-label">STARTER MILIEU</span>
-                <span class="starter-name" id="starter-2-name">Aléatoire</span>
-                <span class="starter-id" id="starter-2-id">#???</span>
-              </div>
-              <div class="starter-card slot-3">
-                <div class="starter-ball"></div>
-                <span class="starter-slot-label">STARTER DROITE</span>
-                <span class="starter-name" id="starter-3-name">Aléatoire</span>
-                <span class="starter-id" id="starter-3-id">#???</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- RANDOMIZER SETTINGS GRID -->
-        <div class="grid-2-cols mt-4">
+        <!-- 2. TWO MAJOR COLUMNS: YOUR WORLD VS CO-OP -->
+        <div class="rand-columns-grid mt-4">
           
-          <!-- WILD ENCOUNTERS & TRAINERS -->
-          <div class="pixel-card">
+          <!-- ======================================================== -->
+          <!-- LEFT COLUMN: YOUR WORLD (INDIVIDUAL & ADVENTURE)         -->
+          <!-- ======================================================== -->
+          <div class="pixel-card world-panel">
             <div class="card-header">
               <div class="card-header-with-icon">
                 <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-leaf"></use></svg>
-                <span class="card-title">RENCONTRES SAUVAGES & DRESSEURS</span>
+                <span class="card-title" data-i18n="rand_world_col_title">VOTRE MONDE (INDIVIDUEL & AVENTURE)</span>
               </div>
             </div>
             <div class="card-body">
-              <!-- Wilds Toggle -->
-              <div class="toggle-card">
-                <div class="toggle-info">
-                  <span class="toggle-title">Randomiser les Pokémon Sauvages</span>
-                  <span class="toggle-desc">Modifie les 187 zones de Sinnoh (Hautes herbes, Surf, Pêche, Radar).</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-wilds" checked>
-                    <span class="slider"></span>
+              <p class="panel-desc-note" data-i18n="rand_world_col_desc">Ces options personnalisent votre monde. Le partage du Code Monde est optionnel.</p>
+
+              <!-- Category: Wild Encounters -->
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-wilds" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-wilds" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_wilds">Rencontres Sauvages (187 zones de Sinnoh)</span>
+                  <span class="cat-subdesc" data-i18n="rand_cat_wilds_desc">Modifie les hautes herbes, surf, pêche et rencontres radar.</span>
+                </label>
+              </div>
+
+              <!-- Category: Starter Trio -->
+              <div class="cat-checkbox-item mt-2">
+                <input type="checkbox" id="toggle-rand-starters" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-starters" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_starters">Trio de Starters dans la Valise</span>
+                </label>
+              </div>
+
+              <!-- Starter Trio Sub-options & Preview -->
+              <div class="cat-sub-options">
+                <div class="starters-mode-selector">
+                  <label class="pixel-radio">
+                    <input type="radio" name="starters-mode" value="balanced" checked onchange="onStartersModeChanged()">
+                    <span data-i18n="rand_starters_evolving">Starters évolutifs (Familles à 3 stades - Recommandé)</span>
                   </label>
+                  <label class="pixel-radio mt-1">
+                    <input type="radio" name="starters-mode" value="any" onchange="onStartersModeChanged()">
+                    <span data-i18n="rand_starters_any">Totalement aléatoire (Tout Pokémon niveau de base)</span>
+                  </label>
+                  <label class="pixel-radio mt-1">
+                    <input type="radio" name="starters-mode" value="vanilla" onchange="onStartersModeChanged()">
+                    <span data-i18n="rand_starters_vanilla">Starters Vanilla (Tortipouss, Ouisticram, Tiplouf)</span>
+                  </label>
+                </div>
+
+                <!-- Starters Preview Cards -->
+                <div class="starters-preview-grid mt-2" id="starters-preview-container">
+                  <div class="starter-card slot-1">
+                    <div class="starter-ball"></div>
+                    <span class="starter-slot-label" data-i18n="rand_starter_slot_left">STARTER GAUCHE</span>
+                    <span class="starter-name" id="starter-1-name">Aléatoire</span>
+                    <span class="starter-id" id="starter-1-id">#???</span>
+                  </div>
+                  <div class="starter-card slot-2">
+                    <div class="starter-ball"></div>
+                    <span class="starter-slot-label" data-i18n="rand_starter_slot_mid">STARTER MILIEU</span>
+                    <span class="starter-name" id="starter-2-name">Aléatoire</span>
+                    <span class="starter-id" id="starter-2-id">#???</span>
+                  </div>
+                  <div class="starter-card slot-3">
+                    <div class="starter-ball"></div>
+                    <span class="starter-slot-label" data-i18n="rand_starter_slot_right">STARTER DROITE</span>
+                    <span class="starter-name" id="starter-3-name">Aléatoire</span>
+                    <span class="starter-id" id="starter-3-id">#???</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- Wilds Mode -->
-              <div class="form-group mt-3">
-                <label class="form-label">Mode de substitution des zones :</label>
-                <select id="select-rand-mode" class="pixel-select">
-                  <option value="area_1to1">Zone 1-pour-1 (Chaque Pokémon a un équivalent dans la zone)</option>
-                  <option value="global_1to1">Global 1-pour-1 (Une espèce remplace une espèce dans tout Sinnoh)</option>
-                  <option value="random">Totalement Aléatoire (Chaque slot est indépendant)</option>
+              <!-- Other World Categories (From Project PM) -->
+              <div class="cat-checkbox-item mt-2">
+                <input type="checkbox" id="toggle-rand-honey" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-honey" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_honey_eggs">Arbres à Miel & Œufs Offerts</span>
+                </label>
+              </div>
+
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-battles" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-battles" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_statics">Rencontres Fixes & Légendaires</span>
+                </label>
+              </div>
+
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-special" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-special" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_special">Rencontres Sauvages Spéciales (Barpau, Grand Marais...)</span>
+                </label>
+              </div>
+
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-gba" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-gba" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_gba">Rencontres Cartouches GBA insérées</span>
+                </label>
+              </div>
+
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-gifts" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-gifts" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_gifts">Pokémon Cadeaux des PNJ (Évoli, Porygon...)</span>
+                </label>
+              </div>
+
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-trades" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-trades" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_cat_trades">Échanges Internes avec les PNJ</span>
+                </label>
+              </div>
+
+              <!-- Wild Encounter Algorithm Options -->
+              <div class="category-group-title mt-3">
+                <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-leaf"></use></svg>
+                <span data-i18n="rand_wild_opts_title">Options des Rencontres Sauvages</span>
+              </div>
+
+              <div class="form-group mt-2">
+                <label class="form-label" data-i18n="rand_mode_label">Mode de substitution :</label>
+                <select id="select-rand-mode" class="pixel-select" onchange="updateWorldCodeFromUI()">
+                  <option value="area_1to1" data-i18n="rand_mode_area">Zone 1-pour-1 (Équivalence cohérente par zone - Recommandé)</option>
+                  <option value="global_1to1" data-i18n="rand_mode_global">Global 1-pour-1 (Une espèce remplace une espèce dans tout Sinnoh)</option>
+                  <option value="random" data-i18n="rand_mode_random">Totalement Aléatoire (Chaque slot est indépendant)</option>
                 </select>
               </div>
 
-              <!-- Wilds Strength Rule -->
-              <div class="form-group mt-3">
-                <label class="form-label">Règle de force des Pokémon :</label>
-                <select id="select-rand-rule" class="pixel-select">
-                  <option value="similar_strength">Force Similaire (BST ±15% - Recommandé)</option>
-                  <option value="none">Aucune restriction (Totalement libre)</option>
+              <div class="form-group mt-2">
+                <label class="form-label" data-i18n="rand_rule_label">Règle de force :</label>
+                <select id="select-rand-rule" class="pixel-select" onchange="updateWorldCodeFromUI()">
+                  <option value="similar_strength" data-i18n="rand_rule_similar">Force Similaire (BST ±15% - Équilibré)</option>
+                  <option value="type_theme" data-i18n="rand_rule_type">Thème par Type (Conserver affinité élémentaire)</option>
+                  <option value="none" data-i18n="rand_rule_none">Aucune (Totalement libre)</option>
                 </select>
               </div>
 
-              <!-- Exclude Legendaries -->
-              <div class="toggle-card mt-3">
-                <div class="toggle-info">
-                  <span class="toggle-title">Exclure les 35 Pokémon Légendaires</span>
-                  <span class="toggle-desc">Empêche l'apparition des légendaires (Mewtwo, Arceus...) dans la nature.</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-noleg" checked>
-                    <span class="slider"></span>
-                  </label>
-                </div>
+              <div class="cat-checkbox-item mt-2">
+                <input type="checkbox" id="toggle-rand-noleg" checked onchange="updateWorldCodeFromUI()">
+                <label for="toggle-rand-noleg" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_noleg">Exclure les 35 Pokémon Légendaires de la nature</span>
+                </label>
               </div>
 
-              <!-- Trainers Randomizer -->
-              <div class="toggle-card mt-3">
-                <div class="toggle-info">
-                  <span class="toggle-title">Randomiser les Dresseurs & Champions</span>
-                  <span class="toggle-desc">Reroll les 973 équipes de dresseurs en conservant niveaux et difficulté.</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-trainers" checked>
-                    <span class="slider"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SPECIES DATA, STATICS & SHINY -->
-          <div class="pixel-card">
-            <div class="card-header">
-              <div class="card-header-with-icon">
-                <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-sparkle"></use></svg>
-                <span class="card-title">DONNÉES ESPÈCES, STATIQUES & SHINY</span>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Types Randomizer -->
-              <div class="toggle-card">
-                <div class="toggle-info">
-                  <span class="toggle-title">Randomiser les Types de Pokémon</span>
-                  <span class="toggle-desc">Reroll les types élémentaires de chaque espèce (double-types cohérents).</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-types">
-                    <span class="slider"></span>
-                  </label>
-                </div>
+              <!-- ROM Tweaks: Shiny Odds -->
+              <div class="category-group-title mt-3">
+                <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-sparkle"></use></svg>
+                <span data-i18n="rand_tweaks_title">Ajustements ROM</span>
               </div>
 
-              <!-- Abilities Randomizer -->
-              <div class="toggle-card mt-3">
-                <div class="toggle-info">
-                  <span class="toggle-title">Randomiser les Talents (Abilities)</span>
-                  <span class="toggle-desc">Reroll les 123 talents passifs parmi les Pokémon.</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-abilities">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Learnsets Randomizer -->
-              <div class="toggle-card mt-3">
-                <div class="toggle-info">
-                  <span class="toggle-title">Randomiser les Attaques par Niveau (Movesets)</span>
-                  <span class="toggle-desc">Reroll les attaques apprises tout en conservant les paliers de niveau.</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-movesets">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Statics & Gifts -->
-              <div class="toggle-card mt-3">
-                <div class="toggle-info">
-                  <span class="toggle-title">Légendaires Statiques, Œufs & Échanges</span>
-                  <span class="toggle-desc">Randomise Uxie, Azelf, Giratina, Arbres à Miel, Œufs de Cynthia et trocs PNJs.</span>
-                </div>
-                <div class="toggle-control">
-                  <label class="pixel-switch">
-                    <input type="checkbox" id="toggle-rand-statics" checked>
-                    <span class="slider"></span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- SHINY ODDS SLIDER -->
-              <div class="shiny-slider-card mt-3">
+              <div class="shiny-slider-card mt-2">
                 <div class="slider-header">
-                  <span class="slider-label">CHANCES DE SHINY (PROBABILITÉ ARM9) :</span>
+                  <span class="slider-label" data-i18n="rand_shiny_label">Taux d'apparition des Shiny :</span>
                   <span class="shiny-badge" id="shiny-odds-display">~1/1024 (x8)</span>
                 </div>
                 <input type="range" id="slider-shiny" min="1" max="7" value="4" class="pixel-slider" oninput="onShinySliderChange()">
@@ -616,25 +563,171 @@
                   <span>1/100</span>
                 </div>
               </div>
+
+              <!-- World Seed & Code Box -->
+              <div class="category-group-title mt-3">
+                <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-save"></use></svg>
+                <span data-i18n="rand_world_seed_title">Graine & Code Monde</span>
+              </div>
+              <p class="panel-desc-note" data-i18n="rand_world_seed_desc">Ce code est OPTIONNEL à partager. Importez le code d'un ami uniquement si vous voulez un monde identique.</p>
+
+              <div class="code-box">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="rand_world_seed_label">Graine Monde :</label>
+                  <div class="input-with-button">
+                    <input type="text" id="input-world-seed" class="pixel-input" placeholder="Graine numérique..." oninput="onWorldSeedInput()">
+                    <button class="pixel-btn icon-btn" onclick="generateNewWorldSeed()" title="Nouveau tirage" data-i18n-title="btn_roll_seed">
+                      <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-reroll"></use></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group mt-2">
+                  <label class="form-label" data-i18n="rand_world_code_label">Code Monde :</label>
+                  <div class="input-with-button">
+                    <input type="text" id="input-world-code" class="pixel-input code-input" placeholder="PMW-..." onchange="onWorldCodeChanged()">
+                    <button class="pixel-btn icon-btn" onclick="copyWorldCode()" title="Copier" data-i18n-title="btn_copy_code">
+                      <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-copy"></use></svg>
+                    </button>
+                    <button class="pixel-btn icon-btn" onclick="pasteWorldCode()" title="Coller" data-i18n-title="btn_paste_code">
+                      <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-paste"></use></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
+
+          <!-- ======================================================== -->
+          <!-- RIGHT COLUMN: CO-OP (MULTIPLAYER SYNC)                   -->
+          <!-- ======================================================== -->
+          <div class="pixel-card coop-panel">
+            <div class="card-header">
+              <div class="card-header-with-icon">
+                <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
+                <span class="card-title" data-i18n="rand_coop_col_title">MODE CO-OP (SYNCHRONISATION MULTIJOUEUR)</span>
+              </div>
+            </div>
+            <div class="card-body">
+              
+              <!-- Critical Rule Banner -->
+              <div class="sync-alert-banner">
+                <svg class="alert-svg" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg>
+                <div class="alert-text" data-i18n="rand_coop_alert">
+                  <strong>RÈGLE MULTIJOUEUR CRITIQUE :</strong> Ce code DOIT être <strong>strictement identique</strong> entre tous les joueurs qui combattent ensemble pour éviter les désynchronisations en combat double ou en arène.
+                </div>
+              </div>
+
+              <!-- Co-Op Features Title -->
+              <div class="category-group-title coop-group-title mt-3">
+                <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
+                <span data-i18n="rand_coop_categories_title">Fonctionnalités Co-Op Synchronisées</span>
+              </div>
+
+              <!-- Category: Trainers -->
+              <div class="cat-checkbox-item">
+                <input type="checkbox" id="toggle-rand-trainers" checked onchange="updateCoopCodeFromUI()">
+                <label for="toggle-rand-trainers" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_trainers">Équipes des Dresseurs & Champions (973 combats)</span>
+                </label>
+              </div>
+
+              <!-- Trainers Sub-options -->
+              <div class="cat-sub-options coop-sub-options">
+                <div class="cat-checkbox-item">
+                  <input type="checkbox" id="toggle-coop-simstr" onchange="updateCoopCodeFromUI()">
+                  <label for="toggle-coop-simstr" class="cat-text">
+                    <span class="cat-label" data-i18n="rand_trainers_simstr">Force Similaire (Équipes de Dresseurs)</span>
+                  </label>
+                </div>
+                <div class="cat-checkbox-item mt-1">
+                  <input type="checkbox" id="toggle-coop-noleg" checked onchange="updateCoopCodeFromUI()">
+                  <label for="toggle-coop-noleg" class="cat-text">
+                    <span class="cat-label" data-i18n="rand_trainers_noleg">Exclure les Légendaires (Dresseurs)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Category: Types -->
+              <div class="cat-checkbox-item mt-2">
+                <input type="checkbox" id="toggle-rand-types" checked onchange="updateCoopCodeFromUI()">
+                <label for="toggle-rand-types" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_types">Types Élémentaires des Pokémon</span>
+                  <span class="cat-subdesc" data-i18n="rand_types_desc">Reroll les types élémentaires (double-types cohérents).</span>
+                </label>
+              </div>
+
+              <!-- Category: Abilities -->
+              <div class="cat-checkbox-item mt-2">
+                <input type="checkbox" id="toggle-rand-abilities" checked onchange="updateCoopCodeFromUI()">
+                <label for="toggle-rand-abilities" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_abilities">Talents des Pokémon (Abilities)</span>
+                  <span class="cat-subdesc" data-i18n="rand_abilities_desc">Reroll les 123 talents passifs parmi les Pokémon.</span>
+                </label>
+              </div>
+
+              <!-- Category: Movesets -->
+              <div class="cat-checkbox-item mt-2">
+                <input type="checkbox" id="toggle-rand-movesets" checked onchange="updateCoopCodeFromUI()">
+                <label for="toggle-rand-movesets" class="cat-text">
+                  <span class="cat-label" data-i18n="rand_movesets">Attaques apprises par Niveau (Movesets)</span>
+                  <span class="cat-subdesc" data-i18n="rand_movesets_desc">Reroll les attaques apprises tout en conservant les paliers.</span>
+                </label>
+              </div>
+
+              <!-- Co-Op Seed & Code Box -->
+              <div class="category-group-title coop-group-title mt-4">
+                <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-refresh"></use></svg>
+                <span data-i18n="rand_coop_seed_title">Graine & Code Co-Op</span>
+              </div>
+              <p class="panel-desc-note" data-i18n="rand_coop_seed_desc">Tous ceux qui jouent ensemble DOIVENT importer exactement ce même code.</p>
+
+              <div class="code-box">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="rand_coop_seed_label">Graine Co-Op :</label>
+                  <div class="input-with-button">
+                    <input type="text" id="input-coop-seed" class="pixel-input" placeholder="Graine numérique..." oninput="onCoopSeedInput()">
+                    <button class="pixel-btn icon-btn" onclick="generateNewCoopSeed()" title="Nouveau tirage" data-i18n-title="btn_roll_seed">
+                      <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-reroll"></use></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group mt-2">
+                  <label class="form-label" data-i18n="rand_coop_code_label">Code Co-Op :</label>
+                  <div class="input-with-button">
+                    <input type="text" id="input-coop-code" class="pixel-input code-input" placeholder="PMC-..." onchange="onCoopCodeChanged()">
+                    <button class="pixel-btn icon-btn" onclick="copyCoopCode()" title="Copier" data-i18n-title="btn_copy_code">
+                      <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-copy"></use></svg>
+                    </button>
+                    <button class="pixel-btn icon-btn" onclick="pasteCoopCode()" title="Coller" data-i18n-title="btn_paste_code">
+                      <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-paste"></use></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
 
-        <!-- RANDOMIZER ACTION FOOTER -->
+        <!-- 3. ACTION BUTTON -->
         <div class="action-footer mt-4">
           <button class="pixel-btn primary large-btn w-100" id="btn-start-randomizer" onclick="startRandomizer()">
             <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-dice"></use></svg>
-            <span>GÉNÉRER LA ROM RANDOMISÉE</span>
+            <span data-i18n="btn_execute_randomize">RANDOMISER LA ROM</span>
           </button>
         </div>
 
-        <!-- RANDOMIZER TERMINAL LOG -->
+        <!-- 4. LOG TERMINAL -->
         <div class="terminal-card mt-4" id="rand-terminal-card">
           <div class="terminal-header">
-            <span class="terminal-title">RAPPORT DE RANDOMISATION</span>
+            <span class="terminal-title" data-i18n="terminal_rand_report">RAPPORT DE RANDOMISATION</span>
             <div class="terminal-actions">
-              <span class="terminal-status" id="rand-status-text">Prêt</span>
-              <button class="pixel-btn mini" onclick="clearLog('rand-log')">Vider</button>
+              <span class="terminal-status" id="rand-status-text" data-i18n="terminal_status_ready">Prêt</span>
+              <button class="pixel-btn mini" onclick="clearLog('rand-log')" data-i18n="btn_clear">Vider</button>
             </div>
           </div>
           <pre class="terminal-output" id="rand-log"></pre>
@@ -650,14 +743,14 @@
           <div class="card-header">
             <div class="card-header-with-icon">
               <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-save"></use></svg>
-              <span class="card-title">GESTIONNAIRE DE SAUVEGARDES AUTOMATIQUES</span>
+              <span class="card-title" data-i18n="saves_title">GESTIONNAIRE DE SAUVEGARDES AUTOMATIQUES</span>
             </div>
           </div>
           <div class="card-body">
-            <p>Lorsque vous appliquez un patch ou modifiez votre ROM, le patcher sauvegarde et synchronise automatiquement vos fichiers <code>.sav</code> et <code>.dsv</code> (melonDS / DeSmuME) pour éviter toute perte de progression.</p>
+            <p data-i18n="saves_desc">Lorsque vous appliquez un patch ou modifiez votre ROM, le patcher sauvegarde et synchronise automatiquement vos fichiers <code>.sav</code> et <code>.dsv</code> (melonDS / DeSmuME) pour éviter toute perte de progression.</p>
             <div class="backup-folder-info mt-3">
-              <span>Emplacement des sauvegardes : <code>PMBackups/</code></span>
-              <button class="pixel-btn ml-3" onclick="openBackupsFolder()">Ouvrir le dossier</button>
+              <span><span data-i18n="saves_folder_label">Emplacement des sauvegardes :</span> <code>PMBackups/</code></span>
+              <button class="pixel-btn ml-3" onclick="openBackupsFolder()" data-i18n="btn_open_folder">Ouvrir le dossier</button>
             </div>
           </div>
         </div>
@@ -671,16 +764,16 @@
           <div class="card-header">
             <div class="card-header-with-icon">
               <svg class="header-svg" viewBox="0 0 16 16"><use href="#icon-info"></use></svg>
-              <span class="card-title">À PROPOS DE PROJECT PM ADDON PATCHER</span>
+              <span class="card-title" data-i18n="about_title">À PROPOS DE PROJECT PM ADDON PATCHER</span>
             </div>
           </div>
           <div class="card-body">
             <div class="about-hero">
               <div class="about-logo"></div>
               <div class="about-text">
-                <h2>Project PM Addon Patcher & Randomizer</h2>
-                <p>Outil tout-en-un pour la communauté Pokémon Platine : Multijoueur coopératif, Mod Soul Link / SoulLocke, Améliorations visuelles Visual+, et moteur de randomisation haute compatibilité.</p>
-                <div class="credits-badge mt-3">
+                <h2 data-i18n="about_app_name">Project PM Addon Patcher & Randomizer</h2>
+                <p data-i18n="about_desc">Outil tout-en-un pour la communauté Pokémon Platine : Multijoueur coopératif, Mod Soul Link / SoulLocke, Améliorations visuelles Visual+, et moteur de randomisation haute compatibilité.</p>
+                <div class="credits-badge mt-3" data-i18n="about_credits">
                   Développé avec passion par <strong>Ekiii</strong>
                 </div>
               </div>
@@ -689,9 +782,9 @@
             <div class="about-actions mt-4">
               <button class="pixel-btn primary" onclick="checkForUpdates()">
                 <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-refresh"></use></svg>
-                <span>Vérifier les mises à jour</span>
+                <span data-i18n="btn_check_updates">Vérifier les mises à jour</span>
               </button>
-              <button class="pixel-btn ml-3" onclick="openGitHub()">GitHub Officiel</button>
+              <button class="pixel-btn ml-3" onclick="openGitHub()" data-i18n="btn_github">GitHub Officiel</button>
             </div>
             <div class="update-result-box mt-3" id="update-result-box" style="display: none;"></div>
           </div>
@@ -704,10 +797,10 @@
     <footer class="app-footer">
       <div class="footer-left">
         <span class="pulse-indicator"></span>
-        <span id="footer-status-text">Prêt à patcher</span>
+        <span id="footer-status-text" data-i18n="footer_status_ready">Prêt à patcher</span>
       </div>
       <div class="footer-right">
-        <span>Project PM Platinum Community</span>
+        <span data-i18n="footer_community">Project PM Platinum Community</span>
       </div>
     </footer>
   </div>
