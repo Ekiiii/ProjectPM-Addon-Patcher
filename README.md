@@ -24,6 +24,7 @@
 - **One-Click Reversible**: Easily uninstall addons to revert to clean stock ProjectPM at any time.
 - **Save & Randomizer Protection**: Automatically backs up and synchronizes companion save files (`.sav` and `.dsv`) into `PMBackups/`. Automatically preserves and re-applies randomizer tables (`.rand.txt`).
 - **Additional Custom Patches**: Apply an optional external `.xdelta` patch after all other mods are applied.
+- **Automatic In-App Updates**: Seamlessly checks for newer GitHub releases and updates itself with a single click and automatic restart!
 - **Bilingual Interface**: Full English and French support with instant in-app switching and sleek Dark Modern UI.
 - **Standalone Portable `.exe`**: No Python installation required for players!
 
@@ -50,6 +51,7 @@
 - **Restauration en 1 clic** : Retirez les addons à tout moment pour revenir instantanément à la version ProjectPM classique d'origine.
 - **Protection des Sauvegardes & Randomisation** : Copie de secours automatique de vos sauvegardes (`.sav` et `.dsv`) dans `PMBackups/`. Préservation et réapplication automatique des tables de randomisation (`.rand.txt`).
 - **Patchs Personnalisés XDelta** : Possibilité d'appliquer un patch externe optionnel de votre choix en étape finale.
+- **Mises à Jour Automatiques Intégrées** : Détecte les nouvelles versions GitHub et se met à jour en 1 clic avec redémarrage transparent automatique !
 - **Interface Bilingue & Moderne** : Français et Anglais avec bascule instantanée et thème sombre soigné.
 - **Exécutable .exe Autonome** : Aucune installation de Python requise pour les joueurs !
 
