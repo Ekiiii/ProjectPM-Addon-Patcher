@@ -81,6 +81,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## Legal Disclaimer / Avertissement Légal
 
-- *This is an unofficial community project developed by Ekiiii. It is not affiliated with, endorsed by, or sponsored by Nintendo, The Pokémon Company, Game Freak, or the core Project PM team.*  
+- *This is an unofficial community project developed by Ekiii. It is not affiliated with, endorsed by, or sponsored by Nintendo, The Pokémon Company, Game Freak, or the core Project PM team.*  
 - *Pokémon and Nintendo DS are registered trademarks of Nintendo, Creatures Inc., and GAME FREAK inc.*  
 - *This tool does NOT contain or distribute copyrighted ROM files, game assets, or proprietary Nintendo code. Users must supply their own legally obtained ROM backups.*

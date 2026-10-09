@@ -380,8 +380,8 @@ TRANSLATIONS = {
         "fr": "Mode développement actif (exécution depuis les sources Python).\nLa mise à jour automatique est réservée aux versions .exe compilées."
     },
     "disclaimer": {
-        "en": "Unofficial Community Mod Manager by Ekiiii. Not affiliated with the official Project PM team.",
-        "fr": "Gestionnaire de Mods communautaire par Ekiiii. Non affilié à l'équipe officielle Project PM."
+        "en": "Unofficial Community Mod Manager by Ekiii. Not affiliated with the official Project PM team.",
+        "fr": "Gestionnaire de Mods communautaire par Ekiii. Non affilié à l'équipe officielle Project PM."
     }
 }
 
