@@ -16,6 +16,8 @@ import base64
 import datetime
 from typing import Dict, List, Tuple, Set, Optional, Any, Callable
 
+from core.i18n import t, get_lang
+
 APP_NAME = "Project PM Randomizer"
 RAND_VERSION = 8
 MAX_SPECIES_ID = 493
@@ -807,6 +809,64 @@ def _save_narc(rom: RandNDSRom, span: Tuple[int, int], narc: RandNARC, path: str
     rom.write(start, end, new)
     return True
 
+def evo_randomize(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[int], evo_mode: str, rng: random.Random, log: Callable = print) -> Optional[Dict[str, Any]]:
+    """
+    Randomizes evolution target species in poketool/personal/evo.narc.
+    evo_mode: 'vanilla' (no change), 'similar_strength' (matched BST range), 'chaos' (any species).
+    """
+    if evo_mode in ('vanilla', None, False, ''):
+        return None
+
+    path = 'poketool/personal/evo.narc'
+    span, narc = _open_narc(rom, path, log)
+    if narc is None:
+        return None
+
+    sim_str = (evo_mode == 'similar_strength')
+    assigned: Dict[int, int] = {}
+    changed_count = 0
+
+    max_idx = min(narc.num_files, 494)
+    for i in range(1, max_idx):
+        data = bytearray(narc.get(i))
+        if len(data) < 42:
+            continue
+        file_changed = False
+        for slot in range(7):
+            off = slot * 6
+            method, param, target = struct.unpack_from('<HHH', data, off)
+            if method == 0 or target == 0 or target > 493:
+                continue
+
+            if target in assigned:
+                new_target = assigned[target]
+            else:
+                if sim_str and target in db:
+                    old_bst = db[target].get('bst', 400)
+                    candidates = [
+                        p for p in pool
+                        if p in db and abs(db[p].get('bst', 400) - old_bst) <= max(40, int(old_bst * 0.20))
+                    ]
+                    if not candidates:
+                        candidates = pool
+                    new_target = rng.choice(candidates)
+                else:
+                    new_target = rng.choice(pool)
+                assigned[target] = new_target
+
+            struct.pack_into('<H', data, off + 4, new_target)
+            file_changed = True
+            changed_count += 1
+
+        if file_changed:
+            narc.put(i, bytes(data))
+
+    if not _save_narc(rom, span, narc, path, log):
+        return None
+
+    log(f"[rand] evolutions: randomized {changed_count} targets across {len(assigned)} target species (mode: {evo_mode})")
+    return {'evolutions_randomized': changed_count, 'mode': evo_mode, 'targets': assigned}
+
 def randomize_species_data(rom: RandNDSRom, seed: Any, do_types: bool, do_abilities: bool, log: Callable = print) -> Tuple[bool, Dict[str, Any]]:
     """Randomizes types and/or abilities in poketool/personal/pl_personal.narc."""
     path = 'poketool/personal/pl_personal.narc'
@@ -1153,11 +1213,11 @@ def decode_share_code(code: str) -> Tuple[Optional[Dict[str, Any]], Optional[str
     clean = re.sub(r'\s+', '', str(code).upper())
     parts = clean.split('-')
     if len(parts) != 3:
-        return (None, "format invalide (attendu: PREFIX-PAYLOAD-CHECKSUM)")
+        return (None, "format invalide (attendu: PREFIX-PAYLOAD-CHECKSUM)" if get_lang() == "fr" else "invalid format (expected: PREFIX-PAYLOAD-CHECKSUM)")
     prefix, payload, ck = parts
     expected_ck = hashlib.sha256(f"{prefix}-{payload}".encode('ascii')).hexdigest()[:4].upper()
     if ck != expected_ck:
-        return (None, "code altéré ou corrompu (somme de contrôle incorrecte)")
+        return (None, "code altéré ou corrompu (somme de contrôle incorrecte)" if get_lang() == "fr" else "tampered or corrupted code (checksum mismatch)")
     settings: Dict[str, Any] = {}
     if prefix == SHARE_PREFIX_COOP:
         flags = _unb32(payload[:2])
@@ -1180,7 +1240,7 @@ def decode_share_code(code: str) -> Tuple[Optional[Dict[str, Any]], Optional[str
         settings['shiny'] = _unb32(payload[4:6])
         settings['seed'] = _unpack_seed(payload[6:])
         return (settings, None)
-    return (None, f"préfixe inconnu: {prefix}")
+    return (None, f"préfixe inconnu: {prefix}" if get_lang() == "fr" else f"unknown prefix: {prefix}")
 
 def roll_seed() -> str:
     """Generates a random 10-digit numeric seed string."""
@@ -1190,7 +1250,10 @@ def coop_categories_on(settings: Dict[str, Any]) -> bool:
     return any(bool(settings.get(k)) for k in COOP_KEYS)
 
 def must_match_categories(settings: Dict[str, Any]) -> List[str]:
-    labels = {'trainers': 'Dresseurs', 'types': 'Types', 'abilities': 'Talents', 'movesets': 'Capacités'}
+    if get_lang() == "en":
+        labels = {'trainers': 'Trainers', 'types': 'Types', 'abilities': 'Abilities', 'movesets': 'Movesets'}
+    else:
+        labels = {'trainers': 'Dresseurs', 'types': 'Types', 'abilities': 'Talents', 'movesets': 'Capacités'}
     return [labels[k] for k in COOP_KEYS if settings.get(k)]
 
 def rand_sidecar_path(rom_path: str) -> str:
@@ -1225,6 +1288,13 @@ def write_rand_sidecar(rom_path: str, summary: Dict[str, Any], settings: Dict[st
     if summary.get('starters'):
         s = summary['starters']
         lines.append(f"starters:     {species_name(s[0])} / {species_name(s[1])} / {species_name(s[2])}")
+    if summary.get('evolutions'):
+        evo_info = summary['evolutions']
+        lines.append(f"evolutions:   mode = {evo_info.get('mode', 'vanilla')} ({evo_info.get('evolutions_randomized', 0)} targets changed)")
+    if summary.get('honey'):
+        lines.append("honey trees:  randomized across 21 trees")
+    if summary.get('eggs'):
+        lines.append("static encounters: randomized (Drifloon, Rotom, Spiritomb, eggs)")
     if summary.get('trades'):
         for npc, t in summary['trades'].items():
             lines.append(f"trade {npc:7s}: gives {species_name(t['give_new'])} (was {species_name(t['give_old'])}), wants {species_name(t['want_new'])} (was {species_name(t['want_old'])})")
@@ -1247,7 +1317,7 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
              do_battles: bool = False, do_gifts: bool = False, do_trade_get: bool = False,
              do_trade_want: bool = False, do_wild_special: bool = False,
              starters_any: bool = False, starters_pick: Optional[Tuple[int, int, int]] = None,
-             do_gba_slots: bool = False) -> Tuple[bool, Dict[str, Any]]:
+             do_gba_slots: bool = False, do_honey: bool = True, evo_mode: str = 'vanilla') -> Tuple[bool, Dict[str, Any]]:
     """Core wild encounters, starters, statics, and trades randomizer routine."""
     if seed is not None and seed != '':
         try:
@@ -1342,11 +1412,19 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
         rom.write(es, ee, new)
 
     honey = None
+    if do_honey:
+        seed_norm = seed if seed not in (None, '') else None
+        honey = statics_honey(rom, db, pool, mode, rule, rand_substream('honey', seed_norm), log)
+
     eggs = None
     if do_statics:
         seed_norm = seed if seed not in (None, '') else None
-        honey = statics_honey(rom, db, pool, mode, rule, rand_substream('honey', seed_norm), log)
         eggs = statics_eggs(rom, db, pool, rule, rand_substream('eggs', seed_norm), log)
+
+    evolutions = None
+    if evo_mode and evo_mode != 'vanilla':
+        seed_norm = seed if seed not in (None, '') else None
+        evolutions = evo_randomize(rom, db, pool, evo_mode, rand_substream('evolutions', seed_norm), log)
 
     starters = None
     if do_starters and starters_pick:
@@ -1391,23 +1469,47 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
         'starters': starters,
         'honey': honey,
         'eggs': eggs,
+        'evolutions': evolutions,
         'battles': battles,
         'gifts': gifts,
         'trades': trades,
         'wild_special': wild_special
     })
 
-def randomize_rom(in_rom: str, out_rom: str, settings: Dict[str, Any], log: Callable = print) -> Tuple[bool, Dict[str, Any]]:
+def randomize_rom(
+    in_rom: Optional[str] = None,
+    out_rom: Optional[str] = None,
+    settings: Optional[Dict[str, Any]] = None,
+    log: Callable = print,
+    rom_path: Optional[str] = None,
+    out_path: Optional[str] = None
+) -> Tuple[bool, Dict[str, Any]]:
     """Master coordinator that randomizes in_rom -> out_rom and outputs .rand.txt."""
-    if not os.path.isfile(in_rom):
-        log(f"[rand] ERROR: no such ROM: {in_rom}")
+    actual_in = in_rom or rom_path
+    actual_out = out_rom or out_path or actual_in
+    if not actual_in or not os.path.isfile(actual_in):
+        log(f"[rand] ERROR: no such ROM: {actual_in}")
         return (False, {})
-    with open(in_rom, 'rb') as f:
+    in_rom = actual_in
+    out_rom = actual_out
+    if settings is None:
+        settings = {}
+
+    # Ensure any existing save file (.sav / .dsv) is safely backed up before randomizing!
+    try:
+        from core.save_manager import backup_and_sync_save
+        backup_and_sync_save(actual_in, actual_out, log_cb=log)
+    except Exception as e:
+        log(f"[Backup] Note sauvegarde: {e}")
+
+    with open(actual_in, 'rb') as f:
         in_sha = hashlib.sha1(f.read()).hexdigest()
 
     do_wilds = bool(settings.get('wilds', True))
     do_starters = bool(settings.get('starters', True))
+    do_honey = bool(settings.get('honey', True))
     do_statics = bool(settings.get('statics', True))
+    evo_mode = settings.get('evolutions_mode', 'vanilla')
     do_battles = bool(settings.get('battles', False))
     do_gifts = bool(settings.get('gifts', False))
     do_trade_get = bool(settings.get('trade_get', False))
@@ -1422,7 +1524,7 @@ def randomize_rom(in_rom: str, out_rom: str, settings: Dict[str, Any], log: Call
     seed = settings.get('seed') or roll_seed()
     settings['seed'] = seed
 
-    log("=== [1/3] Randomisation de l'Aventure & Monde ===")
+    log(t("rand_log_start_world"))
     ok, summary = rand_run(
         in_rom, out_rom, mode=mode, rule=rule,
         do_grass=True, do_surf=True, do_fish=True, do_spec=True,
@@ -1430,7 +1532,8 @@ def randomize_rom(in_rom: str, out_rom: str, settings: Dict[str, Any], log: Call
         do_starters=do_starters, do_statics=do_statics, do_wilds=do_wilds,
         do_battles=do_battles, do_gifts=do_gifts, do_trade_get=do_trade_get,
         do_trade_want=do_trade_want, do_wild_special=do_wild_special,
-        starters_any=starters_any, starters_pick=starters_pick, do_gba_slots=do_gba_slots
+        starters_any=starters_any, starters_pick=starters_pick, do_gba_slots=do_gba_slots,
+        do_honey=do_honey, evo_mode=evo_mode
     )
     if not ok:
         return (False, {})
@@ -1440,7 +1543,7 @@ def randomize_rom(in_rom: str, out_rom: str, settings: Dict[str, Any], log: Call
     if coop_on:
         coop_seed = settings.get('coop_seed') or roll_seed()
         settings['coop_seed'] = coop_seed
-        log("=== [2/3] Randomisation Multijoueur Co-op ===")
+        log(t("rand_log_start_coop"))
         rom = RandNDSRom(out_rom)
         db = rand_load_pokemon_db(rom)
         c_noleg = bool(settings.get('coop_noleg', True))
@@ -1455,7 +1558,8 @@ def randomize_rom(in_rom: str, out_rom: str, settings: Dict[str, Any], log: Call
         coop_code = encode_coop_code(settings)
         summary['coop_code'] = coop_code
         summary['coop_seed'] = coop_seed
-        log(f"[rand] Code Co-op (à partager): {coop_code}")
+        coop_label = "[rand] Co-op Code (to share):" if get_lang() == "en" else "[rand] Code Co-op (à partager) :"
+        log(f"{coop_label} {coop_code}")
 
     world_code = encode_world_code(settings)
     summary['world_code'] = world_code
@@ -1463,13 +1567,13 @@ def randomize_rom(in_rom: str, out_rom: str, settings: Dict[str, Any], log: Call
 
     shiny = int(settings.get('shiny', SHINY_VANILLA))
     if shiny != SHINY_VANILLA:
-        log("=== [3/3] Modification du seuil Shiny ===")
+        log(t("rand_log_shiny"))
         apply_shiny_odds(out_rom, shiny, log)
 
     with open(out_rom, 'rb') as f:
         out_sha = hashlib.sha1(f.read()).hexdigest()
     sidecar = write_rand_sidecar(out_rom, summary, settings, in_sha, out_sha)
-    log(f"[OK] Randomisation terminée avec succès ! Rapport généré: {os.path.basename(sidecar)}")
+    log(t("rand_log_complete", os.path.basename(sidecar)))
     return (True, summary)
 
 def run_selftest() -> bool:

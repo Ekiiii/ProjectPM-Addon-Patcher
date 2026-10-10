@@ -71,6 +71,7 @@ class RomInfo:
         self.is_randomized = False
         self.has_visual_bg = False
         self.has_visual_cam = False
+        self.has_exp_share = False
         
         # Save & Rand
         self.companion_save = None
@@ -79,6 +80,35 @@ class RomInfo:
         
         if self.exists:
             self._analyze()
+
+    @property
+    def is_valid(self) -> bool:
+        return self.exists and (
+            "POKEMON PL" in self.game_title
+            or self.category in ("vanilla", "projectpm")
+            or self.game_code.startswith("CPU")
+            or self.has_multiplayer
+        )
+
+    @property
+    def has_soullocke(self) -> bool:
+        return self.is_soullocke
+
+    @property
+    def soullocke_variant(self) -> str:
+        return self.lang
+
+    @property
+    def has_visualplus_bg(self) -> bool:
+        return self.has_visual_bg
+
+    @property
+    def has_visualplus_cam(self) -> bool:
+        return self.has_visual_cam
+
+    @property
+    def mp_version(self) -> str:
+        return "0.4.5"
 
     def _analyze(self):
         try:
@@ -250,6 +280,13 @@ class RomInfo:
                 self.has_visual_cam = True
             elif 5 in ovs and CAM_VISUAL_BYTES in ovs[5].data:
                 self.has_visual_cam = True
+
+            # Check Shared Team EXP mod
+            try:
+                from core.exp_share_patcher import is_exp_share_active
+                self.has_exp_share = is_exp_share_active(rom)
+            except Exception:
+                self.has_exp_share = False
 
             # Companion Save Files (.dsv and .sav)
             dsv_candidate = base_no_ext + ".dsv"

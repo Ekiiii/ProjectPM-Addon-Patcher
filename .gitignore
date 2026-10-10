@@ -18,3 +18,7 @@ temp_*.nds
 # OS files
 .DS_Store
 Thumbs.db
+
+# App local runtime files
+config.json
+logs/

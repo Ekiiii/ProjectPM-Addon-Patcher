@@ -34,9 +34,9 @@ def launch_webview():
         title="ProjectPM - Mod Patcher & Randomizer",
         url=index_html,
         js_api=bridge,
-        width=1040,
-        height=760,
-        min_size=(960, 680),
+        width=1180,
+        height=840,
+        min_size=(1040, 740),
         frameless=True,
         easy_drag=False,
         background_color="#0b101b"
@@ -45,6 +45,12 @@ def launch_webview():
     webview.start(gui="edgechromium")
 
 def main():
+    try:
+        from core.logger import init_logging
+        init_logging()
+    except Exception as e:
+        print(f"[Logger Init Warning] {e}")
+
     if "--legacy" in sys.argv:
         launch_legacy()
         return

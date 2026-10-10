@@ -228,8 +228,60 @@ def clean_vanilla_for_xdelta(src_rom_path, temp_clean_path, lang="fr", assets_di
             except Exception:
                 pass
 
-    rom.saveToFile(temp_clean_path)
+    rom_bytes = bytearray(rom.save())
+    if len(rom_bytes) < 134217728:
+        rom_bytes.extend(b"\xff" * (134217728 - len(rom_bytes)))
+    with open(temp_clean_path, "wb") as f:
+        f.write(rom_bytes)
     log("[Randomizer] Clean base successfully prepared for xdelta.")
+    return temp_clean_path
+
+def clean_projectpm_for_xdelta(src_rom_path, temp_clean_path, lang="fr", assets_dir=None, log_cb=None):
+    """
+    Reverts randomized tables and visual mods in a ProjectPM ROM to standard clean tables
+    so that xdelta3 differential patching succeeds without checksum mismatch.
+    """
+    def log(msg):
+        if log_cb:
+            log_cb(msg)
+
+    if not assets_dir:
+        assets_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+
+    pack_name = "clean_projectpm_fr.pack" if lang == "fr" else "clean_projectpm_us.pack"
+    pack_path = os.path.join(assets_dir, "clean_narcs", pack_name)
+
+    if not os.path.isfile(pack_path):
+        log(f"[Randomizer] Pack not found: {pack_name}, using source as-is.")
+        shutil.copy2(src_rom_path, temp_clean_path)
+        return temp_clean_path
+
+    log(f"[Randomizer] Preparing clean ProjectPM base for xDelta ({pack_name})...")
+    with open(pack_path, "rb") as f:
+        clean_pack = pickle.loads(zlib.decompress(f.read()))
+
+    rom = ndspy.rom.NintendoDSRom.fromFile(src_rom_path)
+    ovs = rom.loadArm9Overlays()
+    for fname, data in clean_pack.items():
+        if fname == "ov78" and 78 in ovs:
+            ovs[78].data = data
+            rom.files[ovs[78].fileID] = data
+        elif fname == "ov5" and 5 in ovs:
+            ovs[5].data = data
+            rom.files[ovs[5].fileID] = data
+        else:
+            try:
+                rom.setFileByName(fname, data)
+            except Exception:
+                pass
+
+    rom_bytes = bytearray(rom.save())
+    if len(rom_bytes) < 134217728:
+        rom_bytes.extend(b"\xff" * (134217728 - len(rom_bytes)))
+    with open(temp_clean_path, "wb") as f:
+        f.write(rom_bytes)
+
+    log("[Randomizer] Clean ProjectPM base successfully prepared for xdelta.")
     return temp_clean_path
 
 def restore_randomizer_data(output_rom_path, rand_data, log_cb=None):
@@ -270,7 +322,11 @@ def restore_randomizer_data(output_rom_path, rand_data, log_cb=None):
                     rom.files[ovs[ov_id].fileID] = ov_data
             rom.arm9OverlayTable = ndspy.code.saveOverlayTable(ovs)
 
-        rom.saveToFile(output_rom_path)
+        rom_bytes = bytearray(rom.save())
+        if len(rom_bytes) < 134217728:
+            rom_bytes.extend(b"\xff" * (134217728 - len(rom_bytes)))
+        with open(output_rom_path, "wb") as f:
+            f.write(rom_bytes)
         log(f"[Randomizer] SUCCESS: All {len(files)} randomized tables successfully restored!")
 
         # Copy companion .rand.txt if present

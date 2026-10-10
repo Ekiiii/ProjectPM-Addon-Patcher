@@ -211,9 +211,17 @@ def restore_clean_projectpm(input_path, output_path, payload_json_path, log_cb=N
     log("[Restore] Restoring Arena Hi to 0x023E0000...")
     struct.pack_into("<I", arm9, LIT_MAIN_ARENA_HI - ARM9_BASE, ARENA_HI_DEFAULT)
     
-    # Revert autoload to vanilla 2 entries
-    old_list = bytes(arm9[AUTOLOAD_LIST_OFF: AUTOLOAD_LIST_OFF + 24])
-    struct.pack_into("<2I", arm9, MODULE_PARAMS_OFF, AUTOLOAD_LIST_OFF, AUTOLOAD_LIST_OFF + 24)
+    # Restore Nitro-SDK Module Parameters at 0xBA0
+    log("[Restore] Restoring Nitro-SDK Module Parameters at 0xBA0...")
+    struct.pack_into("<6I", arm9, MODULE_PARAMS_OFF, *VANILLA_MODULE_PARAMS)
+
+    # Truncate ARM9 to AUTOLOAD_LIST_OFF (0x109840) to strip the injected C payload
+    arm9 = bytearray(arm9[:AUTOLOAD_LIST_OFF])
+
+    # Append clean 24-byte Autoload List (2 entries: ITCM 0x01FF8000 and DTCM 0x027E0000)
+    clean_autoload = struct.pack("<6I", 0x01FF8000, 0x660, 0, 0x027E0000, 0x60, 0x20)
+    arm9.extend(clean_autoload)
+    log(f"[Restore] Truncated ARM9 and restored clean Autoload List ({len(arm9)} bytes)...")
 
     rom.name = b"POKEMON PL\x00\x00"
     rom.arm9 = bytes(arm9)

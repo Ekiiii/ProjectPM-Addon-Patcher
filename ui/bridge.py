@@ -33,6 +33,8 @@ from core.randomizer import (
     RAND_LEGENDARIES
 )
 from core.updater import CURRENT_VERSION, check_for_updates_async
+from core.logger import get_physical_logger, open_logs_folder, log_info, log_warning, log_error
+from core.config_manager import load_config, save_config, update_config_key
 
 
 class PatcherBridge:
@@ -61,35 +63,39 @@ class PatcherBridge:
     # =========================================================================
     def init_app(self) -> Dict[str, Any]:
         """Returns startup configuration, translations, and initial seeds."""
+        cfg = load_config()
+        if cfg.get("language"):
+            set_lang(cfg["language"])
         cur_lang = get_lang()
+
         coop_seed = str(random.randint(1000000000, 9999999999))
         world_seed = str(random.randint(1000000000, 9999999999))
 
         init_coop_code = encode_coop_code({
             'coop_seed': coop_seed,
-            'trainers': True,
-            'types': True,
-            'abilities': True,
-            'movesets': True,
-            'coop_noleg': True,
+            'trainers': False,
+            'types': False,
+            'abilities': False,
+            'movesets': False,
+            'coop_noleg': False,
             'coop_simstr': False
         })
 
         init_world_code = encode_world_code({
             'seed': world_seed,
-            'wilds': True,
+            'wilds': False,
             'mode': 'area_1to1',
-            'rule': 'similar_strength',
-            'noleg': True,
-            'starters': True,
-            'statics': True,
-            'battles': True,
-            'gifts': True,
-            'trade_get': True,
-            'trade_want': True,
-            'wild_special': True,
-            'gba_slots': True,
-            'shiny': 64
+            'rule': 'none',
+            'noleg': False,
+            'starters': False,
+            'statics': False,
+            'battles': False,
+            'gifts': False,
+            'trade_get': False,
+            'trade_want': False,
+            'wild_special': False,
+            'gba_slots': False,
+            'shiny': 8
         })
 
         # Format translations for frontend
@@ -100,6 +106,8 @@ class PatcherBridge:
         return {
             "version": CURRENT_VERSION,
             "lang": cur_lang,
+            "has_selected_language": cfg.get("has_selected_language", False),
+            "saved_config": cfg,
             "translations": trans,
             "pokemon_names": self.get_pokemon_names(cur_lang),
             "initial_coop": {
@@ -128,8 +136,10 @@ class PatcherBridge:
         return {}
 
     def set_language(self, lang: str) -> Dict[str, Any]:
-        """Switches UI language and returns updated translations and names."""
+        """Switches UI language, persists selection, and returns updated translations."""
         set_lang(lang)
+        update_config_key("language", lang)
+        update_config_key("has_selected_language", True)
         trans = {}
         for key, dict_val in TRANSLATIONS.items():
             trans[key] = dict_val.get(lang, dict_val.get("en", key))
@@ -137,6 +147,10 @@ class PatcherBridge:
             "translations": trans,
             "pokemon_names": self.get_pokemon_names(lang)
         }
+
+    def save_app_config(self, cfg_data: Dict[str, Any]) -> bool:
+        """Saves user preferences (ROM paths, settings) to disk."""
+        return save_config(cfg_data)
 
     # =========================================================================
     # NATIVE WINDOW CONTROLS & SEAMLESS DRAG
@@ -228,68 +242,124 @@ class PatcherBridge:
     def analyze_rom(self, rom_path: str) -> Dict[str, Any]:
         """Performs deep binary analysis on ROM and returns badges and state."""
         if not rom_path or not os.path.isfile(rom_path):
-            return {"valid": False, "error": "Fichier introuvable"}
+            log_warning(f"analyze_rom called with invalid path: {rom_path}")
+            return {"valid": False, "error": t("err_file_not_found")}
 
         try:
+            log_info(f"Analyzing ROM: {rom_path}")
             info = detect_rom(rom_path)
             if not info or not info.is_valid:
+                log_warning(f"ROM detection failed or invalid: {rom_path}")
                 return {
                     "valid": False,
-                    "error": "Ce fichier n'est pas une ROM Pokémon Platine valide."
+                    "error": t("err_invalid_rom")
                 }
+            log_info(f"ROM detected: game={info.game_title}, lang={info.lang}, mp={info.has_multiplayer} ({info.mp_lang}), sl={info.has_soullocke} ({info.soullocke_variant}), rand={info.is_randomized}")
 
             # Generate suggested output name
             dir_name = os.path.dirname(os.path.abspath(rom_path))
             base_no_ext = os.path.splitext(os.path.basename(rom_path))[0]
-            if info.has_multiplayer:
+            if info.has_soullocke:
+                sug_name = f"{base_no_ext}_Clean.nds"
+            elif info.has_multiplayer:
                 sug_name = f"{base_no_ext}_Modded.nds"
             else:
                 sug_name = f"ProjectPM_{info.lang.upper()}_Multiplayer.nds"
             sug_path = os.path.join(dir_name, sug_name).replace("\\", "/")
 
-            badges = []
-            # Base game badge
-            badges.append({
-                "label": f"Pokémon Platine ({info.lang.upper()})",
-                "color": "blue"
-            })
+            # Persist last selected ROM paths
+            try:
+                update_config_key("last_source_rom", rom_path)
+                update_config_key("last_output_rom", sug_path)
+            except Exception:
+                pass
 
-            # Multiplayer badge
-            if info.has_multiplayer:
+            cur_l = get_lang()
+            badges = []
+
+            # 1. Base Game Badge
+            if info.lang == "fr":
                 badges.append({
-                    "label": f"Multiplayer v{info.mp_version} ({info.mp_lang.upper()})",
+                    "key": "badge_platine_fr",
+                    "label": t("badge_platine_fr"),
+                    "color": "blue"
+                })
+            else:
+                badges.append({
+                    "key": "badge_platine_us",
+                    "label": t("badge_platine_us"),
+                    "color": "blue"
+                })
+
+            # 2. Multiplayer Badge
+            if info.has_multiplayer:
+                mp_key = "badge_mp_active_fr" if info.mp_lang == "fr" else "badge_mp_active_en"
+                badges.append({
+                    "key": mp_key,
+                    "label": t(mp_key),
                     "color": "emerald"
                 })
             else:
                 badges.append({
-                    "label": "Vanilla Platine (Non patché)",
+                    "key": "badge_mp_none",
+                    "label": t("badge_mp_none"),
                     "color": "slate"
                 })
 
-            # SoulLocke badge
+            # 3. SoulLocke Badge
             if info.has_soullocke:
                 badges.append({
-                    "label": f"SoulLocke ({info.soullocke_variant.upper()})",
+                    "key": "badge_sl_active",
+                    "label": t("badge_sl_active"),
                     "color": "purple"
                 })
-
-            # Randomizer badge
-            if info.is_randomized:
+            else:
                 badges.append({
-                    "label": "ROM Randomisée",
-                    "color": "amber"
+                    "key": "badge_sl_none",
+                    "label": t("badge_sl_none"),
+                    "color": "slate"
                 })
 
-            # Visual+ Badges
+            # 4. Randomizer Badge
+            if info.is_randomized:
+                badges.append({
+                    "key": "badge_rand_yes",
+                    "label": t("badge_rand_yes"),
+                    "color": "amber"
+                })
+            else:
+                badges.append({
+                    "key": "badge_rand_no",
+                    "label": t("badge_rand_no"),
+                    "color": "slate"
+                })
+
+            # 5. Visual+ Badges
             if info.has_visualplus_bg:
                 badges.append({
-                    "label": "Visual+ Décors Actifs",
+                    "key": "badge_vbg_yes",
+                    "label": t("badge_vbg_yes"),
                     "color": "cyan"
                 })
             if info.has_visualplus_cam:
                 badges.append({
-                    "label": "Visual+ Caméra 3D",
+                    "key": "badge_vcam_yes",
+                    "label": t("badge_vcam_yes"),
                     "color": "cyan"
+                })
+
+            # 6. Multi Exp Badge
+            if info.has_exp_share:
+                badges.append({
+                    "key": "badge_exp_share_yes",
+                    "label": t("badge_exp_share_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_exp_share_no",
+                    "label": t("badge_exp_share_no"),
+                    "color": "slate"
                 })
 
             return {
@@ -307,6 +377,7 @@ class PatcherBridge:
                 "is_randomized": info.is_randomized,
                 "has_visualplus_bg": info.has_visualplus_bg,
                 "has_visualplus_cam": info.has_visualplus_cam,
+                "has_exp_share": bool(info.has_exp_share),
                 "size_mb": round(os.path.getsize(rom_path) / (1024 * 1024), 1),
                 "suggested_output": sug_path,
                 "badges": badges
@@ -344,7 +415,7 @@ class PatcherBridge:
     def run_patching(self, in_rom: str, out_rom: str, options: Dict[str, Any]):
         """Runs the patcher pipeline in a background thread."""
         if self._is_patching:
-            return {"success": False, "error": "Un processus de patch est déjà en cours."}
+            return {"success": False, "error": t("err_patching_in_progress")}
 
         self._is_patching = True
 
@@ -358,17 +429,26 @@ class PatcherBridge:
                     escaped = json.dumps(msg)
                     self._eval_js(f"window.onPatchProgress({val}, {escaped});")
 
+                phys_log = get_physical_logger(_log)
+                phys_log(f"Starting patch pipeline: input='{in_rom}', output='{out_rom}'")
+                phys_log(f"Options: {json.dumps(options)}")
+
                 ok, res_msg = execute_patch_pipeline(
                     rom_path=in_rom,
                     output_rom=out_rom,
                     options=options,
                     assets_dir=self._assets_dir,
                     payloads_dir=self._payloads_dir,
-                    log_cb=_log,
+                    log_cb=phys_log,
                     progress_cb=_prog
                 )
+                phys_log(f"Patch pipeline complete: ok={ok}, res_msg='{res_msg}'")
                 escaped_res = json.dumps(res_msg)
                 self._eval_js(f"window.onPatchComplete({json.dumps(ok)}, {escaped_res});")
+            except Exception as e:
+                log_error(f"Unhandled error in patch worker: {e}", exc=e)
+                escaped_res = json.dumps(str(e))
+                self._eval_js(f"window.onPatchComplete(false, {escaped_res});")
             finally:
                 self._is_patching = False
 
@@ -382,7 +462,7 @@ class PatcherBridge:
     def run_randomizer(self, in_rom: str, out_rom: str, settings: Dict[str, Any]):
         """Runs the randomizer engine in a background thread."""
         if self._is_randomizing:
-            return {"success": False, "error": "Une randomisation est déjà en cours."}
+            return {"success": False, "error": t("err_randomizing_in_progress")}
 
         self._is_randomizing = True
 
@@ -392,13 +472,19 @@ class PatcherBridge:
                     escaped = json.dumps(msg)
                     self._eval_js(f"window.onRandLog({escaped});")
 
-                _log("=== Démarrage de la Randomisation Project PM ===")
+                phys_log = get_physical_logger(_log)
+                start_msg = "=== Starting Project PM Randomization ===" if get_lang() == "en" else "=== Démarrage de la Randomisation Project PM ==="
+                phys_log(start_msg)
+                phys_log(f"Input: '{in_rom}', Output: '{out_rom}'")
+                phys_log(f"Settings: {json.dumps(settings)}")
+
                 ok, summary = randomize_rom(
                     rom_path=in_rom,
                     out_path=out_rom,
                     settings=settings,
-                    log=_log
+                    log=phys_log
                 )
+                phys_log(f"Randomizer finished: ok={ok}")
 
                 # Format starters display names
                 starters_info = []
@@ -420,6 +506,7 @@ class PatcherBridge:
                 }
                 self._eval_js(f"window.onRandComplete({json.dumps(payload)});")
             except Exception as e:
+                log_error(f"Unhandled error in randomizer worker: {e}", exc=e)
                 self._eval_js(f"window.onRandComplete({json.dumps({'ok': False, 'error': str(e)})});")
             finally:
                 self._is_randomizing = False
@@ -432,8 +519,20 @@ class PatcherBridge:
     # EXTERNAL ACTIONS & UPDATES
     # =========================================================================
     def open_external_url(self, url: str):
-        """Opens web link in the user's default browser."""
-        webbrowser.open(url)
+        """Opens web link in the user's default browser or folder in explorer."""
+        if url.startswith("http://") or url.startswith("https://"):
+            webbrowser.open(url)
+        else:
+            self.open_backups_folder(url)
+
+    def open_backups_folder(self, rom_path: Optional[str] = None):
+        """Opens the PMBackups directory in Windows Explorer."""
+        from core.save_manager import open_backups_folder
+        open_backups_folder(rom_path)
+
+    def open_logs_folder(self):
+        """Opens the physical on-disk logs directory in Windows Explorer."""
+        open_logs_folder()
 
     def check_for_updates(self):
         """Checks GitHub releases for latest version in background."""

@@ -87,6 +87,14 @@ TRANSLATIONS = {
         "en": "Visual+ Cam: Active",
         "fr": "Visual+ Cam : Actif"
     },
+    "badge_exp_share_yes": {
+        "en": "Shared EXP: Active",
+        "fr": "Multi Exp : Actif"
+    },
+    "badge_exp_share_no": {
+        "en": "Shared EXP: Inactive",
+        "fr": "Multi Exp : Inactif"
+    },
     "badge_already_installed": {
         "en": "Already Installed on ROM",
         "fr": "Déjà installé sur la ROM"
@@ -132,16 +140,16 @@ TRANSLATIONS = {
         "fr": "Activer le Multijoueur ProjectPM"
     },
     "mp_version_btn": {
-        "en": "⚙ Version: %s ▾",
-        "fr": "⚙ Version : %s ▾"
+        "en": "Version: %s ▾",
+        "fr": "Version : %s ▾"
     },
     "btn_select_lang": {
-        "en": "⚙ Select Language ▾",
-        "fr": "⚙ Sélectionner la langue ▾"
+        "en": "Select Language ▾",
+        "fr": "Sélectionner la langue ▾"
     },
     "btn_select_version": {
-        "en": "⚙ Select Version ▾",
-        "fr": "⚙ Sélectionner la version ▾"
+        "en": "Select Version ▾",
+        "fr": "Sélectionner la version ▾"
     },
     "err_need_select_mp_lang": {
         "en": "Please select a language for ProjectPM Multiplayer before proceeding.",
@@ -212,8 +220,8 @@ TRANSLATIONS = {
         "fr": "Installé sur la ROM"
     },
     "addon_version_btn": {
-        "en": "⚙ Version: %s ▾",
-        "fr": "⚙ Version : %s ▾"
+        "en": "Version: %s ▾",
+        "fr": "Version : %s ▾"
     },
     "addon_soullocke_fr": {
         "en": "SoulLocke Edition (Français)",
@@ -232,12 +240,24 @@ TRANSLATIONS = {
         "fr": "Aucun / Ne pas ajouter"
     },
     "addon_restore": {
-        "en": "Restore Clean ProjectPM (Uninstall SoulLocke)",
-        "fr": "Restaurer en ProjectPM Classique (Retirer SoulLocke)"
+        "en": "Uninstall SoulLocke",
+        "fr": "Désinstaller le SoulLocke"
     },
     "addon_restore_desc": {
-        "en": "Reverts to stock multiplayer ROM, removes SoulLocke hooks.",
-        "fr": "Remet la ROM multijoueur propre, retire les hooks SoulLocke."
+        "en": "Uninstalls the SoulLocke mod and restores the clean multiplayer ROM.",
+        "fr": "Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre."
+    },
+    "exp_share_title": {
+        "en": "Shared Team EXP (Gen 6+ Style)",
+        "fr": "Multi Exp d'Équipe (Style Gen 6+)"
+    },
+    "exp_share_desc": {
+        "en": "Distributes battle experience to all Pokémon in your party (the active battler earns a higher share while non-combatants receive partial EXP).",
+        "fr": "Partage l'expérience de combat avec toute l'équipe (le Pokémon au combat reçoit la part principale et les remplaçants reçoivent une part d'appoint)."
+    },
+    "exp_share_badge": {
+        "en": "EXP ALL",
+        "fr": "MULTI EXP"
     },
     "section_visual": {
         "en": "4. VISUAL+ GRAPHICS OPTIONS",
@@ -428,31 +448,27 @@ TRANSLATIONS = {
     # --- SECTION 2: MULTIPLAYER & MODS ---
     "card_mods_title": {
         "en": "2. MULTIPLAYER BASE & GAMEPLAY MODS",
-        "fr": "2. BASE MULTI ET MODES DE JEU"
+        "fr": "2. BASE MULTIJOUEUR & MODES DE JEU"
     },
     "label_mp_base": {
-        "en": "Project PM Multiplayer Base:",
-        "fr": "Base Multijoueur Project PM :"
-    },
-    "opt_mp_auto": {
-        "en": "Automatic Detection (Recommended)",
-        "fr": "Détection Automatique (Recommandé)"
+        "en": "Project PM Multiplayer Language (Required Base):",
+        "fr": "Langue du Multijoueur Project PM (Base obligatoire) :"
     },
     "opt_mp_fr": {
-        "en": "Force French Multiplayer (v0.4.5)",
-        "fr": "Forcer Project PM Multijoueur Français (v0.4.5)"
+        "en": "Project PM French Multiplayer (v0.4.5)",
+        "fr": "Project PM Multijoueur Français (v0.4.5)"
     },
     "opt_mp_en": {
-        "en": "Force USA Multiplayer (v0.4.5)",
-        "fr": "Forcer Project PM Multiplayer USA (v0.4.5)"
+        "en": "Project PM USA / English Multiplayer (v0.4.5)",
+        "fr": "Project PM Multijoueur USA / Anglais (v0.4.5)"
     },
     "opt_mp_none": {
-        "en": "None (Keep Base ROM)",
-        "fr": "Aucun (Garder ROM de base)"
+        "en": "None (Keep Vanilla ROM without multiplayer)",
+        "fr": "Aucun (Conserver la ROM Vanilla sans multijoueur)"
     },
     "help_mp_base": {
-        "en": "If your ROM is Vanilla, the multiplayer patch will be applied automatically.",
-        "fr": "Si votre ROM est une version originale (Vanilla), le patch multijoueur sera appliqué automatiquement."
+        "en": "The multiplayer language selected here automatically defines the language of the SoulLocke mod.",
+        "fr": "La langue du multijoueur choisie ici définit automatiquement la langue du mod SoulLocke."
     },
     "label_addon_mode": {
         "en": "Additional Gameplay Mode:",
@@ -471,15 +487,15 @@ TRANSLATIONS = {
         "fr": "Soul Link & SoulLocke"
     },
     "addon_soullink_desc": {
-        "en": "Linked souls: shared deaths, 1 catch per area, automatic graveyard box.",
-        "fr": "Âmes liées entre joueurs : mort partagée, capture unique par zone, cimetière automatique."
+        "en": "Linked souls between players (shared death, 1 encounter/zone, automatic graveyard).",
+        "fr": "Âmes liées entre joueurs (mort partagée, capture unique par zone, cimetière automatique)."
     },
     "addon_restore_title": {
-        "en": "Restore Clean ROM",
-        "fr": "Restaurer ROM Propre"
+        "en": "Uninstall SoulLocke",
+        "fr": "Désinstaller le SoulLocke"
     },
     "addon_restore_desc": {
-        "en": "Uninstalls SoulLocke mod and restores clean multiplayer ROM.",
+        "en": "Uninstalls the SoulLocke mod and restores the clean multiplayer ROM.",
         "fr": "Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre."
     },
     # --- SECTION 3: VISUAL+ & PREVIEWS ---
@@ -797,6 +813,14 @@ TRANSLATIONS = {
         "en": "Clear",
         "fr": "Vider"
     },
+    "btn_logs": {
+        "en": "Logs",
+        "fr": "Logs"
+    },
+    "btn_open_logs": {
+        "en": "Open Logs",
+        "fr": "Ouvrir les Logs"
+    },
     # Saves & Backups Tab
     "saves_title": {
         "en": "AUTOMATIC SAVE BACKUP MANAGER",
@@ -839,18 +863,990 @@ TRANSLATIONS = {
         "en": "Official GitHub",
         "fr": "GitHub Officiel"
     },
+    # Window controls & Placeholders
+    "win_minimize": {
+        "en": "Minimize",
+        "fr": "Réduire"
+    },
+    "win_maximize": {
+        "en": "Maximize / Restore",
+        "fr": "Agrandir / Restaurer"
+    },
+    "win_close": {
+        "en": "Close",
+        "fr": "Fermer"
+    },
+    "dest_rom_placeholder": {
+        "en": "Path to output patched ROM...",
+        "fr": "Chemin du fichier patché..."
+    },
+    "rand_src_placeholder": {
+        "en": "Select ROM to randomize...",
+        "fr": "Sélectionnez la ROM à randomiser..."
+    },
+    "seed_placeholder": {
+        "en": "Numeric seed...",
+        "fr": "Graine numérique..."
+    },
+    "code_placeholder": {
+        "en": "Share code...",
+        "fr": "Code de partage..."
+    },
+    "err_file_not_found": {
+        "en": "File not found",
+        "fr": "Fichier introuvable"
+    },
+    "err_invalid_rom": {
+        "en": "This file is not a valid Pokémon Platinum ROM.",
+        "fr": "Ce fichier n'est pas une ROM Pokémon Platine valide."
+    },
+    "err_patching_in_progress": {
+        "en": "A patch operation is already in progress.",
+        "fr": "Un processus de patch est déjà en cours."
+    },
+    "err_randomizing_in_progress": {
+        "en": "A randomization process is already in progress.",
+        "fr": "Une randomisation est déjà en cours."
+    },
+    "badge_platine_fr": {
+        "en": "Pokémon Platinum (France)",
+        "fr": "Pokémon Platine (France)"
+    },
+    "badge_platine_us": {
+        "en": "Pokémon Platinum (USA)",
+        "fr": "Pokémon Platine (USA)"
+    },
+    # Progress & Console Messages
+    "progress_analyzing": {
+        "en": "Analyzing source ROM...",
+        "fr": "Analyse de la ROM source..."
+    },
+    "progress_extract_rand": {
+        "en": "Extracting and preserving randomized tables...",
+        "fr": "Extraction et préservation des tables randomisées..."
+    },
+    "progress_convert_mp": {
+        "en": "Converting Vanilla ROM to ProjectPM Multiplayer (%s)...",
+        "fr": "Conversion de la ROM Vanilla vers ProjectPM Multijoueur (%s)..."
+    },
+    "progress_switch_mp": {
+        "en": "Switching ProjectPM Multiplayer language (%s -> %s)...",
+        "fr": "Changement de langue du multijoueur ProjectPM (%s -> %s)..."
+    },
+    "mp_detect_switch": {
+        "en": "Multiplayer detected: ProjectPM v%s (%s) → Switching to %s",
+        "fr": "Multijoueur détecté : ProjectPM v%s (%s) → Changement vers %s"
+    },
+    "rand_reapply_notice": {
+        "en": "Randomization detected: tables will be automatically preserved and re-applied at the end.",
+        "fr": "Randomisation détectée : les tables seront automatiquement préservées et ré-appliquées à la fin."
+    },
+    "progress_save_backup": {
+        "en": "Backing up and synchronizing .sav / .dsv saves...",
+        "fr": "Sauvegarde et synchronisation des fichiers .sav / .dsv..."
+    },
+    "progress_apply_soullocke": {
+        "en": "Applying SoulLink / SoulLocke mod...",
+        "fr": "Application du mod SoulLink / SoulLocke..."
+    },
+    "progress_restore_projectpm": {
+        "en": "Restoring clean stock ProjectPM...",
+        "fr": "Restauration vers ProjectPM d'origine..."
+    },
+    "progress_apply_visual_bg": {
+        "en": "Applying Visual+ HD Battle Backgrounds...",
+        "fr": "Application des décors de combat Visual+..."
+    },
+    "progress_disable_visual_bg": {
+        "en": "Disabling Visual+ Battle Backgrounds...",
+        "fr": "Désactivation des décors de combat Visual+..."
+    },
+    "progress_apply_visual_cam": {
+        "en": "Applying Visual+ 3D Camera...",
+        "fr": "Application de la caméra 3D élargie Visual+..."
+    },
+    "progress_restore_visual_cam": {
+        "en": "Restoring default camera...",
+        "fr": "Restauration de la caméra par défaut..."
+    },
+    "progress_restore_rand": {
+        "en": "Reinjecting randomized tables into final ROM...",
+        "fr": "Réinjection des tables randomisées sur la ROM finale..."
+    },
+    "progress_apply_custom": {
+        "en": "Applying custom patch: %s...",
+        "fr": "Application du patch personnalisé : %s..."
+    },
+    "progress_running_rand": {
+        "en": "Randomizing Pokémon encounters and rules...",
+        "fr": "Randomisation des rencontres et des règles en cours..."
+    },
+    "err_rand_failed": {
+        "en": "Failed to randomize ROM.",
+        "fr": "Échec lors de la randomisation de la ROM."
+    },
+    "progress_success": {
+        "en": "Patch applied successfully!",
+        "fr": "Patch terminé avec succès !"
+    },
+    # Integrated Randomizer & Wizard
+    "card_rand_title": {
+        "en": "4. INTEGRATED RANDOMIZER (OPTIONAL)",
+        "fr": "4. RANDOMIZER INTÉGRÉ (OPTIONNEL)"
+    },
+    "rand_enable_label": {
+        "en": "Enable Randomizer on this ROM",
+        "fr": "Activer le Randomizer sur cette ROM"
+    },
+    "rand_enable_desc": {
+        "en": "Randomizes wild encounters, starters, trainers and co-op rules during the patching process.",
+        "fr": "Randomise les rencontres sauvages, les starters, les dresseurs et les règles co-op lors de l'application."
+    },
+    "rand_badge_active": {
+        "en": "Randomizer Active",
+        "fr": "Randomizer Activé"
+    },
+    "rand_badge_disabled": {
+        "en": "Disabled",
+        "fr": "Désactivé"
+    },
+    "rand_btn_wizard": {
+        "en": "Configurator...",
+        "fr": "Configurateur..."
+    },
+    "rand_btn_codes": {
+        "en": "Import Friend Codes",
+        "fr": "Importer des Codes Ami"
+    },
+    "rand_summary_title": {
+        "en": "Current Configuration:",
+        "fr": "Configuration actuelle :"
+    },
+    "rand_code_coop_label": {
+        "en": "Co-op Code (Give to friends):",
+        "fr": "Code Co-op (À donner à vos amis) :"
+    },
+    "rand_code_world_label": {
+        "en": "World Code (Personal):",
+        "fr": "Code Monde (Personnel) :"
+    },
+    "rand_modal_title": {
+        "en": "SINNOH RANDOMIZER CONFIGURATOR",
+        "fr": "CONFIGURATEUR RANDOMIZER SINNOH"
+    },
+    "rand_modal_tab_wizard": {
+        "en": "Step-by-Step Configurator",
+        "fr": "Configurateur Pas-à-Pas"
+    },
+    "rand_modal_tab_codes": {
+        "en": "Direct Code Import",
+        "fr": "Saisie Directe de Codes"
+    },
+    "wiz_badge_wilds": {
+        "en": "WILD ENCOUNTERS",
+        "fr": "RENCONTRES SAUVAGES"
+    },
+    "wiz_badge_starters": {
+        "en": "STARTERS & SHINY",
+        "fr": "STARTERS & SHINY"
+    },
+    "wiz_badge_events": {
+        "en": "WORLD EVENTS",
+        "fr": "ÉVÉNEMENTS DU MONDE"
+    },
+    "wiz_badge_evolutions": {
+        "en": "POKÉMON EVOLUTIONS",
+        "fr": "ÉVOLUTIONS DES POKÉMON"
+    },
+    "wiz_badge_coop": {
+        "en": "TRAINERS & CO-OP",
+        "fr": "DRESSEURS & CO-OP"
+    },
+    "wiz_badge_summary": {
+        "en": "SUMMARY & CODES",
+        "fr": "RÉSUMÉ & CODES"
+    },
+    "wiz_counter_prefix": {
+        "en": "Question",
+        "fr": "Question"
+    },
+    "wiz_counter_of": {
+        "en": "of",
+        "fr": "sur"
+    },
+    "wiz_q1_title": {
+        "en": "1. Randomize wild encounters?",
+        "fr": "1. Randomiser les Pokémon sauvages ?"
+    },
+    "wiz_q1_desc": {
+        "en": "Applies random species to tall grass, surfing, and fishing spots across Sinnoh.",
+        "fr": "Modifie les Pokémon apparaissant dans les hautes herbes, la pêche et le surf à travers tout Sinnoh."
+    },
+    "wiz_q1_opt_yes_title": {
+        "en": "Yes, randomize wild encounters (Recommended)",
+        "fr": "Oui, randomiser les Pokémon sauvages (Recommandé)"
+    },
+    "wiz_q1_opt_yes_desc": {
+        "en": "Each area receives new species for tall grass, surfing, and fishing spots.",
+        "fr": "Chaque zone aura de nouvelles espèces dans les herbes, le surf et la canne à pêche."
+    },
+    "wiz_q1_opt_no_title": {
+        "en": "No, keep original encounters",
+        "fr": "Non, conserver les rencontres d'origine"
+    },
+    "wiz_q1_opt_no_desc": {
+        "en": "Maintains official Pokémon Platinum wild encounter tables unchanged.",
+        "fr": "Conserve exactement les Pokémon sauvages du jeu officiel Pokémon Platine."
+    },
+    "wiz_q2_title": {
+        "en": "2. Wild distribution mode across Sinnoh",
+        "fr": "2. Mode de distribution des Pokémon sauvages"
+    },
+    "wiz_q2_desc": {
+        "en": "How should wild Pokémon species be distributed across routes and zones?",
+        "fr": "Comment les espèces doivent-elles être réparties entre les différentes zones et routes ?"
+    },
+    "wiz_q2_opt_area_title": {
+        "en": "Area 1-to-1 (Recommended)",
+        "fr": "Zone 1-pour-1 (Recommandé)"
+    },
+    "wiz_q2_opt_area_desc": {
+        "en": "Each route and area has its own unique, balanced species diversity.",
+        "fr": "Chaque route possède sa propre diversité unique et équilibrée."
+    },
+    "wiz_q2_opt_global_title": {
+        "en": "Global 1-to-1",
+        "fr": "Global 1-pour-1"
+    },
+    "wiz_q2_opt_global_desc": {
+        "en": "A species is replaced with the exact same Pokémon everywhere across Sinnoh.",
+        "fr": "Une espèce est remplacée par la même partout dans Sinnoh (ex: tous les Étourmi deviennent des Roucool)."
+    },
+    "wiz_q2_opt_random_title": {
+        "en": "Completely Random (Chaos)",
+        "fr": "Totalement Aléatoire (Chaos)"
+    },
+    "wiz_q2_opt_random_desc": {
+        "en": "Pure randomness. Every encounter tile and fishing cast is completely independent.",
+        "fr": "Aléatoire pur. Chaque case d'herbe et coup de canne est complètement indépendant."
+    },
+    "wiz_q3_title": {
+        "en": "3. Wild Pokémon strength balance",
+        "fr": "3. Équilibrage de la force des Pokémon sauvages"
+    },
+    "wiz_q3_desc": {
+        "en": "Controls the power curve of Pokémon encountered in early routes.",
+        "fr": "Contrôle la puissance des Pokémon rencontrés en début de jeu."
+    },
+    "wiz_q3_opt_simstr_yes_title": {
+        "en": "Keep similar base stat totals (Recommended)",
+        "fr": "Conserver une force similaire (Recommandé)"
+    },
+    "wiz_q3_opt_simstr_yes_desc": {
+        "en": "Wild Pokémon are replaced by species with comparable base stats, avoiding unfair early encounters.",
+        "fr": "Les Pokémon sont remplacés par des espèces de stats comparables (évite Dracaufeu niveau 2)."
+    },
+    "wiz_q3_opt_simstr_no_title": {
+        "en": "Unrestricted base stats (Chaos)",
+        "fr": "Totalement libre (Sans restriction)"
+    },
+    "wiz_q3_opt_simstr_no_desc": {
+        "en": "Any species can appear at low level regardless of evolution stage or base stats.",
+        "fr": "N'importe quel Pokémon peut apparaître à n'importe quel niveau dès la route 201."
+    },
+    "wiz_q4_title": {
+        "en": "4. Legendary Pokémon in the wild",
+        "fr": "4. Pokémon Légendaires dans la nature"
+    },
+    "wiz_q4_desc": {
+        "en": "Allow or forbid legendary Pokémon in ordinary tall grass and water.",
+        "fr": "Autoriser ou interdire les Pokémon Légendaires dans les herbes et l'eau ordinaires."
+    },
+    "wiz_q4_opt_noleg_yes_title": {
+        "en": "Exclude Legendaries (Recommended)",
+        "fr": "Exclure les Légendaires (Recommandé)"
+    },
+    "wiz_q4_opt_noleg_yes_desc": {
+        "en": "Prevents early legendary encounters like Mewtwo or Dialga on Route 201.",
+        "fr": "Empêche les rencontres prématurées avec Mewtwo, Rayquaza ou Dialga dans les hautes herbes."
+    },
+    "wiz_q4_opt_noleg_no_title": {
+        "en": "Allow Legendaries in the wild",
+        "fr": "Autoriser les Légendaires"
+    },
+    "wiz_q4_opt_noleg_no_desc": {
+        "en": "Legendary Pokémon have a chance to appear as ordinary wild encounters.",
+        "fr": "Les Pokémon Légendaires ont une chance d'apparaître parmi les rencontres sauvages."
+    },
+    "wiz_q5_title": {
+        "en": "5. Starter Pokémon in Rowan's briefcase",
+        "fr": "5. Pokémon de départ (Starters)"
+    },
+    "wiz_q5_desc": {
+        "en": "Which starter Pokémon will be inside Professor Rowan's briefcase at Lake Verity?",
+        "fr": "Quels Pokémon seront proposés dans la mallette du Professeur Sorbier au lac Vérité ?"
+    },
+    "wiz_q5_opt_vanilla_title": {
+        "en": "Originals (Vanilla)",
+        "fr": "Originaux (Vanilla)"
+    },
+    "wiz_q5_opt_vanilla_desc": {
+        "en": "Turtwig, Chimchar, Piplup.",
+        "fr": "Tortipouss, Ouisticram, Tiplouf."
+    },
+    "wiz_q5_opt_balanced_title": {
+        "en": "Balanced Random (Recommended)",
+        "fr": "Aléatoires Équilibrés (Recommandé)"
+    },
+    "wiz_q5_opt_balanced_desc": {
+        "en": "3 random basic Pokémon that have 2 evolution stages (e.g. Charmander, Gastly, Starly).",
+        "fr": "3 Pokémon de base à 2 évolutions (ex: Salamèche, Fantominus, Grainipiot)."
+    },
+    "wiz_q5_opt_any_title": {
+        "en": "Completely Random",
+        "fr": "Complètement Aléatoires"
+    },
+    "wiz_q5_opt_any_desc": {
+        "en": "Any basic Pokémon, including single-stage species.",
+        "fr": "N'importe quel Pokémon de base (y compris sans évolution)."
+    },
+    "wiz_q6_title": {
+        "en": "6. Shiny Pokémon Odds",
+        "fr": "6. Probabilité des Pokémon Chromatiques (Shiny)"
+    },
+    "wiz_q6_desc": {
+        "en": "Adjust the rate of encountering shiny Pokémon during your playthrough.",
+        "fr": "Ajustez la rareté des Pokémon chromatiques pour votre aventure."
+    },
+    "wiz_q7_title": {
+        "en": "7. Sinnoh Honey Tree Encounters",
+        "fr": "7. Arbres à Miel de Sinnoh"
+    },
+    "wiz_q7_desc": {
+        "en": "Randomizes wild Pokémon that appear after slathering Honey on the 21 Sinnoh honey trees (Combee, Heracross, Munchlax...).",
+        "fr": "Randomise les espèces sauvages qui apparaissent après avoir étalé du miel sur les 21 arbres de Sinnoh (Apiraine, Scarhino, Goinfrex...)."
+    },
+    "wiz_q7_opt_yes_title": {
+        "en": "Yes, randomize honey trees (Recommended)",
+        "fr": "Oui, randomiser les arbres à miel (Recommandé)"
+    },
+    "wiz_q7_opt_yes_desc": {
+        "en": "All 21 honey trees in Sinnoh will yield surprise wild species.",
+        "fr": "Les 21 arbres à miel de Sinnoh proposeront des espèces sauvages aléatoires."
+    },
+    "wiz_q7_opt_no_title": {
+        "en": "No, keep original honey tree encounters",
+        "fr": "Non, conserver les arbres officiels"
+    },
+    "wiz_q7_opt_no_desc": {
+        "en": "Preserves official Platinum honey tree spawn tables (Combee, Heracross, Munchlax).",
+        "fr": "Conserve les tables officielles des arbres à miel (Apiraine, Scarhino, Goinfrex)."
+    },
+    "wiz_q8_title": {
+        "en": "8. Static & Overworld Encounters",
+        "fr": "8. Pokémon Fixes & Rencontres d'Événements"
+    },
+    "wiz_q8_desc": {
+        "en": "Randomizes static overworld Pokémon: Windworks Drifloon, Old Chateau Rotom, Route 209 Spiritomb, and gifted eggs (Cynthia's Togepi, Riley's Riolu).",
+        "fr": "Randomise les Pokémon fixes visibles sur la carte : Baudrive aux Éoliennes, Motisma au Vieux Château, Spiritomb Route 209, et les œufs offerts (Togepi de Cynthia, Riolu de Riley)."
+    },
+    "wiz_q8_opt_yes_title": {
+        "en": "Yes, randomize static encounters & eggs (Recommended)",
+        "fr": "Oui, randomiser les Pokémon fixes & œufs (Recommandé)"
+    },
+    "wiz_q8_opt_yes_desc": {
+        "en": "Drifloon, Rotom, Spiritomb, and gifted story eggs will feature random Pokémon.",
+        "fr": "Baudrive, Motisma, Spiritomb et les œufs offerts contiendront des Pokémon aléatoires."
+    },
+    "wiz_q8_opt_no_title": {
+        "en": "No, keep original static encounters",
+        "fr": "Non, conserver les Pokémon fixes officiels"
+    },
+    "wiz_q8_opt_no_desc": {
+        "en": "Preserves Drifloon, Rotom, Spiritomb, and egg gifts identical to official Platinum.",
+        "fr": "Laisse Baudrive, Motisma, Spiritomb et les œufs identiques au jeu officiel."
+    },
+    "wiz_q9_title": {
+        "en": "9. Scripted Boss & Rival Battles",
+        "fr": "9. Combats de Boss & Rivaux Scriptés"
+    },
+    "wiz_q9_desc": {
+        "en": "Randomizes one-time scripted battles (fixed legendaries: Dialga, Palkia, Giratina, etc.).",
+        "fr": "Randomise les combats fixes scénarisés (Légendaires fixes comme Dialga, Palkia, Giratina, etc.)."
+    },
+    "wiz_q9_opt_yes_title": {
+        "en": "Yes, randomize scripted boss battles",
+        "fr": "Oui, randomiser les combats scénarisés"
+    },
+    "wiz_q9_opt_yes_desc": {
+        "en": "Story legendary battles will be replaced with other random species.",
+        "fr": "Les combats d'histoire contre les Légendaires seront remplacés par d'autres Pokémon."
+    },
+    "wiz_q9_opt_no_title": {
+        "en": "No, keep original boss encounters (Recommended)",
+        "fr": "Non, conserver les boss d'origine (Recommandé)"
+    },
+    "wiz_q9_opt_no_desc": {
+        "en": "Keeps story encounters with Dialga, Palkia, and Giratina true to the lore.",
+        "fr": "Préserve les cinématiques et rencontres de scénario avec Dialga, Palkia et Giratina."
+    },
+    "wiz_q10_title": {
+        "en": "10. NPC Gifts & In-Game Trades",
+        "fr": "10. Cadeaux de PNJ & Échanges en jeu"
+    },
+    "wiz_q10_desc": {
+        "en": "Randomizes Bebe's Eevee, Veilstone Porygon, revived fossils, and NPC trades.",
+        "fr": "Randomise l'Évoli d'Unionpolis, le Porygon de Voilaroc, les fossiles réanimés et les échanges avec les PNJ."
+    },
+    "wiz_q10_opt_yes_title": {
+        "en": "Yes, randomize gifts & trades (Recommended)",
+        "fr": "Oui, randomiser les dons et échanges (Recommandé)"
+    },
+    "wiz_q10_opt_yes_desc": {
+        "en": "NPCs will gift surprise Pokémon and request/give random species in trades.",
+        "fr": "Les PNJ vous offriront des Pokémon surprises et échangeront de nouvelles espèces."
+    },
+    "wiz_q10_opt_no_title": {
+        "en": "No, keep official gifts & trades",
+        "fr": "Non, conserver les dons et échanges d'origine"
+    },
+    "wiz_q10_opt_no_desc": {
+        "en": "Keeps official Eevee, Porygon, fossils, and in-game trade tables.",
+        "fr": "Conserve Évoli, Porygon, fossiles et échanges officiels."
+    },
+    "wiz_q11_title": {
+        "en": "11. Feebas, Great Marsh & GBA Dual-Slot",
+        "fr": "11. Barpau, Grand Marais & Double-Slot GBA"
+    },
+    "wiz_q11_desc": {
+        "en": "Randomizes Feebas tiles, Trophy Garden, Great Marsh binoculars, and GBA dual-slot spawns.",
+        "fr": "Randomise Barpau (les 4 cases d'eau du Mont Couronné), le Grand Marais, le Jardin Trophée et le double-slot GBA."
+    },
+    "wiz_q11_opt_yes_title": {
+        "en": "Yes, randomize special events (Recommended)",
+        "fr": "Oui, randomiser les événements spéciaux (Recommandé)"
+    },
+    "wiz_q11_opt_yes_desc": {
+        "en": "Randomizes special daily encounters and GBA dual-slot cartridge bonuses.",
+        "fr": "Mélange les apparitions spéciales quotidiennes et le double slot GBA."
+    },
+    "wiz_q11_opt_no_title": {
+        "en": "No, leave standard",
+        "fr": "Non, laisser standard"
+    },
+    "wiz_q11_opt_no_desc": {
+        "en": "Maintains standard behavior for Feebas and the Great Marsh.",
+        "fr": "Garde la logique standard pour Barpau et le Grand Marais."
+    },
+    "wiz_q12_title": {
+        "en": "12. Pokémon Evolution Paths",
+        "fr": "12. Randomisation des Évolutions des Pokémon"
+    },
+    "wiz_q12_desc": {
+        "en": "Modifies the target species obtained when Pokémon evolve (via level-up, stones, trade or friendship).",
+        "fr": "Modifie les espèces obtenues lors des évolutions (par niveau, pierre, échange ou bonheur)."
+    },
+    "wiz_q12_opt_vanilla_title": {
+        "en": "Keep Official Evolutions (Vanilla - Recommended)",
+        "fr": "Conserver les évolutions officielles (Vanilla - Recommandé)"
+    },
+    "wiz_q12_opt_vanilla_desc": {
+        "en": "Standard evolution lines are preserved (e.g. Turtwig -> Grotle -> Torterra).",
+        "fr": "Chaque Pokémon conserve ses évolutions normales (ex: Tortipouss -> Boskara -> Torterra)."
+    },
+    "wiz_q12_opt_simstr_title": {
+        "en": "Balanced Random Evolutions (Similar Strength)",
+        "fr": "Évolutions aléatoires équilibrées (Similar Strength)"
+    },
+    "wiz_q12_opt_simstr_desc": {
+        "en": "Evolves into a random Pokémon with comparable base stats and evolution tier.",
+        "fr": "Les Pokémon évoluent vers une espèce aléatoire de force comparable et au même stade d'évolution."
+    },
+    "wiz_q12_opt_chaos_title": {
+        "en": "Completely Random Evolutions (Chaos)",
+        "fr": "Évolutions complètement aléatoires (Chaos)"
+    },
+    "wiz_q12_opt_chaos_desc": {
+        "en": "Unrestricted randomness: any Pokémon can evolve into any species (even legendaries).",
+        "fr": "N'importe quel Pokémon peut évoluer en n'importe quelle espèce (même un légendaire)."
+    },
+    "wiz_q13_title": {
+        "en": "13. Trainer & Gym Leader Teams (Co-op Synced)",
+        "fr": "13. Dresseurs & Champions d'Arène (Co-op)"
+    },
+    "wiz_q13_desc": {
+        "en": "Randomizes trainer Pokémon. 100% identical between co-op players sharing the same code!",
+        "fr": "Randomise les équipes de tous les dresseurs du jeu. 100% synchronisé en Co-op entre les joueurs avec le même code !"
+    },
+    "wiz_q13_opt_yes_title": {
+        "en": "Yes, randomize trainers (Recommended for Co-op)",
+        "fr": "Oui, randomiser les dresseurs (Recommandé pour Co-op)"
+    },
+    "wiz_q13_opt_yes_desc": {
+        "en": "Every trainer and gym leader gets a fresh, balanced team tailored to their level.",
+        "fr": "Chaque dresseur et champion d'arène aura de nouveaux Pokémon adaptés à leur niveau."
+    },
+    "wiz_q13_opt_no_title": {
+        "en": "No, keep original trainer teams",
+        "fr": "Non, conserver les équipes d'origine"
+    },
+    "wiz_q13_opt_no_desc": {
+        "en": "Retains standard official Pokémon Platinum trainer compositions.",
+        "fr": "Conserve les dresseurs et champions officiels de Pokémon Platine."
+    },
+    "wiz_q14_title": {
+        "en": "14. Trainer Balance & Legendaries",
+        "fr": "14. Équilibrage des Dresseurs ordinaires"
+    },
+    "wiz_q14_desc": {
+        "en": "Difficulty and balance rules for ordinary route trainers.",
+        "fr": "Règles de difficulté pour les dresseurs rencontrés sur les routes."
+    },
+    "wiz_q14_opt_bal_yes_title": {
+        "en": "Balanced trainers & No Legendaries (Recommended)",
+        "fr": "Dresseurs équilibrés & Sans Légendaires (Recommandé)"
+    },
+    "wiz_q14_opt_bal_yes_desc": {
+        "en": "Matches vanilla power curve and restricts legendaries strictly to major boss fights.",
+        "fr": "Les dresseurs suivent la courbe de difficulté et les dresseurs ordinaires ne possèdent aucun légendaire."
+    },
+    "wiz_q14_opt_bal_no_title": {
+        "en": "Completely Unrestricted (Chaos)",
+        "fr": "Totalement libre (Chaos)"
+    },
+    "wiz_q14_opt_bal_no_desc": {
+        "en": "Ordinary route trainers can field any Pokémon including legendaries.",
+        "fr": "N'importe quel dresseur ordinaire peut posséder des Pokémon légendaires ou évolués."
+    },
+    "wiz_q15_title": {
+        "en": "15. Types, Abilities & Movesets (Co-op Chaos)",
+        "fr": "15. Types, Talents & Attaques (Chaos Co-op)"
+    },
+    "wiz_q15_desc": {
+        "en": "Optional chaos modifiers. 100% synchronized across players sharing the same Co-op Code.",
+        "fr": "Options de chaos optionnelles. Synchronisées à 100% entre les joueurs partageant le même Code Co-op."
+    },
+    "wiz_q15_types_label": {
+        "en": "Reroll Pokémon Types (Dual types preserved)",
+        "fr": "Reroll des Types des 493 Pokémon"
+    },
+    "wiz_q15_types_desc": {
+        "en": "Rerolls types for all 493 Pokémon (Dual types preserved). Identical for all players.",
+        "fr": "Redistribue les types pour chaque espèce (ex: Bulbizarre devient Feu/Vol). Identique pour tous les joueurs."
+    },
+    "wiz_q15_abilities_label": {
+        "en": "Reroll Pokémon Abilities (Talents)",
+        "fr": "Reroll des Talents (Capacités spéciales)"
+    },
+    "wiz_q15_abilities_desc": {
+        "en": "Rerolls passive abilities for all Pokémon (Wonder Guard banned). Identical for all players.",
+        "fr": "Redistribue les talents passifs (Garde Mystik interdite). Identique pour tous les joueurs."
+    },
+    "wiz_q15_movesets_label": {
+        "en": "Reroll Pokémon Level-up Movesets",
+        "fr": "Reroll des Attaques apprises par niveau"
+    },
+    "wiz_q15_movesets_desc": {
+        "en": "Rerolls level-up learning moves for all Pokémon. Identical for all players.",
+        "fr": "Redistribue les attaques apprises en montant de niveau. Identique pour tous les joueurs."
+    },
+    "wiz_q16_title": {
+        "en": "16. Summary & Share Codes",
+        "fr": "16. Résumé & Codes de Partage"
+    },
+    "wiz_q16_desc": {
+        "en": "Your randomizer configuration is ready! Share your Co-op Code with your friend so both of you play with identical trainer teams and rules.",
+        "fr": "Votre configuration est prête ! Donnez votre Code Co-op à votre ami(e) pour que vos deux parties soient synchronisées."
+    },
+    "rand_step_1_title": {
+        "en": "Step 1: Wild Encounters & Distribution",
+        "fr": "Étape 1 : Rencontres Sauvages & Distribution"
+    },
+    "rand_step_2_title": {
+        "en": "Step 2: Starters & Shiny Odds",
+        "fr": "Étape 2 : Starters & Taux de Shiny"
+    },
+    "rand_step_3_title": {
+        "en": "Step 3: Special World Events",
+        "fr": "Étape 3 : Événements Spéciaux du Monde"
+    },
+    "rand_step_4_title": {
+        "en": "Step 4: Co-op & Multiplayer Rules",
+        "fr": "Étape 4 : Règles Co-Op & Multijoueur"
+    },
+    "rand_step_5_title": {
+        "en": "Step 5: Summary & Share Codes",
+        "fr": "Étape 5 : Résumé & Codes de Partage"
+    },
+    "rand_q_wilds": {
+        "en": "Randomize wild Pokémon encounters?",
+        "fr": "Voulez-vous randomiser les Pokémon sauvages ?"
+    },
+    "rand_q_wilds_yes": {
+        "en": "Yes, randomize wild encounters",
+        "fr": "Oui, randomiser les Pokémon sauvages"
+    },
+    "rand_q_mode": {
+        "en": "How should wild Pokémon be distributed across Sinnoh?",
+        "fr": "Comment répartir les Pokémon dans les zones de Sinnoh ?"
+    },
+    "rand_mode_area_title": {
+        "en": "Area 1-to-1 (Recommended)",
+        "fr": "Équilibré par Zone (Recommandé)"
+    },
+    "rand_mode_area_desc": {
+        "en": "Each route and area has its own unique, balanced species diversity.",
+        "fr": "Chaque route et zone possède sa propre diversité d'espèces équilibrée."
+    },
+    "rand_mode_global_title": {
+        "en": "Global 1-to-1",
+        "fr": "Global 1-pour-1"
+    },
+    "rand_mode_global_desc": {
+        "en": "A species is replaced with the exact same Pokémon everywhere across Sinnoh.",
+        "fr": "Une espèce est remplacée de manière unique et identique dans tout Sinnoh."
+    },
+    "rand_mode_random_title": {
+        "en": "Completely Random (Chaos)",
+        "fr": "Totalement Aléatoire (Chaos)"
+    },
+    "rand_mode_random_desc": {
+        "en": "Pure randomness. Every encounter tile and rod cast is completely independent.",
+        "fr": "Chaos complet : chaque case d'herbe ou coup de canne à pêche est indépendant."
+    },
+    "rand_q_simstr": {
+        "en": "Similar Strength Rule (Balanced Progression)?",
+        "fr": "Règle de Force Similaire (Progression Équilibrée) ?"
+    },
+    "rand_simstr_title": {
+        "en": "Keep similar base stat totals (Recommended)",
+        "fr": "Conserver une force équivalente (Recommandé)"
+    },
+    "rand_simstr_desc": {
+        "en": "Wild Pokémon are replaced by species with comparable base stats, avoiding unfair early encounters.",
+        "fr": "Les Pokémon sauvages sont remplacés par des espèces de puissance équivalente (BST)."
+    },
+    "rand_q_noleg": {
+        "en": "Ban Legendary Pokémon from wild grass?",
+        "fr": "Bannir les Pokémon Légendaires de la nature ?"
+    },
+    "rand_noleg_title": {
+        "en": "Exclude Legendaries (Recommended)",
+        "fr": "Exclure les Légendaires (Recommandé)"
+    },
+    "rand_noleg_desc": {
+        "en": "Prevents early legendary encounters like Mewtwo or Dialga on Route 201.",
+        "fr": "Empêche les légendaires (Mewtwo, Dialga, etc.) d'apparaître dans les herbes de début de jeu."
+    },
+    "rand_q_starters": {
+        "en": "Which starter Pokémon in Professor Rowan's briefcase?",
+        "fr": "Quels Pokémon de départ dans la mallette du Prof. Sorbier ?"
+    },
+    "rand_starters_vanilla_title": {
+        "en": "Originals (Vanilla)",
+        "fr": "Originaux (Vanilla)"
+    },
+    "rand_starters_vanilla_desc": {
+        "en": "Turtwig, Chimchar, Piplup.",
+        "fr": "Tortipouss, Ouisticram, Tiplouf."
+    },
+    "rand_starters_balanced_title": {
+        "en": "Balanced Random (Recommended)",
+        "fr": "Aléatoire Équilibré (Recommandé)"
+    },
+    "rand_starters_balanced_desc": {
+        "en": "3 random basic Pokémon that have 2 evolution stages (e.g. Charmander, Gastly, Starly).",
+        "fr": "3 Pokémon de base ayant 2 évolutions (ex: Salamèche, Fantominus, Étourmi)."
+    },
+    "rand_starters_any_title": {
+        "en": "Completely Random",
+        "fr": "Totalement Aléatoire"
+    },
+    "rand_starters_any_desc": {
+        "en": "Any basic Pokémon, including single-stage species.",
+        "fr": "N'importe quel Pokémon de base, y compris sans évolution."
+    },
+    "rand_q_shiny": {
+        "en": "Shiny Pokémon Odds:",
+        "fr": "Taux d'apparition des Pokémon Chromatiques (Shiny) :"
+    },
+    "rand_q_events": {
+        "en": "Which special world elements should be randomized?",
+        "fr": "Quels éléments spéciaux du monde souhaitez-vous randomiser ?"
+    },
+    "rand_q_coop": {
+        "en": "Which rules should be synchronized with your co-op friends?",
+        "fr": "Quels éléments voulez-vous synchroniser avec vos partenaires ?"
+    },
+    "rand_coop_help": {
+        "en": "For Co-op & Soul Link, players must share the exact same Co-op Code to keep trainer teams and types synchronized!",
+        "fr": "En Co-op ou Soul Link, tous les joueurs doivent avoir le même Code Co-op pour synchroniser les dresseurs et types !"
+    },
+    "rand_btn_prev": {
+        "en": "< Previous",
+        "fr": "< Précédent"
+    },
+    "rand_btn_next": {
+        "en": "Next >",
+        "fr": "Suivant >"
+    },
+    "rand_btn_apply": {
+        "en": "Apply Configuration",
+        "fr": "Valider et Appliquer la Configuration"
+    },
+    "rand_code_import_title": {
+        "en": "Import Shared Codes from a Friend",
+        "fr": "Importer les Codes d'un Ami"
+    },
+    "rand_code_import_desc": {
+        "en": "If your multiplayer partner already configured the randomizer, paste their codes here to synchronize instantly without going through the configurator.",
+        "fr": "Si votre partenaire multijoueur a déjà configuré le randomizer, collez ses codes ici pour vous synchroniser instantanément sans passer par le configurateur."
+    },
+    "rand_btn_load_codes": {
+        "en": "Load and Apply Codes",
+        "fr": "Charger et Appliquer les Codes"
+    },
+    "btn_copy": {
+        "en": "Copy",
+        "fr": "Copier"
+    },
+    "btn_paste": {
+        "en": "Paste",
+        "fr": "Coller"
+    },
+    "btn_execute_patch_and_rand": {
+        "en": "APPLY PATCHES & RANDOMIZE ROM",
+        "fr": "APPLIQUER LES PATCHS & RANDOMISER LA ROM"
+    },
+    "btn_execute_soullink_and_rand": {
+        "en": "INJECT SOUL LINK & RANDOMIZE ROM (%s)",
+        "fr": "INJECTER SOUL LINK & RANDOMISER LA ROM (%s)"
+    },
+    "stepper_wilds": {
+        "en": "1. Wilds",
+        "fr": "1. Sauvages"
+    },
+    "stepper_starters": {
+        "en": "2. Starters & Shiny",
+        "fr": "2. Starters & Shiny"
+    },
+    "stepper_events": {
+        "en": "3. Events",
+        "fr": "3. Événements"
+    },
+    "stepper_coop": {
+        "en": "4. Trainers & Co-Op",
+        "fr": "4. Dresseurs & Co-Op"
+    },
+    "stepper_summary": {
+        "en": "5. Summary & Codes",
+        "fr": "5. Résumé & Codes"
+    },
+    "rand_cat_wilds_desc": {
+        "en": "Applies random species to tall grass, surfing, and fishing spots.",
+        "fr": "Applique des espèces aléatoires aux hautes herbes, au surf et à la pêche."
+    },
+    "rand_cat_honey": {
+        "en": "Static & Honey Tree Encounters",
+        "fr": "Arbres à Miel & Pokémon Fixes"
+    },
+    "rand_cat_honey_desc": {
+        "en": "Randomizes Honey tree spawns, Windworks Drifloon, Rotom, Spiritomb, and gift eggs.",
+        "fr": "Randomise les arbres à miel, Baudrive aux Éoliennes, Motisma, Spiritomb et les œufs offerts."
+    },
+    "rand_cat_battles": {
+        "en": "Scripted Boss & Rival Battles",
+        "fr": "Combats de Boss & Rivaux Scriptés"
+    },
+    "rand_cat_battles_desc": {
+        "en": "Randomizes one-time scripted battles (fixed legendaries, Rotom, Spiritomb).",
+        "fr": "Randomise les combats uniques scriptés (légendaires fixes, Motisma, Spiritomb)."
+    },
+    "rand_cat_gifts": {
+        "en": "NPC Gift Pokémon (Eevee, Porygon...)",
+        "fr": "Pokémon Offerts par les PNJ (Évoli, Porygon...)"
+    },
+    "rand_cat_gifts_desc": {
+        "en": "Randomizes friendly gift Pokémon: Bebe's Eevee, Veilstone Porygon, and revived fossils.",
+        "fr": "Randomise les Pokémon donnés par des PNJ : Évoli d'Amelle, Porygon de Voilaroc et fossiles."
+    },
+    "rand_cat_trades": {
+        "en": "In-Game NPC Trades",
+        "fr": "Échanges en Jeu avec les PNJ"
+    },
+    "rand_cat_trades_desc": {
+        "en": "Randomizes both the Pokémon requested and given by NPCs in trades.",
+        "fr": "Randomise à la fois les Pokémon demandés et reçus lors des échanges en jeu."
+    },
+    "rand_cat_special": {
+        "en": "Special Events & GBA Dual-Slot",
+        "fr": "Événements Spéciaux & Insertion GBA"
+    },
+    "rand_cat_special_desc": {
+        "en": "Randomizes Feebas, daily Trophy Garden / Great Marsh binoculars, and GBA dual-slot spawns.",
+        "fr": "Randomise Barpau, le Jardin Trophée, le Grand Marais et les insertions de cartouches GBA."
+    },
+    "rand_cat_trainers": {
+        "en": "Randomize Trainer & Gym Leader Teams (Co-op Synced)",
+        "fr": "Randomiser les Dresseurs & Champions (Synchronisés Co-op)"
+    },
+    "rand_cat_trainers_desc": {
+        "en": "Changes every trainer's Pokémon. Levels stay the same, moves come from leveling up. In Co-op, trainer teams are 100% identical between players with the same code!",
+        "fr": "Remplace les Pokémon de chaque dresseur, Champion d'Arène et Rival. Les niveaux restent identiques. En Co-op, les équipes sont 100% identiques entre amis !"
+    },
+    "rand_cat_trainers_simstr": {
+        "en": "Trainer Similar Strength",
+        "fr": "Dresseurs : Force Similaire (Recommandé)"
+    },
+    "rand_cat_trainers_simstr_desc": {
+        "en": "Matches trainers' power to their vanilla difficulty curve.",
+        "fr": "Préserve la courbe de difficulté et la puissance originale des champions."
+    },
+    "rand_cat_trainers_noleg": {
+        "en": "Exclude Legendaries from Ordinary Trainers",
+        "fr": "Exclure les Légendaires des Dresseurs Ordinaires"
+    },
+    "rand_cat_trainers_noleg_desc": {
+        "en": "Restricts legendary Pokémon to major boss battles.",
+        "fr": "Réserve les Pokémon légendaires aux combats majeurs."
+    },
+    "rand_types": {
+        "en": "Reroll Pokémon Types",
+        "fr": "Reroll des Types des Pokémon"
+    },
+    "rand_types_desc": {
+        "en": "Rerolls types for all 493 Pokémon (Dual types preserved). Identical for all players.",
+        "fr": "Reroll les types des 493 Pokémon (doubles types préservés). Identique pour tous les joueurs."
+    },
+    "rand_abilities": {
+        "en": "Reroll Pokémon Abilities (Talents)",
+        "fr": "Reroll des Talents (Abilities)"
+    },
+    "rand_abilities_desc": {
+        "en": "Rerolls passive abilities for all Pokémon (Wonder Guard banned). Identical for all players.",
+        "fr": "Reroll les talents passifs de tous les Pokémon (Garde Mystik banni). Identique pour tous."
+    },
+    "rand_movesets": {
+        "en": "Reroll Pokémon Movesets",
+        "fr": "Reroll des Capacités (Movesets)"
+    },
+    "rand_movesets_desc": {
+        "en": "Rerolls level-up learning moves for all Pokémon. Identical for all players.",
+        "fr": "Reroll les attaques apprises par montée de niveau. Identique pour tous les joueurs."
+    },
+    "rand_summary_heading": {
+        "en": "Step 5: Summary & Share Codes",
+        "fr": "Étape 5 : Résumé & Codes de Partage"
+    },
+    "rand_summary_desc": {
+        "en": "Your randomizer configuration is ready! Share your Co-op Code with your friend so both of you play with identical trainer teams and rules.",
+        "fr": "Votre configuration est prête ! Donnez votre Code Co-op à votre ami pour avoir exactement les mêmes dresseurs et types que lui."
+    },
+    "rand_code_coop_badge": {
+        "en": "CO-OP CODE (FRIENDS MUST MATCH)",
+        "fr": "CODE CO-OP (À DONNER À VOS AMIS)"
+    },
+    "rand_code_world_badge": {
+        "en": "WORLD CODE (PERSONAL)",
+        "fr": "CODE MONDE (PERSONNEL)"
+    },
+    "rand_import_coop_label": {
+        "en": "Co-op Code from partner (PMC-XXXX-XXXX):",
+        "fr": "Code Co-op de votre ami (PMC-XXXX-XXXX) :"
+    },
+    "rand_import_world_label": {
+        "en": "World Code (PMW-XXXX-XXXX, Optional):",
+        "fr": "Code Monde (PMW-XXXX-XXXX, Optionnel) :"
+    },
+    "rand_import_world_help": {
+        "en": "Leave blank if you prefer generating your own personal wild encounters and shiny odds.",
+        "fr": "Laissez vide si vous préférez générer vos propres rencontres sauvages et votre taux de shiny."
+    },
+    "rand_starter_1": {
+        "en": "STARTER #1",
+        "fr": "STARTER #1"
+    },
+    "rand_starter_2": {
+        "en": "STARTER #2",
+        "fr": "STARTER #2"
+    },
+    "rand_starter_3": {
+        "en": "STARTER #3",
+        "fr": "STARTER #3"
+    },
+    "rand_coop_seed_lbl": {
+        "en": "Co-Op Seed:",
+        "fr": "Seed Co-Op :"
+    },
+    "rand_world_seed_lbl": {
+        "en": "World Seed:",
+        "fr": "Seed Monde :"
+    },
     # Footer
     "footer_status_ready": {
         "en": "Ready to patch",
         "fr": "Prêt à patcher"
     },
+    "footer_status_waiting": {
+        "en": "Waiting for a valid ROM (USA rev1 or FR)...",
+        "fr": "En attente d'une ROM valide (USA rev1 ou FR)..."
+    },
+    "footer_status_incompatible": {
+        "en": "Incompatible ROM (Platinum USA rev1 or FR required)",
+        "fr": "ROM non compatible (Platine USA rev1 ou FR requis)"
+    },
     "footer_community": {
-        "en": "Project PM Platinum Community",
-        "fr": "Communauté Project PM Platine"
+        "en": "Project PM Community",
+        "fr": "Communauté Project PM"
+    },
+    # Credits & About Section
+    "credits_title": {
+        "en": "CREDITS & CONTRIBUTORS",
+        "fr": "CRÉDITS & REMERCIEMENTS"
+    },
+    "credits_pm_title": {
+        "en": "Project PM (Platinum Multiplayer)",
+        "fr": "Project PM (Platinum Multiplayer)"
+    },
+    "credits_pm_desc": {
+        "en": "Creators of Project PM: online/LAN multiplayer network bridge, ROM modification & emulator integrations.",
+        "fr": "Créateurs de Project PM : protocole multijoueur en ligne/LAN, pont réseau melonDS/DeSmuME et romhack."
+    },
+    "credits_soullink_title": {
+        "en": "Soul Link Mod & French Suite",
+        "fr": "Mod Soul Link & Suite Française"
+    },
+    "credits_soullink_desc": {
+        "en": "SoulLink/SoulLocke C mod payload, Direct P2P system, streaming overlay, and French translation & tool suite.",
+        "fr": "Développement du mod Soul Link / SoulLocke, Direct P2P, overlay streaming et adaptation intégrale en français."
+    },
+    "credits_visual_title": {
+        "en": "Visual+ & 3D Camera",
+        "fr": "Visual+ & Caméra 3D"
+    },
+    "credits_visual_desc": {
+        "en": "Visual+ battle backgrounds & dynamic 3D camera. Battle backdrops created by Young for Pokémon Another Red.",
+        "fr": "Création de Visual+ et caméra 3D. Décors de combat originaux dessinés par Young pour Pokémon Another Red."
+    },
+    "credits_art_title": {
+        "en": "Community Art & Sprites",
+        "fr": "Art & Sprites Communautaires"
+    },
+    "credits_art_desc": {
+        "en": "@hyo (Brendan ORAS sprites), DiegoWT (Gen 5 OW sprites), Lucidious89 (Animated Intros), Anarlaurendil (Fairy Feather icon).",
+        "fr": "@hyo (Sprites Brice ORAS), DiegoWT (Sprites Overworld 5G), Lucidious89 (Intros animées), Anarlaurendil (Icône Écaille Féerique)."
+    },
+    "credits_tools_title": {
+        "en": "Emulators & Reverse Engineering",
+        "fr": "Émulateurs & Décompilation"
+    },
+    "credits_tools_desc": {
+        "en": "melonDS team, DeSmuME team, and the pret pokeplatinum decomp team for invaluable research and documentation.",
+        "fr": "Équipes melonDS et DeSmuME, ainsi que le projet pret pokeplatinum pour leurs recherches et documentations inestimables."
     }
 }
 
-CURRENT_LANG = "fr"
+CURRENT_LANG = "en"
 
 def set_lang(lang_code):
     global CURRENT_LANG
