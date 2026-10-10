@@ -17,6 +17,7 @@
 
 ### Features
 - **Smart Direct Injection Engine**: Directly patches internal ROM code and file archives without relying on rigid full-ROM checksums. No xDelta hash mismatches: works seamlessly whether using a clean vanilla ROM or an existing modified/randomized ROM!
+- **In-Place Source ROM Overwrite / Direct Update**: Update your existing ProjectPM ROM directly without cluttering your folders with duplicate files. Automatically backs up your previous state to `PMBackups/`, preserves companion `.sav` and `.dsv` saves, and completely refreshes all 37 localized data files (dialogues, moves, abilities, items, French fonts, and Fairy type badges).
 - **Modern Team EXP Share (Gen 6+ Style)**: Optional in-game battle engine patch (Overlay 16) granting shared experience to your entire party (100% for active battlers, 50% for benched members). Features dynamic ROM detection with a real-time status pill (`Team EXP: Active` / `Team EXP: Inactive`).
 - **SoulLocke Edition & Clean Uninstaller**: Full multiplayer support for synchronized fainting, automated graveyard PC boxes (Box 18), single shared catch per area, and live streamer overlay. Includes a clean 1-click uninstaller to revert battle mechanics back to normal without corrupting save files.
 - **Visual+ Graphics Options**:
@@ -53,6 +54,7 @@
 
 ### Fonctionnalités
 - **Moteur d'Injection Directe Intelligent** : Modifie directement le code et les fichiers internes de la ROM sans dépendre d'un patch xDelta rigide. Fini les erreurs de checksum : fonctionne aussi bien sur une ROM originale (Vanilla) que sur une ROM déjà patchée ou randomisée !
+- **Mise à Jour sur Place / Écrasement Direct de la ROM Source** : Mettez à jour directement votre ROM ProjectPM existante sans encombrer vos dossiers avec des fichiers doublons. Sauvegarde automatique horodatée dans `PMBackups/`, préservation intégrale des sauvegardes `.sav` et `.dsv`, et actualisation complète des 37 fichiers localisés (dialogues, capacités, talents, objets, polices françaises et badge authentique Type Fée).
 - **Expérience Partagée d'Équipe (Multi Exp Gen 6+)** : Patch in-game intégré sur l'Overlay 16 permettant le partage d'expérience à toute l'équipe (100% pour les combattants actifs, 50% pour les Pokémon sur le banc). Détection dynamique de l'état du Multi Exp sur la ROM chargée avec badge visuel en temps réel (`Multi Exp : Actif` / `Inactif`).
 - **Édition SoulLocke & Désinstallation Propre** : Destins liés en multijoueur, mort synchronisée, mise au cimetière automatique (boîte PC 18), règle d'une seule capture partagée par zone et overlay streamer en direct. Inclut une option de désinstallation propre en 1 clic pour restaurer le système de combat standard sans toucher aux sauvegardes.
 - **Options Graphiques Visual+** :

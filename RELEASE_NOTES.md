@@ -6,6 +6,11 @@
 
 ### Nouveautés et Améliorations de la version 1.0.4
 
+- **Mise à Jour sur Place / Écrasement Direct de la ROM Source** :
+  - Option permettant de mettre à jour directement une ROM ProjectPM déjà existante sans créer de doublon `_Modded.nds`.
+  - Actualisation automatique des 37 fichiers de données localisés (dialogues, capacités, talents, objets, polices françaises et le badge authentique Type Fée en combat et fiche Pokémon).
+  - Détection automatique et nettoyage préventif des anciens hooks avant réinjection des mods.
+  - Remplacement atomique ultra-sécurisé avec sauvegarde automatique horodatée dans `PMBackups/` et préservation des fichiers `.sav` / `.dsv`.
 - **Expérience Partagée d'Équipe (Multi Exp Gen 6+)** :
   - Intégration d'un patch binaire in-game sur l'Overlay 16 permettant le partage d'expérience à toute l'équipe (100% pour les combattants actifs, 50% pour les Pokémon sur le banc).
   - Détection automatique et dynamique de l'état du Multi Exp sur la ROM chargée, avec affichage d'un badge en temps réel (`Multi Exp : Actif` / `Multi Exp : Inactif`) et synchronisation de la case à cocher.
@@ -33,6 +38,11 @@
 
 ### What's New in Version 1.0.4
 
+- **In-Place Source ROM Overwrite / Direct Update**:
+  - Direct 1-click update on existing ProjectPM ROMs without cluttering your folders with duplicate `_Modded.nds` files.
+  - Automatic refresh of all 37 localized data files (dialogues, moves, abilities, items, French fonts, and authentic in-battle & summary Fairy type badges).
+  - Automatic inspection and pre-cleaning of obsolete hooks before applying new mods.
+  - Rock-solid atomic replacement with automated timestamped backups in `PMBackups/` and companion `.sav` / `.dsv` preservation.
 - **Team EXP Share (Gen 6+ Style)**:
   - Integrated in-game binary patch on Overlay 16 granting shared battle experience to the entire party (100% to active battlers, 50% to benched team members).
   - Dynamic ROM inspection detecting whether the loaded ROM currently has Team EXP Share enabled, displaying a real-time status pill (`Team EXP: Active` / `Team EXP: Inactive`) and auto-syncing the checkbox.
