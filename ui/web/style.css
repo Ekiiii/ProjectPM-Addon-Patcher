@@ -797,14 +797,15 @@ body {
 .pixel-switch .slider:before {
   position: absolute;
   content: "";
-  height: 14px;
-  width: 14px;
-  left: 2px;
-  bottom: 2px;
+  height: 18px;
+  width: 18px;
+  left: 1px;
+  top: 0px;
   background-color: #94a3b8;
   border: 1px solid #000;
   border-radius: 2px;
   transition: .15s;
+  box-sizing: border-box;
 }
 
 .pixel-switch input:checked + .slider {
@@ -812,7 +813,7 @@ body {
 }
 
 .pixel-switch input:checked + .slider:before {
-  transform: translateX(22px);
+  transform: translateX(20px);
   background-color: #fff;
 }
 
@@ -1409,6 +1410,107 @@ body {
   color: var(--text-muted);
   line-height: 1.4;
 }
+
+/* ==========================================================================
+   LEGAL DISCLAIMER & ROM NOTICE SECTION
+   ========================================================================== */
+.legal-section {
+  margin-top: 24px;
+  border-top: 1px solid #1e293b;
+  padding-top: 18px;
+}
+
+.legal-section-title {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  color: #ef4444;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-crimson {
+  color: #ef4444;
+  fill: #ef4444;
+}
+
+.legal-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legal-item {
+  background-color: #080d16;
+  border: 1px solid #1e293b;
+  border-left: 3px solid #334155;
+  border-radius: 4px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease;
+}
+
+.legal-item:first-child {
+  border-left: 3px solid #ef4444;
+  background-color: rgba(239, 68, 68, 0.04);
+}
+
+.legal-item:hover {
+  border-color: #475569;
+}
+
+.legal-item:first-child:hover {
+  border-left-color: #f87171;
+}
+
+.legal-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.legal-badge-pill {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 9.5px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.legal-badge-pill.crimson {
+  background-color: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+.legal-badge-pill.slate {
+  background-color: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.legal-item-title {
+  font-size: 12.5px;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.legal-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.legal-desc strong {
+  color: #f1f5f9;
+}
+
 
 /* ==========================================================================
    RANDOMIZER INTEGRATED CARD & WIZARD MODAL

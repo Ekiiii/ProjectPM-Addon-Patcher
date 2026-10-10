@@ -483,8 +483,8 @@ TRANSLATIONS = {
         "fr": "Expérience multijoueur Project PM classique sans règles restrictives."
     },
     "addon_soullink_title": {
-        "en": "Soul Link & SoulLocke",
-        "fr": "Soul Link & SoulLocke"
+        "en": "SoulLocke",
+        "fr": "SoulLocke"
     },
     "addon_soullink_desc": {
         "en": "Linked souls between players (shared death, 1 encounter/zone, automatic graveyard).",
@@ -1843,6 +1843,59 @@ TRANSLATIONS = {
     "credits_tools_desc": {
         "en": "melonDS team, DeSmuME team, and the pret pokeplatinum decomp team for invaluable research and documentation.",
         "fr": "Équipes melonDS et DeSmuME, ainsi que le projet pret pokeplatinum pour leurs recherches et documentations inestimables."
+    },
+    # Legal Disclaimer & ROM Notice Section
+    "legal_title": {
+        "en": "LEGAL DISCLAIMER & ROM NOTICE",
+        "fr": "MENTIONS LÉGALES & NON-FOURNITURE DE ROM"
+    },
+    "legal_rom_badge": {
+        "en": "NO ROM INCLUDED",
+        "fr": "AUCUNE ROM FOURNIE"
+    },
+    "legal_rom_head": {
+        "en": "Strict Non-Distribution Policy",
+        "fr": "Politique stricte de non-fourniture de ROM"
+    },
+    "legal_rom_desc": {
+        "en": "This software does NOT provide, host, download, or distribute <strong>ANY game ROMs</strong>, copyrighted Pokémon Platinum files, or Nintendo proprietary code. Users must strictly provide their own legally dumped copy from an original retail cartridge they physically own.",
+        "fr": "Ce logiciel ne fournit, ne contient, n'héberge, ne télécharge et ne distribue <strong>AUCUNE ROM de jeu</strong>, fichier binaire propriétaire ou ressource protégée par le droit d'auteur de Nintendo ou Pokémon. Les utilisateurs doivent obligatoirement fournir leur propre copie légale de Pokémon Version Platine (dump personnel réalisé à partir de leur propre cartouche de jeu physique originale)."
+    },
+    "legal_indie_badge": {
+        "en": "COMMUNITY PROJECT",
+        "fr": "PROJET FAN-MADE"
+    },
+    "legal_indie_head": {
+        "en": "Independent Fan-Made Initiative",
+        "fr": "Projet Communautaire Indépendant"
+    },
+    "legal_indie_desc": {
+        "en": "Project PM Addon Patcher is an independent open-source community tool created for fair-use game modding and multiplayer interoperability. It is not affiliated with, endorsed by, or partnered with Nintendo, Creatures Inc., The Pokémon Company, GAME FREAK inc., or the Project PM core development team.",
+        "fr": "Project PM Addon Patcher est un utilitaire communautaire indépendant et open-source développé par des fans à des fins d'interopérabilité et de confort de jeu. Il n'est en aucun cas sponsorisé, approuvé, affilié ou associé à Nintendo, Creatures Inc., The Pokémon Company, GAME FREAK inc., ni à l'équipe officielle de développement de Project PM."
+    },
+    "legal_ip_badge": {
+        "en": "TRADEMARKS",
+        "fr": "MARQUES DÉPOSÉES"
+    },
+    "legal_ip_head": {
+        "en": "Trademarks & Copyrights",
+        "fr": "Propriété Intellectuelle & Marques"
+    },
+    "legal_ip_desc": {
+        "en": "Pokémon, Pokémon Platinum, and Nintendo DS are registered trademarks of Nintendo, Creatures Inc., and GAME FREAK inc. All characters, names, media, and related assets remain the exclusive intellectual property of their respective copyright holders.",
+        "fr": "Pokémon, Pokémon Version Platine et Nintendo DS sont des marques déposées de Nintendo, Creatures Inc. et GAME FREAK inc. L'ensemble des noms de créatures, personnages, jeux et visuels cités demeurent la propriété exclusive de leurs détenteurs respectifs."
+    },
+    "legal_terms_badge": {
+        "en": "PERSONAL USE",
+        "fr": "USAGE PERSONNEL"
+    },
+    "legal_terms_head": {
+        "en": "Private Use & Disclaimer of Warranty",
+        "fr": "Usage Privé & Absence de Garantie"
+    },
+    "legal_terms_desc": {
+        "en": "This utility is distributed free of charge 'as is', without warranty of any kind. The user assumes full responsibility for any modifications applied to their own game files and the management of their backups.",
+        "fr": "Cet utilitaire est distribué gratuitement « en l'état », sans garantie d'aucune sorte. L'utilisateur assume l'entière responsabilité des modifications appliquées sur ses propres fichiers de jeu et de la gestion de ses sauvegardes."
     }
 }
 
