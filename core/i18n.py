@@ -543,6 +543,18 @@ TRANSLATIONS = {
         "en": "APPLY PATCHES & MODS",
         "fr": "APPLIQUER LES PATCHS & MODS"
     },
+    "label_overwrite_source": {
+        "en": "Overwrite source ROM directly (In-place update)",
+        "fr": "Écraser la ROM source directement (Mise à jour sur place)"
+    },
+    "label_overwrite_source_desc": {
+        "en": "Updates your current ROM directly without creating an extra file. Backups are automatically preserved in PMBackups.",
+        "fr": "Met à jour directement votre ROM actuelle sans créer de doublon. Vos sauvegardes sont automatiquement protégées dans PMBackups."
+    },
+    "btn_execute_update_rom": {
+        "en": "UPDATE ROM IN-PLACE",
+        "fr": "METTRE À JOUR LA ROM SUR PLACE"
+    },
     # --- SECTION 4: RANDOMIZER TAB ---
     "rand_rom_title": {
         "en": "1. ROM TO RANDOMIZE",
@@ -933,9 +945,21 @@ TRANSLATIONS = {
         "en": "Switching ProjectPM Multiplayer language (%s -> %s)...",
         "fr": "Changement de langue du multijoueur ProjectPM (%s -> %s)..."
     },
+    "progress_refresh_mp": {
+        "en": "Refreshing ProjectPM Multiplayer components (%s)...",
+        "fr": "Actualisation des composants Multijoueur ProjectPM (%s)..."
+    },
+    "progress_inplace_replace": {
+        "en": "Applying in-place update directly to source ROM...",
+        "fr": "Application atomique de la mise à jour sur la ROM source..."
+    },
     "mp_detect_switch": {
         "en": "Multiplayer detected: ProjectPM v%s (%s) → Switching to %s",
         "fr": "Multijoueur détecté : ProjectPM v%s (%s) → Changement vers %s"
+    },
+    "mp_detect_update": {
+        "en": "ProjectPM ROM detected (%s) → Ready to update / refresh",
+        "fr": "ROM ProjectPM détectée (%s) → Prête pour mise à jour / réactualisation"
     },
     "rand_reapply_notice": {
         "en": "Randomization detected: tables will be automatically preserved and re-applied at the end.",

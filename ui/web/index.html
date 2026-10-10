@@ -237,7 +237,13 @@
 
             <!-- Destination ROM -->
             <div class="form-group mt-3">
-              <label class="form-label" id="i18n-label-dst-rom" data-i18n="label_dst_rom">Destination ROM (Where to save):</label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0;" id="i18n-label-dst-rom" data-i18n="label_dst_rom">Destination ROM (Where to save):</label>
+                <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; font-size: 11px; color: var(--accent-light, #93c5fd);" title="Met à jour directement votre ROM sans créer de doublon. Vos sauvegardes sont automatiquement protégées dans PMBackups.">
+                  <input type="checkbox" id="toggle-overwrite-source" onchange="onToggleOverwriteSource()" style="accent-color: #3b82f6; width: 14px; height: 14px; cursor: pointer;">
+                  <span id="i18n-label-overwrite" data-i18n="label_overwrite_source">Écraser la ROM source directement (Mise à jour sur place)</span>
+                </label>
+              </div>
               <div class="input-with-button">
                 <input type="text" id="input-dest-rom" class="pixel-input" data-i18n-placeholder="dest_rom_placeholder" placeholder="Path to output patched ROM..." oninput="saveCurrentOptionsToConfig()">
                 <button class="pixel-btn" onclick="browseDestRom()" id="i18n-btn-browse-dst" data-i18n="btn_browse_dst">Save As...</button>

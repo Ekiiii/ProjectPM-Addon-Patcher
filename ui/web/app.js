@@ -303,8 +303,8 @@ function updateMpDetectIndicator() {
         : `<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Multiplayer detected:</strong> Project PM v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; <strong>Switching to ${targetLangStr} Multiplayer</strong>`;
     } else {
       mpDetectEl.innerHTML = currentLang === 'fr'
-        ? `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>Multijoueur détecté :</strong> Project PM v${res.mp_version || '0.4.5'} (${curLangStr})`
-        : `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>Multiplayer detected:</strong> Project PM v${res.mp_version || '0.4.5'} (${curLangStr})`;
+        ? `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>ROM Project PM détectée :</strong> v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; Prête pour mise à jour / réactualisation`
+        : `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>Project PM ROM detected:</strong> v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; Ready to update / refresh`;
     }
   } else {
     const langStr = (res.lang === 'fr') 
@@ -411,6 +411,12 @@ async function processSelectedRom(path) {
     const toggleExp = document.getElementById('toggle-team-exp-share');
     if (toggleExp && res.has_exp_share !== undefined) {
       toggleExp.checked = !!res.has_exp_share;
+    }
+
+    // Suggest in-place update by default for existing ProjectPM ROMs
+    const overwriteToggle = document.getElementById('toggle-overwrite-source');
+    if (overwriteToggle) {
+      overwriteToggle.checked = !!res.has_multiplayer;
     }
 
     // Update destination path & UI buttons & SoulLocke badges
@@ -531,6 +537,10 @@ function onMpModeChange() {
   onAddonModeChange();
 }
 
+function onToggleOverwriteSource() {
+  onAddonModeChange();
+}
+
 function onAddonModeChange() {
   // Update visual active state of radio cards
   document.querySelectorAll('input[name="addon-mode"]').forEach(r => {
@@ -541,6 +551,7 @@ function onAddonModeChange() {
   const addonRadio = document.querySelector('input[name="addon-mode"]:checked');
   const addonVal = addonRadio ? addonRadio.value : 'none';
   const dstInput = document.getElementById('input-dest-rom');
+  const dstBtn = document.getElementById('i18n-btn-browse-dst');
   const btn = document.getElementById('btn-start-patch');
   const btnSpan = btn ? btn.querySelector('span') : null;
 
@@ -548,38 +559,72 @@ function onAddonModeChange() {
   const randEnabled = randToggle ? randToggle.checked : false;
   const randSuffix = randEnabled ? '_Randomized' : '';
 
+  const overwriteToggle = document.getElementById('toggle-overwrite-source');
+  const isOverwrite = !!(overwriteToggle && overwriteToggle.checked);
+
   if (currentRomInfo && currentRomInfo.path) {
     const srcPath = currentRomInfo.path;
     const dirName = srcPath.substring(0, srcPath.lastIndexOf('/'));
-    const baseName = srcPath.substring(srcPath.lastIndexOf('/') + 1).replace(/\\.nds$/i, '');
+    const baseName = srcPath.substring(srcPath.lastIndexOf('/') + 1).replace(/\.nds$/i, '');
     const mpMode = document.getElementById('select-mp-mode').value;
     const lang = (mpMode === 'en') ? 'EN' : 'FR';
 
-    if (addonVal === 'restore') {
-      dstInput.value = `${dirName}/${baseName}_Clean${randSuffix}.nds`;
-      if (btnSpan) {
-        btnSpan.innerText = randEnabled
-          ? (currentLang === 'fr' ? "RESTAURER & RANDOMISER LA ROM" : "RESTORE & RANDOMIZE ROM")
-          : (currentLang === 'fr' ? "RESTAURER LA ROM PROPRE (RETIRER SOULLOCKE)" : "RESTORE CLEAN ROM (UNINSTALL SOULLOCKE)");
-      }
-    } else if (addonVal === 'soullink') {
-      dstInput.value = `${dirName}/ProjectPM_${lang}_SoulLocke${randSuffix}.nds`;
-      if (btnSpan) {
-        btnSpan.innerText = randEnabled
-          ? (currentLang === 'fr' ? `INJECTER SOUL LINK & RANDOMISER LA ROM (${lang})` : `INJECT SOUL LINK & RANDOMIZE ROM (${lang})`)
-          : (currentLang === 'fr' ? `INJECTER LE MOD SOUL LINK / SOULLOCKE (${lang})` : `INJECT SOUL LINK / SOULLOCKE MOD (${lang})`);
+    if (isOverwrite) {
+      dstInput.value = srcPath;
+      dstInput.disabled = true;
+      dstInput.style.opacity = '0.7';
+      if (dstBtn) dstBtn.disabled = true;
+
+      if (addonVal === 'restore') {
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? "RESTAURER & RANDOMISER SUR PLACE" : "RESTORE & RANDOMIZE IN-PLACE")
+            : (currentLang === 'fr' ? "RESTAURER LA ROM SUR PLACE (PROPRE)" : "RESTORE CLEAN ROM IN-PLACE");
+        }
+      } else if (addonVal === 'soullink') {
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? `INJECTER SOULLOCKE & RANDOMISER SUR PLACE (${lang})` : `INJECT SOULLOCKE & RANDOMIZE IN-PLACE (${lang})`)
+            : (currentLang === 'fr' ? `METTRE À JOUR & INJECTER SOULLOCKE SUR PLACE (${lang})` : `UPDATE & INJECT SOULLOCKE IN-PLACE (${lang})`);
+        }
+      } else {
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? "METTRE À JOUR & RANDOMISER SUR PLACE" : "UPDATE & RANDOMIZE ROM IN-PLACE")
+            : (translations['btn_execute_update_rom'] || (currentLang === 'fr' ? "METTRE À JOUR LA ROM SUR PLACE" : "UPDATE ROM IN-PLACE"));
+        }
       }
     } else {
-      // none
-      if (currentRomInfo.has_multiplayer) {
-        dstInput.value = `${dirName}/${baseName}_Modded${randSuffix}.nds`;
+      dstInput.disabled = false;
+      dstInput.style.opacity = '1';
+      if (dstBtn) dstBtn.disabled = false;
+
+      if (addonVal === 'restore') {
+        dstInput.value = `${dirName}/${baseName}_Clean${randSuffix}.nds`;
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? "RESTAURER & RANDOMISER LA ROM" : "RESTORE & RANDOMIZE ROM")
+            : (currentLang === 'fr' ? "RESTAURER LA ROM PROPRE (RETIRER SOULLOCKE)" : "RESTORE CLEAN ROM (UNINSTALL SOULLOCKE)");
+        }
+      } else if (addonVal === 'soullink') {
+        dstInput.value = `${dirName}/ProjectPM_${lang}_SoulLocke${randSuffix}.nds`;
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? `INJECTER SOUL LINK & RANDOMISER LA ROM (${lang})` : `INJECT SOUL LINK & RANDOMIZE ROM (${lang})`)
+            : (currentLang === 'fr' ? `INJECTER LE MOD SOUL LINK / SOULLOCKE (${lang})` : `INJECT SOUL LINK / SOULLOCKE MOD (${lang})`);
+        }
       } else {
-        dstInput.value = `${dirName}/ProjectPM_${lang}_Multiplayer${randSuffix}.nds`;
-      }
-      if (btnSpan) {
-        btnSpan.innerText = randEnabled
-          ? (translations['btn_execute_patch_and_rand'] || (currentLang === 'fr' ? "APPLIQUER LES PATCHS & RANDOMISER LA ROM" : "APPLY PATCHES & RANDOMIZE ROM"))
-          : (translations['btn_execute_patch'] || (currentLang === 'fr' ? "APPLIQUER LES PATCHS SUR LA ROM" : "APPLY PATCHES TO ROM"));
+        // none
+        if (currentRomInfo.has_multiplayer) {
+          dstInput.value = `${dirName}/${baseName}_Modded${randSuffix}.nds`;
+        } else {
+          dstInput.value = `${dirName}/ProjectPM_${lang}_Multiplayer${randSuffix}.nds`;
+        }
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (translations['btn_execute_patch_and_rand'] || (currentLang === 'fr' ? "APPLIQUER LES PATCHS & RANDOMISER LA ROM" : "APPLY PATCHES & RANDOMIZE ROM"))
+            : (translations['btn_execute_patch'] || (currentLang === 'fr' ? "APPLIQUER LES PATCHS SUR LA ROM" : "APPLY PATCHES TO ROM"));
+        }
       }
     }
   } else {

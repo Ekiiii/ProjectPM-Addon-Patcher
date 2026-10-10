@@ -77,6 +77,7 @@ def execute_patch_pipeline(
     temp_clean = None
     temp_base = None
     temp_pre_custom = None
+    temp_final_inplace = None
 
     try:
         if not os.path.isfile(rom_path):
@@ -109,6 +110,14 @@ def execute_patch_pipeline(
 
         out_dir = os.path.dirname(os.path.abspath(output_rom))
         os.makedirs(out_dir, exist_ok=True)
+
+        # In-place overwrite detection
+        is_in_place = (os.path.abspath(output_rom).lower() == os.path.abspath(rom_path).lower())
+        final_target_path = output_rom
+        if is_in_place:
+            temp_final_inplace = os.path.join(out_dir, f"temp_final_inplace_{os.getpid()}.nds")
+            output_rom = temp_final_inplace
+            log_cb("[Pipeline] Mode écrasement direct actif : préparation dans un buffer sécurisé.")
 
         # 0. Preserve randomizer tables if input is randomized
         _progress(0.15, t("progress_extract_rand"))
@@ -143,30 +152,16 @@ def execute_patch_pipeline(
                 raise RuntimeError("Failed to apply ProjectPM xDelta base patch.")
             working_rom = temp_base
 
-        elif info.has_multiplayer and effective_mp in ("fr", "en") and effective_mp != info.mp_lang:
-            src_lang = info.mp_lang
+        elif info.has_multiplayer and effective_mp in ("fr", "en"):
+            src_lang = info.mp_lang or effective_mp
             dst_lang = effective_mp
-            _progress(0.30, t("progress_switch_mp", src_lang.upper(), dst_lang.upper()))
-            log_cb(f"[Pipeline] Switching Multiplayer language: {src_lang.upper()} -> {dst_lang.upper()}")
             temp_base = os.path.join(out_dir, f"temp_pm_switch_lang_{os.getpid()}.nds")
-
-            # Determine appropriate patch based on current ROM characteristics
-            if src_lang == "en" and dst_lang == "fr":
-                patch_name = "ProjectPM_USA_to_FR.xdelta"
-            else:
-                if info.has_visual_bg or info.has_visual_cam:
-                    patch_name = "ProjectPM_FR_VisualPlus_to_USA.xdelta"
-                else:
-                    patch_name = "ProjectPM_FR_to_USA.xdelta"
-
-            patch_file = os.path.join(assets_dir, "base_patches", patch_name)
-            xd_exe = os.path.join(assets_dir, "xdelta3.exe")
 
             clean_src = working_rom
             temp_clean_sl = None
             temp_clean_rand = None
 
-            # If SoulLocke active, clean hooks for xdelta
+            # If SoulLocke active, clean hooks for fresh base / update
             if info.is_soullocke:
                 temp_clean_sl = os.path.join(out_dir, f"temp_clean_sl_{os.getpid()}.nds")
                 payload_json = os.path.join(payloads_dir, f"soullocke_{src_lang}.json")
@@ -175,23 +170,46 @@ def execute_patch_pipeline(
                 if restore_clean_projectpm(clean_src, temp_clean_sl, payload_json, log_cb=log_cb):
                     clean_src = temp_clean_sl
 
-            # If randomized, clean tables for xdelta
-            if rand_data.get("is_randomized"):
-                temp_clean_rand = os.path.join(out_dir, f"temp_clean_rand_{os.getpid()}.nds")
-                clean_src = clean_projectpm_for_xdelta(
-                    clean_src, temp_clean_rand, lang=src_lang, assets_dir=assets_dir, log_cb=log_cb
-                )
+            if src_lang != dst_lang:
+                _progress(0.30, t("progress_switch_mp", src_lang.upper(), dst_lang.upper()))
+                log_cb(f"[Pipeline] Switching Multiplayer language: {src_lang.upper()} -> {dst_lang.upper()}")
 
-            patched_ok = False
-            if os.path.isfile(patch_file):
-                patched_ok = apply_xdelta(clean_src, patch_file, temp_base, xd_exe, log_cb)
+                # If randomized, clean tables for xdelta
+                if rand_data.get("is_randomized"):
+                    temp_clean_rand = os.path.join(out_dir, f"temp_clean_rand_{os.getpid()}.nds")
+                    clean_src = clean_projectpm_for_xdelta(
+                        clean_src, temp_clean_rand, lang=src_lang, assets_dir=assets_dir, log_cb=log_cb
+                    )
 
-            # Fallback: if xdelta failed (custom mod / non-standard base), use smart file-swap
-            if not patched_ok:
-                log_cb("[Pipeline] Notice: Applying Direct Localized Translation Engine...")
-                src_for_swap = clean_src if (clean_src and os.path.isfile(clean_src)) else working_rom
+                # Determine appropriate patch based on current ROM characteristics
+                if src_lang == "en" and dst_lang == "fr":
+                    patch_name = "ProjectPM_USA_to_FR.xdelta"
+                else:
+                    if info.has_visual_bg or info.has_visual_cam:
+                        patch_name = "ProjectPM_FR_VisualPlus_to_USA.xdelta"
+                    else:
+                        patch_name = "ProjectPM_FR_to_USA.xdelta"
+
+                patch_file = os.path.join(assets_dir, "base_patches", patch_name)
+                xd_exe = os.path.join(assets_dir, "xdelta3.exe")
+
+                patched_ok = False
+                if os.path.isfile(patch_file):
+                    patched_ok = apply_xdelta(clean_src, patch_file, temp_base, xd_exe, log_cb)
+
+                # Fallback: if xdelta failed (custom mod / non-standard base), use smart file-swap
+                if not patched_ok:
+                    log_cb("[Pipeline] Notice: Applying Direct Localized Translation Engine...")
+                    src_for_swap = clean_src if (clean_src and os.path.isfile(clean_src)) else working_rom
+                    patched_ok = switch_projectpm_lang(
+                        src_for_swap, temp_base, target_lang=dst_lang, assets_dir=assets_dir, log_cb=log_cb
+                    )
+            else:
+                # Same language: ROM update / refresh of the 37 localized components & clean base
+                _progress(0.30, t("progress_refresh_mp", dst_lang.upper()))
+                log_cb(f"[Pipeline] Actualisation des composants Multijoueur ProjectPM ({dst_lang.upper()})...")
                 patched_ok = switch_projectpm_lang(
-                    src_for_swap, temp_base, target_lang=dst_lang, assets_dir=assets_dir, log_cb=log_cb
+                    clean_src, temp_base, target_lang=dst_lang, assets_dir=assets_dir, log_cb=log_cb
                 )
 
             # Cleanup intermediate xdelta clean files
@@ -203,16 +221,16 @@ def execute_patch_pipeline(
                         pass
 
             if not patched_ok or not os.path.isfile(temp_base):
-                raise RuntimeError(f"Failed to switch ProjectPM multiplayer language ({src_lang.upper()} -> {dst_lang.upper()}).")
+                raise RuntimeError(f"Failed to update or switch ProjectPM multiplayer language ({src_lang.upper()} -> {dst_lang.upper()}).")
 
             working_rom = temp_base
-            log_cb(f"[Pipeline] Multiplayer language successfully switched to {dst_lang.upper()}!")
+            log_cb(f"[Pipeline] Multiplayer language components successfully updated to {dst_lang.upper()}!")
 
         # 2. Save Backup
         if backup_save:
             _progress(0.45, t("progress_save_backup"))
             try:
-                backup_and_sync_save(rom_path, output_rom, log_cb)
+                backup_and_sync_save(rom_path, final_target_path, log_cb)
             except Exception as e:
                 log_cb(f"[Warning] Save sync skipped: {e}")
 
@@ -312,6 +330,21 @@ def execute_patch_pipeline(
             log_cb(f"[Randomizer] Existing randomization detected ({len(rand_data.get('files', {}))} tables): re-applying at the end of patching to ensure 100% preservation...")
             restore_randomizer_data(output_rom, rand_data, log_cb=log_cb)
 
+        # 9. In-place overwrite finalization: atomically replace source ROM with new build
+        if is_in_place and temp_final_inplace and os.path.isfile(temp_final_inplace):
+            _progress(0.98, t("progress_inplace_replace"))
+            log_cb("[Pipeline] Application atomique de la mise à jour sur la ROM source...")
+            os.replace(temp_final_inplace, final_target_path)
+            temp_sidecar = temp_final_inplace + ".rand.txt"
+            if os.path.isfile(temp_sidecar):
+                target_sidecar = final_target_path + ".rand.txt"
+                try:
+                    if os.path.isfile(target_sidecar):
+                        os.remove(target_sidecar)
+                    os.replace(temp_sidecar, target_sidecar)
+                except Exception as e:
+                    log_cb(f"[Warning] Sidecar rename failed: {e}")
+
         _progress(1.0, t("progress_success"))
         return True, t("progress_success")
 
@@ -320,7 +353,7 @@ def execute_patch_pipeline(
         log_cb(f"[ERREUR] {str(e)}")
         return False, str(e)
     finally:
-        for f in (temp_clean, temp_base, temp_pre_custom):
+        for f in (temp_clean, temp_base, temp_pre_custom, temp_final_inplace):
             if f and os.path.isfile(f):
                 try:
                     os.remove(f)

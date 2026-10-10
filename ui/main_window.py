@@ -25,7 +25,7 @@ from core.rom_detector import detect_rom
 from core.smart_injector import apply_soullocke, restore_clean_projectpm
 from core.visual_patcher import apply_battle_bg_patch, apply_camera_patch
 from core.xdelta_engine import apply_xdelta
-from core.patch_pipeline import resolve_base_patch
+from core.patch_pipeline import resolve_base_patch, execute_patch_pipeline
 from core.save_manager import backup_and_sync_save
 from core.updater import check_for_updates_async, CURRENT_VERSION, download_update_chunked, apply_update_and_restart
 from core.rand_manager import extract_randomizer_data, clean_vanilla_for_xdelta, restore_randomizer_data
@@ -311,14 +311,32 @@ class MainWindow(tk.Tk):
         out_box = tk.Frame(self.card_rom, bg=BG_CARD)
         out_box.pack(fill="x", pady=(8, 2))
 
+        out_top_row = tk.Frame(out_box, bg=BG_CARD)
+        out_top_row.pack(fill="x", pady=(0, 3))
+
         self.lbl_out_title = tk.Label(
-            out_box,
+            out_top_row,
             text=t("rom_output_label"),
             bg=BG_CARD,
             fg=COLOR_GOLD,
             font=get_font(9, bold=True)
         )
-        self.lbl_out_title.pack(anchor="w", pady=(0, 3))
+        self.lbl_out_title.pack(side="left")
+
+        self.var_overwrite_source = tk.BooleanVar(value=False)
+        self.chk_overwrite = tk.Checkbutton(
+            out_top_row,
+            text=t("label_overwrite_source"),
+            variable=self.var_overwrite_source,
+            command=self._on_toggle_overwrite,
+            bg=BG_CARD,
+            fg=COLOR_CYAN,
+            selectcolor=BG_PANEL,
+            activebackground=BG_CARD,
+            activeforeground=COLOR_CYAN,
+            font=get_font(8)
+        )
+        self.chk_overwrite.pack(side="right")
 
         out_row = tk.Frame(out_box, bg=BG_CARD)
         out_row.pack(fill="x")
@@ -1047,6 +1065,21 @@ class MainWindow(tk.Tk):
             self.lbl_status.config(text=t("status_ready"))
             self._update_multiplayer_ui_state()
 
+    def _on_toggle_overwrite(self):
+        if hasattr(self, "var_overwrite_source") and self.var_overwrite_source.get():
+            if self.selected_rom_path:
+                self.entry_output.config(state="normal")
+                self.entry_output.delete(0, tk.END)
+                self.entry_output.insert(0, normalize_ui_path(self.selected_rom_path))
+                self.entry_output.config(state="disabled")
+            if hasattr(self, "btn_browse_output"):
+                self.btn_browse_output.config(state="disabled")
+        else:
+            self.entry_output.config(state="normal")
+            if hasattr(self, "btn_browse_output"):
+                self.btn_browse_output.config(state="normal")
+            self._update_suggested_output_path()
+
     def _on_output_manual_edit(self):
         self.output_manually_edited = True
 
@@ -1135,7 +1168,11 @@ class MainWindow(tk.Tk):
         self.current_rom_info = info
         self.output_manually_edited = False
         self._update_rom_display(info)
-        self._update_suggested_output_path()
+        if hasattr(self, "var_overwrite_source"):
+            self.var_overwrite_source.set(bool(info and info.has_multiplayer))
+            self._on_toggle_overwrite()
+        else:
+            self._update_suggested_output_path()
 
     def _update_rom_display(self, info):
         if not info.exists:
@@ -1441,118 +1478,37 @@ class MainWindow(tk.Tk):
             if os.path.abspath(output_rom).lower() == os.path.abspath(rom_path).lower():
                 ans = messagebox.askyesno(
                     "Confirm Overwrite",
-                    "The destination file is identical to the source ROM.\nPatching in place will modify your original file directly.\n\nDo you want to proceed?"
+                    "The destination file is identical to the source ROM.\nPatching in place will modify your original file directly (a backup will be preserved in PMBackups).\n\nDo you want to proceed?"
                 )
                 if not ans:
                     self._log_msg("Patching cancelled by user.")
                     return
 
-            # 0. Snapshot randomizer tables if input ROM is randomized
-            rand_data = extract_randomizer_data(rom_path, log_cb=self._log_msg)
-            if rand_data["is_randomized"]:
-                self._log_msg(f"[Pipeline] Preserving {len(rand_data['files'])} randomized tables from source ROM...")
+            options = {
+                "mp_enabled": effective_mp is not None,
+                "mp_version": effective_mp or "none",
+                "sl_enabled": sl_enabled,
+                "sl_mode": sl_mode,
+                "sl_variant": sl_variant,
+                "bg_opt": bg_opt,
+                "cam_opt": cam_opt,
+                "backup_save": self.var_backup_save.get(),
+                "team_exp_share": getattr(self, "var_team_exp_share", tk.BooleanVar(value=False)).get(),
+                "custom_patch": (self.entry_custom_patch.get().strip() if self.var_custom_patch_enabled.get() else None),
+                "rand_enabled": False,
+                "rand_settings": None
+            }
 
-            # 1. Base ROM check: If Vanilla and user wants Multiplayer, apply base xDelta patch!
-            working_rom = rom_path
-            temp_clean = None
-            temp_base = None
-            if not info.has_multiplayer and effective_mp in ("fr", "en"):
-                self._log_msg(f"[Pipeline] Converting Vanilla ROM to ProjectPM Multiplayer ({effective_mp.upper()})...")
-                temp_base = os.path.join(parent_dir, "temp_projectpm_base.nds")
-                patch_file = None
-
-                patch_name = resolve_base_patch(effective_mp, info.lang, self.assets_dir)
-                patch_file = os.path.join(self.assets_dir, "base_patches", patch_name)
-
-                clean_src = rom_path
-                if rand_data["is_randomized"]:
-                    temp_clean = os.path.join(parent_dir, "temp_vanilla_clean.nds")
-                    clean_src = clean_vanilla_for_xdelta(rom_path, temp_clean, lang=info.lang, assets_dir=self.assets_dir, log_cb=self._log_msg)
-
-                xd_exe = os.path.join(self.assets_dir, "xdelta3.exe")
-                ok = apply_xdelta(clean_src, patch_file, temp_base, xd_exe, self._log_msg)
-                if not ok:
-                    raise RuntimeError("Failed to apply base ProjectPM patch to Vanilla ROM.")
-                working_rom = temp_base
-
-            # 2. Backup Save & ROM if enabled
-            if self.var_backup_save.get():
-                backup_and_sync_save(rom_path, output_rom, self._log_msg)
-
-            # 3. Apply Mod (SoulLocke or Restore)
-            if sl_mode == "restore":
-                payload_json = os.path.join(self.payloads_dir, f"soullocke_{info.lang}.json")
-                self._log_msg("[Pipeline] Restoring clean ProjectPM...")
-                ok = restore_clean_projectpm(working_rom, output_rom, payload_json, self._log_msg)
-                if not ok:
-                    raise RuntimeError("Failed to restore clean ProjectPM.")
-            elif sl_enabled and effective_mp:
-                target_payload_lang = sl_variant
-                payload_json = os.path.join(self.payloads_dir, f"soullocke_{target_payload_lang}.json")
-                self._log_msg(f"[Pipeline] Injecting SoulLocke ({target_payload_lang.upper()}) C mod payload...")
-                ok = apply_soullocke(working_rom, output_rom, payload_json, self._log_msg)
-                if not ok:
-                    raise RuntimeError("Failed to inject SoulLocke payload.")
-            else:
-                # Direct copy if no addon applied
-                import shutil
-                shutil.copy2(working_rom, output_rom)
-
-            # Clean up temporary base & clean files if created
-            for temp_f in (temp_clean, temp_base):
-                if temp_f and os.path.isfile(temp_f):
-                    try:
-                        os.remove(temp_f)
-                    except Exception:
-                        pass
-
-            # 4. Apply Visual+ Options
-            if bg_opt == "builtin":
-                self._log_msg("[Pipeline] Applying Visual+ Battle Backgrounds...")
-                apply_battle_bg_patch(output_rom, self.assets_dir, enable=True, log_cb=self._log_msg)
-            elif bg_opt == "off":
-                self._log_msg("[Pipeline] Disabling Visual+ Battle Backgrounds...")
-                apply_battle_bg_patch(output_rom, self.assets_dir, enable=False, log_cb=self._log_msg)
-
-            if cam_opt == "builtin":
-                self._log_msg("[Pipeline] Applying Visual+ 3D Camera...")
-                apply_camera_patch(output_rom, enable=True, log_cb=self._log_msg)
-            elif cam_opt == "off":
-                self._log_msg("[Pipeline] Reverting Visual+ 3D Camera...")
-                apply_camera_patch(output_rom, enable=False, log_cb=self._log_msg)
-
-            # 5. Restore Randomizer tables if input was randomized
-            if rand_data["is_randomized"]:
-                self._log_msg("[Pipeline] Re-applying randomized tables onto destination ROM...")
-                restore_randomizer_data(output_rom, rand_data, log_cb=self._log_msg)
-
-            # 6. Apply Custom XDelta Patch if requested
-            if self.var_custom_patch_enabled.get():
-                custom_patch_file = self.entry_custom_patch.get().strip()
-                if custom_patch_file:
-                    if not os.path.isfile(custom_patch_file):
-                        raise FileNotFoundError(f"Custom XDelta patch file not found: {custom_patch_file}")
-
-                    self._log_msg(f"[Pipeline] Applying custom XDelta patch: {os.path.basename(custom_patch_file)}...")
-                    temp_pre_custom = output_rom + ".pre_custom.tmp"
-                    import shutil
-                    shutil.copy2(output_rom, temp_pre_custom)
-                    xd_exe = os.path.join(self.assets_dir, "xdelta3.exe")
-
-                    ok = apply_xdelta(temp_pre_custom, custom_patch_file, output_rom, xd_exe, self._log_msg)
-                    if not ok:
-                        # Revert on error
-                        if os.path.isfile(temp_pre_custom):
-                            shutil.copy2(temp_pre_custom, output_rom)
-                            os.remove(temp_pre_custom)
-                        raise RuntimeError(f"Failed to apply custom XDelta patch ({os.path.basename(custom_patch_file)}). Check that the patch matches this base ROM.")
-
-                    if os.path.isfile(temp_pre_custom):
-                        try:
-                            os.remove(temp_pre_custom)
-                        except Exception:
-                            pass
-                    self._log_msg("[Pipeline] Custom XDelta patch successfully applied!")
+            ok, res_msg = execute_patch_pipeline(
+                rom_path=rom_path,
+                output_rom=output_rom,
+                options=options,
+                assets_dir=self.assets_dir,
+                payloads_dir=self.payloads_dir,
+                log_cb=self._log_msg
+            )
+            if not ok:
+                raise RuntimeError(res_msg)
 
             self._log_msg(t("status_success"))
             messagebox.showinfo("Success", f"{t('status_success')}\n\nOutput: {os.path.basename(output_rom)}")
@@ -1561,10 +1517,4 @@ class MainWindow(tk.Tk):
             self._log_msg(f"{t('status_error')} ({e})")
             messagebox.showerror("Error", f"{t('status_error')}\n\nDetails: {e}")
         finally:
-            for temp_f in (temp_clean, temp_base):
-                if temp_f and os.path.isfile(temp_f):
-                    try:
-                        os.remove(temp_f)
-                    except Exception:
-                        pass
             self.btn_apply.config(state="normal")
