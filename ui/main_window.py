@@ -25,6 +25,7 @@ from core.rom_detector import detect_rom
 from core.smart_injector import apply_soullocke, restore_clean_projectpm
 from core.visual_patcher import apply_battle_bg_patch, apply_camera_patch
 from core.xdelta_engine import apply_xdelta
+from core.patch_pipeline import resolve_base_patch
 from core.save_manager import backup_and_sync_save
 from core.updater import check_for_updates_async, CURRENT_VERSION, download_update_chunked, apply_update_and_restart
 from core.rand_manager import extract_randomizer_data, clean_vanilla_for_xdelta, restore_randomizer_data
@@ -1460,14 +1461,8 @@ class MainWindow(tk.Tk):
                 temp_base = os.path.join(parent_dir, "temp_projectpm_base.nds")
                 patch_file = None
 
-                # Check source ROM language for proper patch selection
-                if effective_mp == "fr":
-                    if info.lang == "fr":
-                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR.xdelta")
-                    else:
-                        patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta")
-                else:  # English
-                    patch_file = os.path.join(self.assets_dir, "base_patches", "PlatinumMultiplayerV0.4.5.xdelta")
+                patch_name = resolve_base_patch(effective_mp, info.lang, self.assets_dir)
+                patch_file = os.path.join(self.assets_dir, "base_patches", patch_name)
 
                 clean_src = rom_path
                 if rand_data["is_randomized"]:

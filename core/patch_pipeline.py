@@ -10,6 +10,7 @@ Unified execution pipeline for ProjectPM Addon Patcher:
 - Optional custom xDelta patches
 """
 import os
+import re
 import shutil
 from typing import Dict, Any, Callable, Optional, Tuple
 
@@ -26,6 +27,33 @@ from core.rand_manager import (
     restore_randomizer_data
 )
 from core.lang_switcher import switch_projectpm_lang
+
+
+def resolve_base_patch(target_mp: str, source_lang: str, assets_dir: str) -> str:
+    """
+    Finds the appropriate xDelta patch for converting Vanilla to Multiplayer.
+    Dynamically scans assets/base_patches for the highest matching version,
+    seamlessly supporting 0.4.5, 0.4.6, 0.5.0, etc.
+    """
+    base_dir = os.path.join(assets_dir, "base_patches")
+    if not os.path.isdir(base_dir):
+        return ""
+    if target_mp == "fr":
+        if source_lang == "fr":
+            pattern = re.compile(r"^PlatinumMultiplayerV(.*)_FR\.xdelta$", re.IGNORECASE)
+            fallback = "PlatinumMultiplayerV0.4.5_FR.xdelta"
+        else:
+            pattern = re.compile(r"^PlatinumMultiplayerV(.*)_FR-From-USA\.xdelta$", re.IGNORECASE)
+            fallback = "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta"
+    else:
+        pattern = re.compile(r"^PlatinumMultiplayerV(?!.*FR)(.*)\.xdelta$", re.IGNORECASE)
+        fallback = "PlatinumMultiplayerV0.4.5.xdelta"
+
+    candidates = [f for f in os.listdir(base_dir) if pattern.match(f)]
+    if candidates:
+        candidates.sort(reverse=True)
+        return candidates[0]
+    return fallback
 
 
 def execute_patch_pipeline(
@@ -97,14 +125,7 @@ def execute_patch_pipeline(
             _progress(0.30, t("progress_convert_mp", effective_mp.upper()))
             temp_base = os.path.join(out_dir, f"temp_pm_base_{os.getpid()}.nds")
 
-            if effective_mp == "fr":
-                if info.lang == "fr":
-                    patch_name = "PlatinumMultiplayerV0.4.5_FR.xdelta"
-                else:
-                    patch_name = "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta"
-            else:
-                patch_name = "PlatinumMultiplayerV0.4.5.xdelta"
-
+            patch_name = resolve_base_patch(effective_mp, info.lang, assets_dir)
             patch_file = os.path.join(assets_dir, "base_patches", patch_name)
             if not os.path.isfile(patch_file):
                 raise FileNotFoundError(f"Patch xDelta not found: {patch_file}")
