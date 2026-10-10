@@ -89,7 +89,7 @@ window.addEventListener('pywebviewready', async () => {
     
     // Set version
     const verEl = document.getElementById('app-version');
-    if (verEl) verEl.innerText = initData.version || 'v1.0.4';
+    if (verEl) verEl.innerText = initData.version || 'v1.0.5';
     
     // Set initial seeds & codes
     if (initData.initial_coop) {

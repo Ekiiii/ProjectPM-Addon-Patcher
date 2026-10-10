@@ -17,7 +17,7 @@ import json
 import subprocess
 import time
 
-CURRENT_VERSION = "v1.0.4"
+CURRENT_VERSION = "v1.0.5"
 GITHUB_REPO = "Ekiiii/ProjectPM-Addon-Patcher"
 RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 

@@ -37,7 +37,7 @@ def get_logs_dir() -> str:
         pass
     return logs_dir
 
-def init_logging(app_version: str = "1.0.4"):
+def init_logging(app_version: str = "1.0.5"):
     """Initializes the physical log files for this application run."""
     global _current_log_file, _latest_log_file
     with _log_lock:
