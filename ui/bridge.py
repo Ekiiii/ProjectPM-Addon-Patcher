@@ -32,7 +32,7 @@ from core.randomizer import (
     MAX_SPECIES_ID,
     RAND_LEGENDARIES
 )
-from core.updater import CURRENT_VERSION, check_for_updates_async
+from core.updater import CURRENT_VERSION, check_for_updates_async, GITHUB_REPO
 from core.logger import get_physical_logger, open_logs_folder, log_info, log_warning, log_error
 from core.config_manager import load_config, save_config, update_config_key
 
@@ -536,15 +536,16 @@ class PatcherBridge:
 
     def check_for_updates(self):
         """Checks GitHub releases for latest version in background."""
-        def _cb(available: bool, latest_ver: str, release_data: Dict[str, Any]):
+        def _cb(available: bool, latest_ver: str, release_data: Optional[Dict[str, Any]] = None, err: Optional[str] = None):
             payload = {
-                "available": available,
+                "available": bool(available),
                 "current": CURRENT_VERSION,
                 "latest": latest_ver or CURRENT_VERSION,
-                "notes": release_data.get("body", "") if release_data else "",
-                "url": release_data.get("html_url", "") if release_data else ""
+                "notes": release_data.get("body", "") if isinstance(release_data, dict) else "",
+                "url": release_data.get("html_url", "") if isinstance(release_data, dict) else f"https://github.com/{GITHUB_REPO}/releases",
+                "error": err
             }
             self._eval_js(f"window.onUpdateCheckResult({json.dumps(payload)});")
 
-        check_for_updates_async(_cb)
+        check_for_updates_async(_cb, current_ver=CURRENT_VERSION)
         return {"checking": True}

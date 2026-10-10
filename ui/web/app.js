@@ -1434,13 +1434,37 @@ async function openLogsFolder() {
 
 async function checkForUpdates() {
   const box = document.getElementById('update-result-box');
+  if (!box) return;
   box.style.display = 'block';
   box.innerHTML = currentLang === 'fr' ? '<em>Recherche de mise à jour sur GitHub...</em>' : '<em>Checking for updates on GitHub...</em>';
-  await window.pywebview.api.check_for_updates();
+  try {
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.check_for_updates) {
+      await window.pywebview.api.check_for_updates();
+    }
+  } catch (err) {
+    console.error("Check for updates error:", err);
+    box.innerHTML = `
+      <div style="background-color: #451a1a; border: 1px solid #ef4444; padding: 10px; border-radius: 4px; color: #fca5a5;">
+        ${currentLang === 'fr' ? 'Erreur lors de la recherche de mise à jour.' : 'Error while checking for updates.'}
+      </div>
+    `;
+  }
 }
 
 window.onUpdateCheckResult = (data) => {
   const box = document.getElementById('update-result-box');
+  if (!box) return;
+  box.style.display = 'block';
+
+  if (data.error) {
+    box.innerHTML = `
+      <div style="background-color: #451a1a; border: 1px solid #ef4444; padding: 10px; border-radius: 4px; color: #fca5a5;">
+        <strong>${currentLang === 'fr' ? 'Recherche de mise à jour :' : 'Update check:'}</strong> ${data.error}
+      </div>
+    `;
+    return;
+  }
+
   if (data.available) {
     box.innerHTML = `
       <div style="background-color: #064e3b; border: 1px solid #10b981; padding: 10px; border-radius: 4px; color: #a7f3d0;">
@@ -1451,7 +1475,7 @@ window.onUpdateCheckResult = (data) => {
   } else {
     box.innerHTML = `
       <div style="background-color: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 4px; color: #94a3b8;">
-        ${currentLang === 'fr' ? `Vous disposez de la dernière version (${data.current}).` : `You are using the latest version (${data.current}).`}
+        ${currentLang === 'fr' ? `Vous disposez déjà de la dernière version (${data.current}).` : `You are already using the latest version (${data.current}).`}
       </div>
     `;
   }

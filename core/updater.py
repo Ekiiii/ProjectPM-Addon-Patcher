@@ -40,39 +40,76 @@ def is_newer_version(latest_tag, current_ver=CURRENT_VERSION):
     """
     return parse_version(latest_tag) > parse_version(current_ver)
 
-def check_for_updates_async(on_update_found_cb=None):
+def check_for_updates_sync(current_ver=CURRENT_VERSION, timeout=5.0):
+    """
+    Synchronously queries GitHub Releases API for the latest release.
+    Returns:
+        tuple (is_available: bool, latest_tag: str, release_data: dict, error_msg: str or None)
+    """
+    try:
+        req = urllib.request.Request(
+            RELEASES_URL,
+            headers={
+                "User-Agent": "ProjectPM-Addon-Patcher",
+                "Accept": "application/vnd.github.v3+json"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            if resp.status == 200:
+                data = json.loads(resp.read().decode("utf-8"))
+                latest_tag = data.get("tag_name", "").strip()
+                newer = is_newer_version(latest_tag, current_ver)
+                return newer, latest_tag, data, None
+            else:
+                return False, current_ver, None, f"HTTP {resp.status}"
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            return False, current_ver, None, "GitHub API rate limit reached. Please try again later."
+        return False, current_ver, None, f"HTTP Error {e.code}"
+    except urllib.error.URLError:
+        return False, current_ver, None, "Unable to reach GitHub. Please check your internet connection."
+    except Exception as e:
+        return False, current_ver, None, str(e)
+
+def check_for_updates_async(callback=None, current_ver=CURRENT_VERSION):
     """
     Queries GitHub API in a background daemon thread.
-    If a newer release is found, calls on_update_found_cb(tag, html_url, asset_url, asset_size).
+    Calls callback with the results once complete, supporting both modern
+    and legacy callback signatures without crashing.
     """
     def _run():
+        avail, latest_tag, data, err = check_for_updates_sync(current_ver)
+        if not callback:
+            return
+
+        # Attempt modern callback: callback(available, latest_ver, release_data, error_msg)
         try:
-            req = urllib.request.Request(
-                RELEASES_URL,
-                headers={"User-Agent": "ProjectPM-Addon-Patcher"}
-            )
-            with urllib.request.urlopen(req, timeout=4.0) as resp:
-                if resp.status == 200:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    latest_tag = data.get("tag_name", "").strip()
-                    html_url = data.get("html_url", f"https://github.com/{GITHUB_REPO}/releases")
-                    
-                    if latest_tag and is_newer_version(latest_tag, CURRENT_VERSION):
-                        # Locate ProjectPM-Addon-Patcher.exe in release assets
-                        asset_url = None
-                        asset_size = 0
-                        for asset in data.get("assets", []):
-                            name = asset.get("name", "")
-                            if name.lower() == "projectpm-addon-patcher.exe":
-                                asset_url = asset.get("browser_download_url")
-                                asset_size = asset.get("size", 0)
-                                break
-                        
-                        if on_update_found_cb:
-                            on_update_found_cb(latest_tag, html_url, asset_url, asset_size)
-        except Exception:
-            # Silent fail when offline or on rate limit
+            callback(avail, latest_tag, data, err)
+            return
+        except TypeError:
             pass
+
+        # Attempt 3-argument callback: callback(available, latest_ver, release_data)
+        try:
+            callback(avail, latest_tag, data)
+            return
+        except TypeError:
+            pass
+
+        # Attempt legacy callback: callback(tag, html_url, asset_url, asset_size)
+        try:
+            if avail and data:
+                html_url = data.get("html_url", f"https://github.com/{GITHUB_REPO}/releases")
+                asset_url = None
+                asset_size = 0
+                for asset in data.get("assets", []):
+                    if asset.get("name", "").lower() == "projectpm-addon-patcher.exe":
+                        asset_url = asset.get("browser_download_url")
+                        asset_size = asset.get("size", 0)
+                        break
+                callback(latest_tag, html_url, asset_url, asset_size)
+        except Exception as ex:
+            print(f"[Updater Callback Error] {ex}")
 
     t = threading.Thread(target=_run, daemon=True)
     t.start()
