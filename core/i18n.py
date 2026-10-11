@@ -20,8 +20,8 @@ TRANSLATIONS = {
         "fr": "Gestionnaire de Mods & Addons pour Pokémon Platine"
     },
     "header_version": {
-        "en": "v1.0.5",
-        "fr": "v1.0.5"
+        "en": "v1.0.6",
+        "fr": "v1.0.6"
     },
     "section_rom": {
         "en": "1. SELECT YOUR ROM & DESTINATION",
