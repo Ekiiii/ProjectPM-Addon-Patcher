@@ -371,11 +371,13 @@ function updateFooterStatus() {
     : `Ready to patch (${currentRomInfo.game || 'Platinum'})`;
 }
 
-async function processSelectedRom(path) {
+async function processSelectedRom(path, isRefresh = false) {
   const box = document.getElementById('rom-status-box');
   box.style.display = 'block';
-  document.getElementById('rom-title-display').innerText = currentLang === 'fr' ? "Analyse en cours..." : "Analyzing ROM...";
-  document.getElementById('rom-badges-container').innerHTML = '';
+  if (!isRefresh) {
+    document.getElementById('rom-title-display').innerText = currentLang === 'fr' ? "Analyse en cours..." : "Analyzing ROM...";
+    document.getElementById('rom-badges-container').innerHTML = '';
+  }
 
   const res = await window.pywebview.api.analyze_rom(path);
   currentRomInfo = res;
@@ -713,12 +715,28 @@ window.onPatchProgress = (pct, msg) => {
   document.getElementById('patch-status-text').innerText = msg;
 };
 
-window.onPatchComplete = (ok, msg) => {
+window.onPatchComplete = async (ok, msg) => {
   document.getElementById('btn-start-patch').disabled = false;
   document.getElementById('patch-status-text').innerText = ok ? (currentLang === 'fr' ? "Terminé !" : "Done!") : (currentLang === 'fr' ? "Erreur" : "Error");
   updateFooterStatus();
   if (ok) {
     document.getElementById('patch-progress-fill').style.width = '100%';
+
+    // Auto-actualisation des badges si la ROM source a été écrasée sur place
+    const inRom = document.getElementById('input-source-rom') ? document.getElementById('input-source-rom').value.trim() : '';
+    const outRom = document.getElementById('input-dest-rom') ? document.getElementById('input-dest-rom').value.trim() : '';
+    const overwriteToggle = document.getElementById('toggle-overwrite-source');
+    const isOverwrite = (overwriteToggle && overwriteToggle.checked) || 
+      (inRom && outRom && inRom.replace(/\\/g, '/').toLowerCase() === outRom.replace(/\\/g, '/').toLowerCase());
+
+    if (isOverwrite && inRom) {
+      try {
+        await processSelectedRom(inRom, true);
+      } catch (err) {
+        console.error('[Erreur actualisation badges ROM]', err);
+      }
+    }
+
     alert((currentLang === 'fr' ? "Succès !\n" : "Success!\n") + msg);
   } else {
     alert((currentLang === 'fr' ? "Erreur lors du patch :\n" : "Patch error:\n") + msg);
