@@ -68,11 +68,17 @@ class RomInfo:
         
         # Mod states
         self.is_soullocke = False
+        self.is_nuzlocke = False
         self.is_randomized = False
         self.has_visual_bg = False
         self.has_visual_cam = False
         self.has_exp_share = False
         self.has_free_hms = False
+        self.has_infinite_tms = False
+        self.has_fast_text = False
+        self.has_trade_evos = False
+        self.has_iv_ev = False
+        self.has_colored_natures = False
         
         # Save & Rand
         self.companion_save = None
@@ -94,6 +100,10 @@ class RomInfo:
     @property
     def has_soullocke(self) -> bool:
         return self.is_soullocke
+
+    @property
+    def has_nuzlocke(self) -> bool:
+        return self.is_nuzlocke
 
     @property
     def soullocke_variant(self) -> str:
@@ -231,12 +241,13 @@ class RomInfo:
                     else:
                         self.display_name = f"Custom ROM ({self.game_title})"
 
-            # Check SoulLocke: Hook H1 at 0x02055FA8 (arm9 offset 0x55FA8)
+            # Check SoulLocke / Nuzlocke: Hook H1 at 0x02055FA8 (arm9 offset 0x55FA8)
             arm9 = rom.arm9
+            has_h1 = False
             if len(arm9) > 0x55FA8 + 4:
                 h1_bytes = arm9[0x55FA8 : 0x55FA8 + 4]
-                if h1_bytes == bytes.fromhex("89f36af9"):
-                    self.is_soullocke = True
+                if h1_bytes != bytes.fromhex("6850301c") and len(h1_bytes) == 4 and (h1_bytes[1] & 0xF0) == 0xF0:
+                    has_h1 = True
 
             base_no_ext = os.path.splitext(self.path)[0]
 
@@ -282,19 +293,94 @@ class RomInfo:
             elif 5 in ovs and CAM_VISUAL_BYTES in ovs[5].data:
                 self.has_visual_cam = True
 
+            # Check PPM Header Tag at 0x1E0 (persisted by patcher)
+            if len(content) > 0x1E8 and content[0x1E0:0x1E4] == b"PPM\x01":
+                qol_f = content[0x1E4]
+                vis_f = content[0x1E5]
+                mode_f = content[0x1E6]
+                if (qol_f & 0x01): self.has_exp_share = True
+                if (qol_f & 0x02): self.has_free_hms = True
+                if (qol_f & 0x04): self.has_trade_evos = True
+                if (qol_f & 0x08): self.has_infinite_tms = True
+                if (vis_f & 0x01): self.has_iv_ev = True
+                if (vis_f & 0x02): self.has_colored_natures = True
+                if (vis_f & 0x04): self.has_visual_bg = True
+                if (vis_f & 0x08): self.has_visual_cam = True
+
+                if mode_f == 2:
+                    self.is_nuzlocke = True
+                    self.is_soullocke = False
+                elif mode_f == 1:
+                    self.is_soullocke = True
+                    self.is_nuzlocke = False
+                elif mode_f == 0:
+                    self.is_soullocke = False
+                    self.is_nuzlocke = False
+
+            # If H1 hook is present but mode was not set by header tag, detect via filename or msg 1301
+            if has_h1 and not self.is_soullocke and not self.is_nuzlocke:
+                if "nuzlocke" in self.filename.lower():
+                    self.is_nuzlocke = True
+                elif "soullocke" in self.filename.lower() or "soullink" in self.filename.lower():
+                    self.is_soullocke = True
+                else:
+                    try:
+                        from core.smart_injector import unpack_bank
+                        msg_data = rom.getFileByName("msgdata/pl_msg.narc")
+                        if msg_data:
+                            narc = ndspy.narc.NARC(msg_data)
+                            if len(narc.files) > 368:
+                                ik, cl = unpack_bank(narc.files[368])
+                                if len(cl) > 1301:
+                                    chars = cl[1301][0]
+                                    if chars and chars[0] == 0x0138:  # 'N' -> Nuzlocke
+                                        self.is_nuzlocke = True
+                                    else:
+                                        self.is_soullocke = True
+                    except Exception:
+                        self.is_soullocke = True
+
             # Check Shared Team EXP mod
             try:
                 from core.exp_share_patcher import is_exp_share_active
-                self.has_exp_share = is_exp_share_active(rom)
+                if is_exp_share_active(rom):
+                    self.has_exp_share = True
             except Exception:
-                self.has_exp_share = False
+                pass
 
             # Check Free HMs & Poké-Rider mod
             try:
                 from core.hm_patcher import is_hm_patch_active
-                self.has_free_hms = is_hm_patch_active(rom)
+                if is_hm_patch_active(rom):
+                    self.has_free_hms = True
             except Exception:
-                self.has_free_hms = False
+                pass
+
+            # Check Infinite TMs
+            try:
+                from core.qol_patcher import is_infinite_tms_active
+                if is_infinite_tms_active(rom):
+                    self.has_infinite_tms = True
+            except Exception:
+                pass
+
+            # Check Trade Evos
+            try:
+                from core.qol_patcher import is_trade_evos_active
+                if is_trade_evos_active(rom):
+                    self.has_trade_evos = True
+            except Exception:
+                pass
+
+            # Check IV/EV & Colored Natures
+            try:
+                from core.visual_enhancements import is_colored_natures_active, is_iv_ev_active
+                if is_colored_natures_active(rom):
+                    self.has_colored_natures = True
+                if is_iv_ev_active(rom):
+                    self.has_iv_ev = True
+            except Exception:
+                pass
 
             # Companion Save Files (.dsv and .sav)
             dsv_candidate = base_no_ext + ".dsv"

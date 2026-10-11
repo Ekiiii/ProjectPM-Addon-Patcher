@@ -97,6 +97,19 @@ def execute_patch_pipeline(
         free_hms = options.get("free_hms", False)
         if free_hms:
             log_cb("[Mods] CS Libres & Poké-Rider: Activé (Utilisation directe avec 'A' et oubli libre des CS).")
+        trade_evos = options.get("trade_evos", False)
+        if trade_evos:
+            log_cb("[QoL] Évolutions d'échange sans échange: Activé.")
+        infinite_tms = options.get("infinite_tms", False)
+        if infinite_tms:
+            log_cb("[QoL] CT Infinies (Style 5G+): Activé.")
+        colored_natures = options.get("colored_natures", False)
+        if colored_natures:
+            log_cb("[Visuel] Natures colorées (+Rouge / -Bleu): Activé.")
+        iv_ev_display = options.get("iv_ev_display", False)
+        if iv_ev_display:
+            log_cb("[Visuel] Affichage IVs & EVs en jeu: Activé.")
+
 
         # Multiplayer mode
         mp_enabled = options.get("mp_enabled", True)
@@ -250,13 +263,22 @@ def execute_patch_pipeline(
             if not ok:
                 raise RuntimeError("Failed to restore clean ProjectPM ROM.")
         elif sl_enabled and effective_mp:
-            _progress(0.60, t("progress_apply_soullocke"))
-            payload_json = os.path.join(payloads_dir, f"soullocke_{effective_sl_lang}.json")
-            if not os.path.isfile(payload_json):
-                payload_json = os.path.join(payloads_dir, "soullocke_fr.json")
-            ok = apply_soullocke(working_rom, output_rom, payload_json, log_cb)
-            if not ok:
-                raise RuntimeError("Failed to inject SoulLocke C payload.")
+            if sl_mode == "nuzlocke":
+                _progress(0.60, t("progress_apply_nuzlocke"))
+                payload_json = os.path.join(payloads_dir, f"nuzlocke_{effective_sl_lang}.json")
+                if not os.path.isfile(payload_json):
+                    payload_json = os.path.join(payloads_dir, "nuzlocke_fr.json")
+                ok = apply_soullocke(working_rom, output_rom, payload_json, log_cb)
+                if not ok:
+                    raise RuntimeError("Failed to inject Nuzlocke C payload.")
+            else:
+                _progress(0.60, t("progress_apply_soullocke"))
+                payload_json = os.path.join(payloads_dir, f"soullocke_{effective_sl_lang}.json")
+                if not os.path.isfile(payload_json):
+                    payload_json = os.path.join(payloads_dir, "soullocke_fr.json")
+                ok = apply_soullocke(working_rom, output_rom, payload_json, log_cb)
+                if not ok:
+                    raise RuntimeError("Failed to inject SoulLocke C payload.")
         else:
             shutil.copy2(working_rom, output_rom)
 
@@ -302,6 +324,34 @@ def execute_patch_pipeline(
             _progress(0.89, t("free_hms_title"))
             apply_hm_patch(output_rom, enable=False, log_cb=log_cb)
 
+        # 6d. Trade Evolutions Without Trading
+        from core.qol_patcher import apply_trade_evos_patch, is_trade_evos_active, apply_infinite_tms_patch
+        if trade_evos:
+            _progress(0.91, t("trade_evos_title"))
+            apply_trade_evos_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_trade_evos_active(output_rom):
+            _progress(0.91, t("trade_evos_title"))
+            apply_trade_evos_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6e. Infinite TMs
+        if infinite_tms:
+            _progress(0.91, t("infinite_tms_title"))
+            apply_infinite_tms_patch(output_rom, enable=True, log_cb=log_cb)
+
+
+        # 6f. Visual Enhancements (Colored Natures & IV/EV Display)
+        from core.visual_enhancements import apply_colored_natures_patch, apply_iv_ev_patch, is_colored_natures_active
+        if colored_natures:
+            _progress(0.92, t("colored_natures_title"))
+            apply_colored_natures_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_colored_natures_active(output_rom):
+            _progress(0.92, t("colored_natures_title"))
+            apply_colored_natures_patch(output_rom, enable=False, log_cb=log_cb)
+
+        if iv_ev_display:
+            _progress(0.93, t("iv_ev_title"))
+            apply_iv_ev_patch(output_rom, enable=True, log_cb=log_cb)
+
         # 7. Custom xDelta patch (applied before final randomizer restoration)
         custom_patch = options.get("custom_patch")
         if custom_patch and os.path.isfile(custom_patch):
@@ -341,6 +391,38 @@ def execute_patch_pipeline(
             _progress(0.95, t("progress_restore_rand"))
             log_cb(f"[Randomizer] Existing randomization detected ({len(rand_data.get('files', {}))} tables): re-applying at the end of patching to ensure 100% preservation...")
             restore_randomizer_data(output_rom, rand_data, log_cb=log_cb)
+
+        # 8b. Write PPM Header Tag at 0x1E0 for feature persistence and instant detection
+        try:
+            if sl_mode == "restore":
+                with open(output_rom, "r+b") as f:
+                    f.seek(0x1E0)
+                    f.write(b"\x00" * 8)
+            else:
+                qol_flags = (
+                    (0x01 if team_exp_share else 0) |
+                    (0x02 if free_hms else 0) |
+                    (0x04 if trade_evos else 0) |
+                    (0x08 if infinite_tms else 0)
+                )
+                vis_flags = (
+                    (0x01 if iv_ev_display else 0) |
+                    (0x02 if colored_natures else 0) |
+                    (0x04 if (bg_opt == "builtin" or getattr(info, "has_visual_bg", False)) else 0) |
+                    (0x08 if (cam_opt == "builtin" or getattr(info, "has_visual_cam", False)) else 0)
+                )
+                mode_flag = 0
+                if sl_enabled:
+                    if sl_mode == "nuzlocke":
+                        mode_flag = 2
+                    else:
+                        mode_flag = 1
+                tag_data = b"PPM\x01" + bytes([qol_flags, vis_flags, mode_flag, 0])
+                with open(output_rom, "r+b") as f:
+                    f.seek(0x1E0)
+                    f.write(tag_data)
+        except Exception as e:
+            log_cb(f"[Warning] Failed to write ROM header metadata: {e}")
 
         # 9. In-place overwrite finalization: atomically replace source ROM with new build
         if is_in_place and temp_final_inplace and os.path.isfile(temp_final_inplace):

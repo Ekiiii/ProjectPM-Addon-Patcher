@@ -147,7 +147,7 @@ LEARNSET_MOVE_BITS = 9
 LEARNSET_MOVE_MASK = (1 << LEARNSET_MOVE_BITS) - 1
 
 COOP_KEYS = ('trainers', 'types', 'abilities', 'movesets')
-COOP_FLAGS = ('trainers', 'types', 'abilities', 'movesets', 'coop_simstr', 'coop_noleg')
+COOP_FLAGS = ('trainers', 'types', 'abilities', 'movesets', 'coop_simstr', 'coop_noleg', 'coop_evo_on', 'coop_evo_rand', 'coop_honey_off')
 WORLD_FLAGS = ('wilds', 'starters', 'statics', 'grass', 'surf', 'fish', 'spec', 'noleg', 'battles', 'gifts', 'trade_get', 'trade_want', 'wild_special', 'every_species', 'starters_any', 'gba_flip')
 PERSONAL_KEYS = ('wilds', 'starters', 'statics', 'battles', 'gifts', 'trade_get', 'trade_want', 'wild_special', 'gba_slots')
 
@@ -1192,6 +1192,12 @@ def encode_coop_code(settings: Dict[str, Any]) -> str:
     else:
         if 'coop_noleg' not in st:
             st['coop_noleg'] = True
+
+    evo_mode = st.get('evolutions_mode') or st.get('rand_evos')
+    st['coop_evo_on'] = bool(evo_mode and evo_mode != 'vanilla')
+    st['coop_evo_rand'] = bool(evo_mode in ('random', 'completely_random', 'chaos'))
+    st['coop_honey_off'] = bool(('honey' in st and not st.get('honey')) or ('rand_honey' in st and not st.get('rand_honey')))
+
     raw = struct.pack('<BH', RAND_VERSION & 255, _pack_flags(st, COOP_FLAGS)) + _pack_seed(st.get('coop_seed'))
     return _finish_code(SHARE_PREFIX_COOP, raw)
 
@@ -1242,7 +1248,16 @@ def encode_world_code(settings: Dict[str, Any]) -> str:
             st['starters_any'] = not bool(st.get('starters_evolving', False))
 
     st['gba_flip'] = bool(st.get('gba_slots')) != bool(st.get('wild_special'))
-    raw = struct.pack('<BHBBB', RAND_VERSION & 255, _pack_flags(st, WORLD_FLAGS), mode_idx, rule_idx, max(1, min(255, shiny))) + _pack_seed(st.get('seed'))
+    raw = struct.pack('<BHBBB', RAND_VERSION & 255, _pack_flags(st, WORLD_FLAGS), mode_idx, rule_idx, max(1, min(255, shiny))) + _pack_seed(st.get('seed') or st.get('world_seed'))
+
+    evo_mode = st.get('evolutions_mode') or st.get('rand_evos')
+    evo_on = bool(evo_mode and evo_mode != 'vanilla')
+    evo_rand = bool(evo_mode in ('random', 'completely_random', 'chaos'))
+    honey_off = bool(('honey' in st and not st.get('honey')) or ('rand_honey' in st and not st.get('rand_honey')))
+    extra = (1 if evo_on else 0) | (2 if evo_rand else 0) | (4 if honey_off else 0)
+    if extra != 0:
+        raw += b'\xee' + bytes([extra])
+
     return _finish_code(SHARE_PREFIX_WORLD, raw)
 
 
@@ -1347,8 +1362,28 @@ def decode_share_code(code: str) -> Tuple[Optional[Dict[str, Any]], Optional[str
         }
         for i, key in enumerate(COOP_FLAGS):
             d[key] = bool(flags & (1 << i))
+
+        if d.pop('coop_evo_on', False):
+            mode_str = 'chaos' if d.pop('coop_evo_rand', False) else 'similar_strength'
+        else:
+            d.pop('coop_evo_rand', False)
+            mode_str = 'vanilla'
+        d['evolutions_mode'] = mode_str
+        d['rand_evos'] = mode_str
+        if d.pop('coop_honey_off', False):
+            d['honey'] = False
+            d['rand_honey'] = False
+        else:
+            d['honey'] = True
+            d['rand_honey'] = True
+
         return (d, None)
     else:
+        extra_byte = 0
+        if len(raw) >= 9 and raw[-2:-1] == b'\xee':
+            extra_byte = raw[-1]
+            raw = raw[:-2]
+
         mode_i = raw[3]
         rule_i = raw[4]
         shiny = raw[5]
@@ -1363,12 +1398,27 @@ def decode_share_code(code: str) -> Tuple[Optional[Dict[str, Any]], Optional[str
             'mode': SHARE_MODES[mode_i],
             'rule': SHARE_RULES[rule_i],
             'shiny': shiny,
-            'seed': seed
+            'seed': seed,
+            'world_seed': seed
         }
         for i, key in enumerate(WORLD_FLAGS):
             d[key] = bool(flags & (1 << i))
         gba_flip = d.pop('gba_flip', False)
         d['gba_slots'] = bool(d.get('wild_special')) != bool(gba_flip)
+
+        if extra_byte & 1:
+            mode_str = 'chaos' if (extra_byte & 2) else 'similar_strength'
+        else:
+            mode_str = 'vanilla'
+        d['evolutions_mode'] = mode_str
+        d['rand_evos'] = mode_str
+        if extra_byte & 4:
+            d['honey'] = False
+            d['rand_honey'] = False
+        else:
+            d['honey'] = True
+            d['rand_honey'] = True
+
         return (d, None)
 
 def roll_seed() -> str:

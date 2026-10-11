@@ -1,3 +1,47 @@
+# v1.0.7
+
+---
+
+## 🇫🇷 Français
+
+### Nouveautés de la version 1.0.7
+
+- **Architecture multi-modes & prise en charge dédiée de Soul Link et Nuzlocke** :
+  - Support séparé et modulaire des modes de jeu additionnels : **Mod Soul Link** (âmes liées, K.O. synchronisés, boîtes cimetière) et **Mod Nuzlocke** (1 capture par zone, K.O. définitifs).
+  - Indicateur contextuel dynamique affichant automatiquement la variante linguistique active ou les avertissements de compatibilité selon le mode choisi.
+  - Rectification complète des textes d'aide et harmonisation du nommage des fichiers de sortie (`ProjectPM_FR_SoulLink.nds`, `ProjectPM_FR_Nuzlocke.nds`).
+  - Nouveaux badges d'analyse de ROM : `Soul Link Actif`, `Nuzlocke Actif`, `Standard (Sans Mod)`.
+- **Typographie DS Pixel-Art native avec support intégral des accents français** :
+  - Extension de la police de caractères `PlatinumDS.ttf` avec 38 nouveaux glyphes accentués et typographiques (`À`, `Â`, `É`, `È`, `Ê`, `Ë`, `Î`, `Ï`, `Ô`, `Ù`, `Û`, `Ü`, `Ç`, minuscules et majuscules, `œ`, `Œ`, `«`, `»`, `’`, etc.).
+  - Rendu visuel 100% fidèle et net sans aucun fallback vers des polices système génériques.
+- **Natures Colorées & Confort Visuel** :
+  - Intégration de l'aperçu HD calibré (216×120 px) pour l'option des Natures Colorées (statistique augmentée en rouge, statistique diminuée en bleu).
+  - Modal d'aperçu interactif avec activation/désactivation au clic.
+- **Améliorations de robustesse et compilation** :
+  - Synchronisation de toutes les dépendances binaires (ndspy, pywebview, pythonnet) pour un packaging autonome fiable sous Windows.
+
+---
+
+## 🇬🇧 English
+
+### What's New in Version 1.0.7
+
+- **Dedicated Multi-Mode Architecture (Soul Link & Nuzlocke)**:
+  - Full modular support for distinct gameplay modes: **Soul Link Mod** (linked souls, shared faints, graveyard boxes) and **Nuzlocke Mod** (1 catch per area, permanent faints).
+  - Dynamic contextual badge showing active mod language and compatibility status based on selected mode.
+  - Cleaned up multiplayer base help text and standardized output ROM naming (`ProjectPM_FR_SoulLink.nds`, `ProjectPM_FR_Nuzlocke.nds`).
+  - New ROM status badges: `Soul Link Active`, `Nuzlocke Active`, `Standard (No Mod)`.
+- **Authentic DS Pixel-Art Font with Full French Accent Support**:
+  - Extended embedded font `PlatinumDS.ttf` with 38 handcrafted pixel-art accented glyphs matching Pokémon Gen 4 typography (`À`, `É`, `è`, `ê`, `ç`, `ô`, `œ`, etc.).
+  - Eliminates OS font fallback for clean, consistent pixel-art UI typography.
+- **Colored Natures & Visual Enhancements**:
+  - Added calibrated 216×120 px preview matching Visual+ formatting for the Colored Natures enhancement (increased stat in red, decreased stat in blue).
+  - Interactive preview modal with click-to-toggle feature.
+- **Build System & Stability Improvements**:
+  - Packaging workflow enhanced with Python 3.12 and explicit binary dependencies bundling.
+
+---
+
 # v1.0.6
 
 ---

@@ -89,7 +89,7 @@ window.addEventListener('pywebviewready', async () => {
     
     // Set version
     const verEl = document.getElementById('app-version');
-    if (verEl) verEl.innerText = initData.version || 'v1.0.6';
+    if (verEl) verEl.innerText = initData.version || 'v1.0.7';
     
     // Set initial seeds & codes
     if (initData.initial_coop) {
@@ -132,9 +132,9 @@ window.addEventListener('pywebviewready', async () => {
         document.getElementById('input-output-rom').value = cfg.last_output_rom;
       }
       if (cfg.addon_mode) {
-        const rad = document.querySelector(`input[name="addon-mode"][value="${cfg.addon_mode}"]`);
-        if (rad) {
-          rad.checked = true;
+        const sel = document.getElementById('select-addon-mode');
+        if (sel) {
+          sel.value = cfg.addon_mode;
           onAddonModeChange();
         }
       }
@@ -158,6 +158,23 @@ window.addEventListener('pywebviewready', async () => {
         const tHms = document.getElementById('toggle-free-hms');
         if (tHms) tHms.checked = cfg.free_hms;
       }
+      if (cfg.infinite_tms !== undefined) {
+        const tTm = document.getElementById('toggle-infinite-tms');
+        if (tTm) tTm.checked = cfg.infinite_tms;
+      }
+      if (cfg.trade_evos !== undefined) {
+        const tEvo = document.getElementById('toggle-trade-evos');
+        if (tEvo) tEvo.checked = cfg.trade_evos;
+      }
+      if (cfg.iv_ev_display !== undefined) {
+        const tIv = document.getElementById('toggle-iv-ev-display');
+        if (tIv) tIv.checked = cfg.iv_ev_display;
+      }
+      if (cfg.colored_natures !== undefined) {
+        const tNat = document.getElementById('toggle-colored-natures');
+        if (tNat) tNat.checked = cfg.colored_natures;
+      }
+      updatePatchSummaryBadges();
     }
   } catch (err) {
     console.error('[App Init Error]', err);
@@ -177,19 +194,103 @@ async function chooseInitialLanguage(lang) {
 
 function saveCurrentOptionsToConfig() {
   if (window.pywebview && window.pywebview.api && window.pywebview.api.save_app_config) {
-    const addonRad = document.querySelector('input[name="addon-mode"]:checked');
+    const addonSel = document.getElementById('select-addon-mode');
     const dstInput = document.getElementById('input-dest-rom');
     const cfg = {
-      addon_mode: addonRad ? addonRad.value : 'none',
+      addon_mode: addonSel ? addonSel.value : 'none',
       visual_bg: document.getElementById('toggle-visual-bg') ? document.getElementById('toggle-visual-bg').checked : true,
       visual_cam: document.getElementById('toggle-visual-cam') ? document.getElementById('toggle-visual-cam').checked : true,
       backup_save: document.getElementById('toggle-backup-save') ? document.getElementById('toggle-backup-save').checked : true,
       team_exp_share: document.getElementById('toggle-team-exp-share') ? document.getElementById('toggle-team-exp-share').checked : false,
       free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
+      infinite_tms: document.getElementById('toggle-infinite-tms') ? document.getElementById('toggle-infinite-tms').checked : false,
+      trade_evos: document.getElementById('toggle-trade-evos') ? document.getElementById('toggle-trade-evos').checked : false,
+      iv_ev_display: document.getElementById('toggle-iv-ev-display') ? document.getElementById('toggle-iv-ev-display').checked : false,
+      colored_natures: document.getElementById('toggle-colored-natures') ? document.getElementById('toggle-colored-natures').checked : false,
       last_output_rom: dstInput ? dstInput.value : ''
     };
     window.pywebview.api.save_app_config(cfg);
   }
+}
+
+// ============================================================================
+// MODAL MANAGEMENT & SUMMARY BADGES (QoL & VISUAL)
+// ============================================================================
+function updatePatchSummaryBadges() {
+  // QoL patches count
+  const qolToggles = [
+    'toggle-team-exp-share',
+    'toggle-free-hms',
+    'toggle-infinite-tms',
+    'toggle-trade-evos'
+  ];
+  let activeQol = 0;
+  qolToggles.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.checked) activeQol++;
+  });
+  const qolBadge = document.getElementById('badge-qol-summary');
+  if (qolBadge) {
+    if (activeQol > 0) {
+      qolBadge.className = 'status-badge emerald';
+      qolBadge.innerText = (currentLang === 'fr') ? `${activeQol} Actif${activeQol > 1 ? 's' : ''}` : `${activeQol} Active`;
+    } else {
+      qolBadge.className = 'status-badge slate';
+      qolBadge.innerText = (currentLang === 'fr') ? '0 Actif' : '0 Active';
+    }
+  }
+
+  // Visual patches count
+  const visualToggles = [
+    'toggle-iv-ev-display',
+    'toggle-colored-natures',
+    'toggle-visual-bg',
+    'toggle-visual-cam'
+  ];
+  let activeVisual = 0;
+  visualToggles.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.checked) activeVisual++;
+  });
+  const visualBadge = document.getElementById('badge-visual-summary');
+  if (visualBadge) {
+    if (activeVisual > 0) {
+      visualBadge.className = 'status-badge blue';
+      visualBadge.innerText = (currentLang === 'fr') ? `${activeVisual} Actif${activeVisual > 1 ? 's' : ''}` : `${activeVisual} Active`;
+    } else {
+      visualBadge.className = 'status-badge slate';
+      visualBadge.innerText = (currentLang === 'fr') ? '0 Actif' : '0 Active';
+    }
+  }
+}
+
+function onToggleOptionChange() {
+  updatePatchSummaryBadges();
+  saveCurrentOptionsToConfig();
+}
+
+function openQolModal() {
+  const m = document.getElementById('modal-qol-patches');
+  if (m) m.style.display = 'flex';
+}
+
+function closeQolModal() {
+  const m = document.getElementById('modal-qol-patches');
+  if (m) m.style.display = 'none';
+  updatePatchSummaryBadges();
+  saveCurrentOptionsToConfig();
+}
+
+function openVisualModal() {
+  const m = document.getElementById('modal-visual-patches');
+  if (m) m.style.display = 'flex';
+}
+
+function closeVisualModal() {
+  const m = document.getElementById('modal-visual-patches');
+  if (m) m.style.display = 'none';
+  updatePatchSummaryBadges();
+  saveCurrentOptionsToConfig();
 }
 
 // ============================================================================
@@ -396,22 +497,23 @@ async function processSelectedRom(path, isRefresh = false) {
     updateMpDetectIndicator();
 
     // Addon mode selection:
-    if (res.has_soullocke) {
-      const radioRestore = document.querySelector('input[name="addon-mode"][value="restore"]');
-      if (radioRestore) radioRestore.checked = true;
-    } else {
-      const radioNone = document.querySelector('input[name="addon-mode"][value="none"]');
-      if (radioNone) radioNone.checked = true;
+    const addonSelect = document.getElementById('select-addon-mode');
+    if (addonSelect) {
+      if (res.has_nuzlocke || res.has_soullocke) {
+        addonSelect.value = 'restore';
+      } else {
+        addonSelect.value = 'none';
+      }
     }
 
     // Sync visual options if already present on ROM
     const toggleBg = document.getElementById('toggle-visual-bg');
-    if (toggleBg && res.has_visualplus_bg) {
-      toggleBg.checked = true;
+    if (toggleBg && res.has_visualplus_bg !== undefined) {
+      toggleBg.checked = !!res.has_visualplus_bg;
     }
     const toggleCam = document.getElementById('toggle-visual-cam');
-    if (toggleCam && res.has_visualplus_cam) {
-      toggleCam.checked = true;
+    if (toggleCam && res.has_visualplus_cam !== undefined) {
+      toggleCam.checked = !!res.has_visualplus_cam;
     }
 
     // Sync Team EXP Share option from ROM
@@ -425,6 +527,32 @@ async function processSelectedRom(path, isRefresh = false) {
     if (toggleHMs && res.has_free_hms !== undefined) {
       toggleHMs.checked = !!res.has_free_hms;
     }
+
+    // Sync Infinite TMs from ROM
+    const toggleTms = document.getElementById('toggle-infinite-tms');
+    if (toggleTms && res.has_infinite_tms !== undefined) {
+      toggleTms.checked = !!res.has_infinite_tms;
+    }
+
+    // Sync Trade Evos from ROM
+    const toggleEvo = document.getElementById('toggle-trade-evos');
+    if (toggleEvo && res.has_trade_evos !== undefined) {
+      toggleEvo.checked = !!res.has_trade_evos;
+    }
+
+    // Sync IV/EV display from ROM
+    const toggleIv = document.getElementById('toggle-iv-ev-display');
+    if (toggleIv && res.has_iv_ev !== undefined) {
+      toggleIv.checked = !!res.has_iv_ev;
+    }
+
+    // Sync Colored Natures from ROM
+    const toggleNat = document.getElementById('toggle-colored-natures');
+    if (toggleNat && res.has_colored_natures !== undefined) {
+      toggleNat.checked = !!res.has_colored_natures;
+    }
+
+    updatePatchSummaryBadges();
 
     // Suggest in-place update by default for existing ProjectPM ROMs
     const overwriteToggle = document.getElementById('toggle-overwrite-source');
@@ -494,58 +622,54 @@ window.addEventListener('drop', (e) => {
 // ============================================================================
 // PATCHER & MODES PIPELINE
 // ============================================================================
-function onMpModeChange() {
+function updateModLangNote() {
+  const note = document.getElementById('soullink-lang-note');
+  if (!note) return;
+
   const mpSelect = document.getElementById('select-mp-mode');
   const mpVal = mpSelect ? mpSelect.value : 'fr';
-  const isEn = (mpVal === 'en');
-  const isNone = (mpVal === 'none');
+  const addonSelect = document.getElementById('select-addon-mode');
+  const addonVal = addonSelect ? addonSelect.value : 'none';
 
-  const soullinkBadge = document.getElementById('soullink-sync-badge');
-  const soullinkNote = document.getElementById('soullink-lang-note');
-  const restoreBadge = document.getElementById('restore-sync-badge');
-
-  if (isNone) {
-    if (soullinkBadge) {
-      soullinkBadge.className = 'status-badge slate';
-      soullinkBadge.innerText = currentLang === 'fr' ? 'Base requise' : 'Base required';
+  if (mpVal === 'none') {
+    if (addonVal === 'soullink' || addonVal === 'nuzlocke') {
+      note.style.display = 'flex';
+      note.innerHTML = currentLang === 'fr'
+        ? '<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg> <em>Une base multijoueur active est requise pour ce mod.</em>'
+        : '<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg> <em>An active multiplayer base is required for this mod.</em>';
+    } else {
+      note.style.display = 'none';
     }
-    if (soullinkNote) {
-      soullinkNote.innerHTML = currentLang === 'fr'
-        ? '<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg> <em>Nécessite une base multijoueur active pour fonctionner.</em>'
-        : '<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg> <em>Requires an active multiplayer base to work.</em>';
-    }
-    if (restoreBadge) {
-      restoreBadge.innerText = 'Project PM';
-    }
-  } else if (isEn) {
-    if (soullinkBadge) {
-      soullinkBadge.className = 'status-badge blue';
-      soullinkBadge.innerText = currentLang === 'fr' ? 'Mod EN' : 'EN Mod';
-    }
-    if (soullinkNote) {
-      soullinkNote.innerHTML = currentLang === 'fr'
-        ? '<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Langue du mod : English / USA</strong> (définie automatiquement par la base multijoueur).'
-        : '<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Mod language: English / USA</strong> (automatically defined by multiplayer base).';
-    }
-    if (restoreBadge) {
-      restoreBadge.innerText = 'Project PM USA';
-    }
-  } else {
-    // fr
-    if (soullinkBadge) {
-      soullinkBadge.className = 'status-badge emerald';
-      soullinkBadge.innerText = currentLang === 'fr' ? 'Mod FR' : 'FR Mod';
-    }
-    if (soullinkNote) {
-      soullinkNote.innerHTML = currentLang === 'fr'
-        ? '<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Langue du mod : Français</strong> (définie automatiquement par la base multijoueur).'
-        : '<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Mod language: French</strong> (automatically defined by multiplayer base).';
-    }
-    if (restoreBadge) {
-      restoreBadge.innerText = 'Project PM FR';
-    }
+    return;
   }
 
+  const langLabel = (mpVal === 'en')
+    ? (currentLang === 'fr' ? 'English / USA' : 'English / USA')
+    : (currentLang === 'fr' ? 'Français' : 'French');
+
+  if (addonVal === 'soullink') {
+    note.style.display = 'flex';
+    note.innerHTML = currentLang === 'fr'
+      ? `<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Langue du mod Soul Link : ${langLabel}</strong> (définie automatiquement par la base multijoueur).`
+      : `<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Soul Link mod language: ${langLabel}</strong> (defined by multiplayer base).`;
+  } else if (addonVal === 'nuzlocke') {
+    note.style.display = 'flex';
+    note.innerHTML = currentLang === 'fr'
+      ? `<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Langue du mod Nuzlocke : ${langLabel}</strong> (définie automatiquement par la base multijoueur).`
+      : `<svg class="inline-svg" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Nuzlocke mod language: ${langLabel}</strong> (defined by multiplayer base).`;
+  } else if (addonVal === 'restore') {
+    note.style.display = 'flex';
+    note.innerHTML = currentLang === 'fr'
+      ? '<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg> <em>Restauration de la ROM multijoueur d\'origine (désinstalle les mods Soul Link / Nuzlocke).</em>'
+      : '<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-warning"></use></svg> <em>Restores original multiplayer ROM (uninstalls Soul Link / Nuzlocke mods).</em>';
+  } else {
+    // none (classic multiplayer)
+    note.style.display = 'none';
+  }
+}
+
+function onMpModeChange() {
+  updateModLangNote();
   updateMpDetectIndicator();
   onAddonModeChange();
 }
@@ -555,14 +679,9 @@ function onToggleOverwriteSource() {
 }
 
 function onAddonModeChange() {
-  // Update visual active state of radio cards
-  document.querySelectorAll('input[name="addon-mode"]').forEach(r => {
-    const card = r.closest('.pixel-radio-card');
-    if (card) card.classList.toggle('active', r.checked);
-  });
-
-  const addonRadio = document.querySelector('input[name="addon-mode"]:checked');
-  const addonVal = addonRadio ? addonRadio.value : 'none';
+  updateModLangNote();
+  const addonSelect = document.getElementById('select-addon-mode');
+  const addonVal = addonSelect ? addonSelect.value : 'none';
   const dstInput = document.getElementById('input-dest-rom');
   const dstBtn = document.getElementById('i18n-btn-browse-dst');
   const btn = document.getElementById('btn-start-patch');
@@ -591,14 +710,20 @@ function onAddonModeChange() {
       if (addonVal === 'restore') {
         if (btnSpan) {
           btnSpan.innerText = randEnabled
-            ? (currentLang === 'fr' ? "RESTAURER & RANDOMISER SUR PLACE" : "RESTORE & RANDOMIZE IN-PLACE")
-            : (currentLang === 'fr' ? "RESTAURER LA ROM SUR PLACE (PROPRE)" : "RESTORE CLEAN ROM IN-PLACE");
+            ? (currentLang === 'fr' ? "DÉSINSTALLER MODS & RANDOMISER SUR PLACE" : "UNINSTALL MODS & RANDOMIZE IN-PLACE")
+            : (currentLang === 'fr' ? "RESTAURER LA ROM SUR PLACE (D'ORIGINE)" : "RESTORE ORIGINAL ROM IN-PLACE");
+        }
+      } else if (addonVal === 'nuzlocke') {
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? `INJECTER NUZLOCKE & RANDOMISER SUR PLACE (${lang})` : `INJECT NUZLOCKE & RANDOMIZE IN-PLACE (${lang})`)
+            : (currentLang === 'fr' ? `METTRE À JOUR & INJECTER NUZLOCKE SUR PLACE (${lang})` : `UPDATE & INJECT NUZLOCKE IN-PLACE (${lang})`);
         }
       } else if (addonVal === 'soullink') {
         if (btnSpan) {
           btnSpan.innerText = randEnabled
-            ? (currentLang === 'fr' ? `INJECTER SOULLOCKE & RANDOMISER SUR PLACE (${lang})` : `INJECT SOULLOCKE & RANDOMIZE IN-PLACE (${lang})`)
-            : (currentLang === 'fr' ? `METTRE À JOUR & INJECTER SOULLOCKE SUR PLACE (${lang})` : `UPDATE & INJECT SOULLOCKE IN-PLACE (${lang})`);
+            ? (currentLang === 'fr' ? `INJECTER SOUL LINK & RANDOMISER SUR PLACE (${lang})` : `INJECT SOUL LINK & RANDOMIZE IN-PLACE (${lang})`)
+            : (currentLang === 'fr' ? `METTRE À JOUR & INJECTER SOUL LINK SUR PLACE (${lang})` : `UPDATE & INJECT SOUL LINK IN-PLACE (${lang})`);
         }
       } else {
         if (btnSpan) {
@@ -616,15 +741,22 @@ function onAddonModeChange() {
         dstInput.value = `${dirName}/${baseName}_Clean${randSuffix}.nds`;
         if (btnSpan) {
           btnSpan.innerText = randEnabled
-            ? (currentLang === 'fr' ? "RESTAURER & RANDOMISER LA ROM" : "RESTORE & RANDOMIZE ROM")
-            : (currentLang === 'fr' ? "RESTAURER LA ROM PROPRE (RETIRER SOULLOCKE)" : "RESTORE CLEAN ROM (UNINSTALL SOULLOCKE)");
+            ? (currentLang === 'fr' ? "DÉSINSTALLER MODS & RANDOMISER LA ROM" : "UNINSTALL MODS & RANDOMIZE ROM")
+            : (currentLang === 'fr' ? "RESTAURER LA ROM D'ORIGINE (DÉSINSTALLER LES MODS)" : "RESTORE ORIGINAL ROM (UNINSTALL MODS)");
+        }
+      } else if (addonVal === 'nuzlocke') {
+        dstInput.value = `${dirName}/ProjectPM_${lang}_Nuzlocke${randSuffix}.nds`;
+        if (btnSpan) {
+          btnSpan.innerText = randEnabled
+            ? (currentLang === 'fr' ? `INJECTER NUZLOCKE & RANDOMISER LA ROM (${lang})` : `INJECT NUZLOCKE & RANDOMIZE ROM (${lang})`)
+            : (currentLang === 'fr' ? `INJECTER LE MOD NUZLOCKE (${lang})` : `INJECT NUZLOCKE MOD (${lang})`);
         }
       } else if (addonVal === 'soullink') {
-        dstInput.value = `${dirName}/ProjectPM_${lang}_SoulLocke${randSuffix}.nds`;
+        dstInput.value = `${dirName}/ProjectPM_${lang}_SoulLink${randSuffix}.nds`;
         if (btnSpan) {
           btnSpan.innerText = randEnabled
             ? (currentLang === 'fr' ? `INJECTER SOUL LINK & RANDOMISER LA ROM (${lang})` : `INJECT SOUL LINK & RANDOMIZE ROM (${lang})`)
-            : (currentLang === 'fr' ? `INJECTER LE MOD SOUL LINK / SOULLOCKE (${lang})` : `INJECT SOUL LINK / SOULLOCKE MOD (${lang})`);
+            : (currentLang === 'fr' ? `INJECTER LE MOD SOUL LINK (${lang})` : `INJECT SOUL LINK MOD (${lang})`);
         }
       } else {
         // none
@@ -671,8 +803,8 @@ async function startPatching() {
   document.getElementById('patch-log').innerText = '';
 
   const mpMode = document.getElementById('select-mp-mode').value;
-  const addonRadio = document.querySelector('input[name="addon-mode"]:checked');
-  const addonVal = addonRadio ? addonRadio.value : 'none';
+  const addonSelect = document.getElementById('select-addon-mode');
+  const addonVal = addonSelect ? addonSelect.value : 'none';
   const effectiveVariant = (mpMode === 'en') ? 'en' : 'fr';
 
   const randToggle = document.getElementById('toggle-enable-randomizer');
@@ -681,15 +813,19 @@ async function startPatching() {
   const options = {
     mp_enabled: mpMode !== 'none',
     mp_version: mpMode === 'none' ? 'none' : effectiveVariant,
-    sl_enabled: addonVal === 'soullink',
-    sl_mode: addonVal === 'restore' ? 'restore' : 'apply',
+    sl_enabled: (addonVal === 'soullink' || addonVal === 'nuzlocke'),
+    sl_mode: addonVal === 'restore' ? 'restore' : (addonVal === 'nuzlocke' ? 'nuzlocke' : (addonVal === 'soullink' ? 'apply' : 'none')),
     sl_variant: effectiveVariant,
-    bg_opt: document.getElementById('toggle-visual-bg').checked ? 'builtin' : 'none',
-    cam_opt: document.getElementById('toggle-visual-cam').checked ? 'builtin' : 'none',
-    backup_save: document.getElementById('toggle-backup-save').checked,
+    bg_opt: (document.getElementById('toggle-visual-bg') && document.getElementById('toggle-visual-bg').checked) ? 'builtin' : 'none',
+    cam_opt: (document.getElementById('toggle-visual-cam') && document.getElementById('toggle-visual-cam').checked) ? 'builtin' : 'none',
+    backup_save: document.getElementById('toggle-backup-save') ? document.getElementById('toggle-backup-save').checked : true,
     team_exp_share: document.getElementById('toggle-team-exp-share') ? document.getElementById('toggle-team-exp-share').checked : false,
     free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
-    custom_patch: document.getElementById('input-custom-patch').value.trim() || null,
+    infinite_tms: document.getElementById('toggle-infinite-tms') ? document.getElementById('toggle-infinite-tms').checked : false,
+    trade_evos: document.getElementById('toggle-trade-evos') ? document.getElementById('toggle-trade-evos').checked : false,
+    iv_ev_display: document.getElementById('toggle-iv-ev-display') ? document.getElementById('toggle-iv-ev-display').checked : false,
+    colored_natures: document.getElementById('toggle-colored-natures') ? document.getElementById('toggle-colored-natures').checked : false,
+    custom_patch: document.getElementById('input-custom-patch') ? (document.getElementById('input-custom-patch').value.trim() || null) : null,
     rand_enabled: randEnabled,
     rand_settings: randEnabled ? getWizardSettingsObject() : null
   };
@@ -798,6 +934,22 @@ function closeRandomizerModal() {
   const modal = document.getElementById('modal-randomizer');
   if (modal) modal.style.display = 'none';
 }
+
+// Global Modal Backdrop and Escape handling
+window.addEventListener('click', (e) => {
+  if (e.target.id === 'modal-qol-patches') closeQolModal();
+  if (e.target.id === 'modal-visual-patches') closeVisualModal();
+  if (e.target.id === 'modal-randomizer') closeRandomizerModal();
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeQolModal();
+    closeVisualModal();
+    closeRandomizerModal();
+  }
+});
+
 
 function switchModalTab(tab) {
   const btnWiz = document.getElementById('modal-tab-btn-wizard');

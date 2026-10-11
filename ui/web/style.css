@@ -1843,3 +1843,84 @@ body {
 .pixel-btn.emerald:hover {
   background-color: #047857;
 }
+
+/* ========================================================================== */
+/* PATCH LAUNCHER CARDS (QoL & VISUAL MODAL LAUNCHERS)                       */
+/* ========================================================================== */
+.patch-launcher-card {
+  background: linear-gradient(180deg, #111a2e 0%, #0d1424 100%);
+  border: 2px solid #1e293b;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.05), inset -1px -1px 0 rgba(0, 0, 0, 0.4);
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.patch-launcher-card:hover {
+  border-color: #3b82f6;
+  background: linear-gradient(180deg, #16223d 0%, #0f182c 100%);
+  transform: translateY(-1px);
+}
+
+.launcher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.launcher-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.launcher-svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.text-emerald {
+  color: #10b981 !important;
+}
+
+.text-cyan {
+  color: #06b6d4 !important;
+}
+
+.text-purple {
+  color: #a855f7 !important;
+}
+
+.text-amber {
+  color: #f59e0b !important;
+}
+
+.launcher-title {
+  font-family: var(--font-pixel, inherit);
+  font-size: 13px;
+  color: #f1f5f9;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.launcher-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin-bottom: 12px;
+  flex-grow: 1;
+}
+
+.custom-patch-mini-card {
+  background-color: #101726;
+  border: 1px solid #1e293b;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+}
+

@@ -38,7 +38,13 @@ def get_default_config() -> Dict[str, Any]:
         "addon_mode": "soullink",
         "mp_mode": "fr",
         "team_exp_share": False,
-        "free_hms": False
+        "free_hms": False,
+        "infinite_tms": False,
+        "trade_evos": False,
+        "fast_text": False,
+        "run_indoors": False,
+        "iv_ev_display": False,
+        "colored_natures": False
     }
 
 def load_config() -> Dict[str, Any]:

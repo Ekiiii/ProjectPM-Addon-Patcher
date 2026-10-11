@@ -259,7 +259,7 @@ class PatcherBridge:
             # Generate suggested output name
             dir_name = os.path.dirname(os.path.abspath(rom_path))
             base_no_ext = os.path.splitext(os.path.basename(rom_path))[0]
-            if info.has_soullocke:
+            if getattr(info, "has_nuzlocke", False) or info.has_soullocke:
                 sug_name = f"{base_no_ext}_Clean.nds"
             elif info.has_multiplayer:
                 sug_name = f"{base_no_ext}_Modded.nds"
@@ -306,8 +306,14 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
-            # 3. SoulLocke Badge
-            if info.has_soullocke:
+            # 3. Game Mode Badge (Nuzlocke / SoulLocke / None)
+            if getattr(info, "has_nuzlocke", False):
+                badges.append({
+                    "key": "badge_nuzlocke_active",
+                    "label": t("badge_nuzlocke_active"),
+                    "color": "purple"
+                })
+            elif info.has_soullocke:
                 badges.append({
                     "key": "badge_sl_active",
                     "label": t("badge_sl_active"),
@@ -334,21 +340,7 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
-            # 5. Visual+ Badges
-            if info.has_visualplus_bg:
-                badges.append({
-                    "key": "badge_vbg_yes",
-                    "label": t("badge_vbg_yes"),
-                    "color": "cyan"
-                })
-            if info.has_visualplus_cam:
-                badges.append({
-                    "key": "badge_vcam_yes",
-                    "label": t("badge_vcam_yes"),
-                    "color": "cyan"
-                })
-
-            # 6. Multi Exp Badge
+            # 5. QoL: Multi Exp Badge
             if info.has_exp_share:
                 badges.append({
                     "key": "badge_exp_share_yes",
@@ -362,7 +354,7 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
-            # 7. Free HMs & Poké-Rider Badge
+            # 6. QoL: Free HMs & Poké-Rider Badge
             if getattr(info, "has_free_hms", False):
                 badges.append({
                     "key": "badge_free_hms_yes",
@@ -373,6 +365,90 @@ class PatcherBridge:
                 badges.append({
                     "key": "badge_free_hms_no",
                     "label": t("badge_free_hms_no"),
+                    "color": "slate"
+                })
+
+            # 7. QoL: Infinite TMs Badge
+            if getattr(info, "has_infinite_tms", False):
+                badges.append({
+                    "key": "badge_infinite_tms_yes",
+                    "label": t("badge_infinite_tms_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_infinite_tms_no",
+                    "label": t("badge_infinite_tms_no"),
+                    "color": "slate"
+                })
+
+            # 8. QoL: Trade Evolutions Solo Badge
+            if getattr(info, "has_trade_evos", False):
+                badges.append({
+                    "key": "badge_trade_evos_yes",
+                    "label": t("badge_trade_evos_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_trade_evos_no",
+                    "label": t("badge_trade_evos_no"),
+                    "color": "slate"
+                })
+
+            # 9. Visual: In-Game IV & EV Display Badge
+            if getattr(info, "has_iv_ev", False):
+                badges.append({
+                    "key": "badge_iv_ev_yes",
+                    "label": t("badge_iv_ev_yes"),
+                    "color": "cyan"
+                })
+            else:
+                badges.append({
+                    "key": "badge_iv_ev_no",
+                    "label": t("badge_iv_ev_no"),
+                    "color": "slate"
+                })
+
+            # 10. Visual: Colored Stat Natures Badge
+            if getattr(info, "has_colored_natures", False):
+                badges.append({
+                    "key": "badge_colored_natures_yes",
+                    "label": t("badge_colored_natures_yes"),
+                    "color": "cyan"
+                })
+            else:
+                badges.append({
+                    "key": "badge_colored_natures_no",
+                    "label": t("badge_colored_natures_no"),
+                    "color": "slate"
+                })
+
+            # 11. Visual: HD Battle Arenas Badge
+            if info.has_visualplus_bg:
+                badges.append({
+                    "key": "badge_vbg_yes",
+                    "label": t("badge_vbg_yes"),
+                    "color": "cyan"
+                })
+            else:
+                badges.append({
+                    "key": "badge_vbg_no",
+                    "label": t("badge_vbg_no"),
+                    "color": "slate"
+                })
+
+            # 12. Visual: Extended 3D Camera Badge
+            if info.has_visualplus_cam:
+                badges.append({
+                    "key": "badge_vcam_yes",
+                    "label": t("badge_vcam_yes"),
+                    "color": "cyan"
+                })
+            else:
+                badges.append({
+                    "key": "badge_vcam_no",
+                    "label": t("badge_vcam_no"),
                     "color": "slate"
                 })
 
@@ -387,12 +463,18 @@ class PatcherBridge:
                 "mp_version": info.mp_version,
                 "mp_lang": info.mp_lang,
                 "has_soullocke": info.has_soullocke,
+                "has_nuzlocke": getattr(info, "has_nuzlocke", False),
                 "soullocke_variant": info.soullocke_variant,
                 "is_randomized": info.is_randomized,
                 "has_visualplus_bg": info.has_visualplus_bg,
                 "has_visualplus_cam": info.has_visualplus_cam,
                 "has_exp_share": bool(info.has_exp_share),
                 "has_free_hms": bool(getattr(info, "has_free_hms", False)),
+                "has_infinite_tms": bool(getattr(info, "has_infinite_tms", False)),
+                "has_fast_text": bool(getattr(info, "has_fast_text", False)),
+                "has_trade_evos": bool(getattr(info, "has_trade_evos", False)),
+                "has_iv_ev": bool(getattr(info, "has_iv_ev", False)),
+                "has_colored_natures": bool(getattr(info, "has_colored_natures", False)),
                 "size_mb": round(os.path.getsize(rom_path) / (1024 * 1024), 1),
                 "suggested_output": sug_path,
                 "badges": badges

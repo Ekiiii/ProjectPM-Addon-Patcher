@@ -20,8 +20,8 @@ TRANSLATIONS = {
         "fr": "Gestionnaire de Mods & Addons pour Pokémon Platine"
     },
     "header_version": {
-        "en": "v1.0.6",
-        "fr": "v1.0.6"
+        "en": "v1.0.7",
+        "fr": "v1.0.7"
     },
     "section_rom": {
         "en": "1. SELECT YOUR ROM & DESTINATION",
@@ -64,12 +64,16 @@ TRANSLATIONS = {
         "fr": "ROM Vanilla (Sans Multijoueur)"
     },
     "badge_sl_active": {
-        "en": "SoulLocke Active",
-        "fr": "SoulLocke Actif"
+        "en": "Soul Link Active",
+        "fr": "Soul Link Actif"
+    },
+    "badge_nuzlocke_active": {
+        "en": "Nuzlocke Active",
+        "fr": "Nuzlocke Actif"
     },
     "badge_sl_none": {
-        "en": "SoulLocke Inactive",
-        "fr": "SoulLocke Inactif"
+        "en": "Standard (No Mod)",
+        "fr": "Standard (Sans Mod)"
     },
     "badge_rand_yes": {
         "en": "Randomized ROM",
@@ -80,12 +84,20 @@ TRANSLATIONS = {
         "fr": "Rencontres Standard"
     },
     "badge_vbg_yes": {
-        "en": "Visual+ BG: Active",
-        "fr": "Visual+ BG : Actif"
+        "en": "HD Arenas: Active",
+        "fr": "Arènes HD : Actif"
+    },
+    "badge_vbg_no": {
+        "en": "HD Arenas: Inactive",
+        "fr": "Arènes HD : Inactif"
     },
     "badge_vcam_yes": {
-        "en": "Visual+ Cam: Active",
-        "fr": "Visual+ Cam : Actif"
+        "en": "3D Camera: Active",
+        "fr": "Caméra 3D : Actif"
+    },
+    "badge_vcam_no": {
+        "en": "3D Camera: Inactive",
+        "fr": "Caméra 3D : Inactif"
     },
     "badge_exp_share_yes": {
         "en": "Shared EXP: Active",
@@ -102,6 +114,38 @@ TRANSLATIONS = {
     "badge_free_hms_no": {
         "en": "Free HMs: Inactive",
         "fr": "CS Libres : Inactif"
+    },
+    "badge_infinite_tms_yes": {
+        "en": "Infinite TMs: Active",
+        "fr": "CT Infinies : Actif"
+    },
+    "badge_infinite_tms_no": {
+        "en": "Infinite TMs: Inactive",
+        "fr": "CT Infinies : Inactif"
+    },
+    "badge_trade_evos_yes": {
+        "en": "Solo Evos: Active",
+        "fr": "Évolutions Solo : Actif"
+    },
+    "badge_trade_evos_no": {
+        "en": "Solo Evos: Inactive",
+        "fr": "Évolutions Solo : Inactif"
+    },
+    "badge_iv_ev_yes": {
+        "en": "IV/EV: Active",
+        "fr": "IV/EV : Actif"
+    },
+    "badge_iv_ev_no": {
+        "en": "IV/EV: Inactive",
+        "fr": "IV/EV : Inactif"
+    },
+    "badge_colored_natures_yes": {
+        "en": "Natures: Active",
+        "fr": "Natures : Actif"
+    },
+    "badge_colored_natures_no": {
+        "en": "Natures: Inactive",
+        "fr": "Natures : Inactif"
     },
     "badge_already_installed": {
         "en": "Already Installed on ROM",
@@ -248,12 +292,144 @@ TRANSLATIONS = {
         "fr": "Aucun / Ne pas ajouter"
     },
     "addon_restore": {
-        "en": "Uninstall SoulLocke",
-        "fr": "Désinstaller le SoulLocke"
+        "en": "Uninstall Game Mods",
+        "fr": "Désinstaller les mods de jeu"
+    },
+    "addon_restore_title": {
+        "en": "Uninstall Game Mods (Restore Original ROM)",
+        "fr": "Désinstaller les mods de jeu (Restaurer la ROM d'origine)"
     },
     "addon_restore_desc": {
-        "en": "Uninstalls the SoulLocke mod and restores the clean multiplayer ROM.",
-        "fr": "Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre."
+        "en": "Uninstalls gameplay mods (Soul Link, Nuzlocke, etc.) and restores the original multiplayer ROM.",
+        "fr": "Désinstalle les mods de jeu (Soul Link, Nuzlocke, etc.) et restaure la ROM multijoueur d'origine."
+    },
+    "addon_standard_title": {
+        "en": "Standard / Official (Classic Multiplayer)",
+        "fr": "Standard / Officiel (Multijoueur classique)"
+    },
+    "addon_soullink_title": {
+        "en": "Soul Link (Linked Souls, Shared Faints, Graveyard Boxes 15-18)",
+        "fr": "Soul Link (Âmes liées, K.O. partagés, Boîtes Cimetière 15 à 18)"
+    },
+    "addon_nuzlocke_title": {
+        "en": "Nuzlocke (1 Catch/Area, Permanent Faints, Graveyard Boxes 15-18)",
+        "fr": "Nuzlocke (1 Capture/Zone, K.O. définitifs, Boîtes Cimetière 15 à 18)"
+    },
+    "card_addons_title": {
+        "en": "3. ADDITIONAL ENHANCEMENTS & PATCHES",
+        "fr": "3. OPTIONS ADDITIONNELLES & PATCHS"
+    },
+    "qol_launcher_title": {
+        "en": "Gameplay & QoL Patches",
+        "fr": "Patchs de Confort & Gameplay (QoL)"
+    },
+    "qol_launcher_desc": {
+        "en": "Team EXP Share (Gen 6+), Free HMs & Poké-Rider, Infinite TMs, Solo Evolutions...",
+        "fr": "Multi Exp d'équipe (Gen 6+), CS Libres & Poké-Rider, CT infinies, Évolutions Solo..."
+    },
+    "btn_configure_qol": {
+        "en": "Configure QoL Patches...",
+        "fr": "Configurer les patchs QoL..."
+    },
+    "visual_launcher_title": {
+        "en": "Visual & Interface Enhancements",
+        "fr": "Visuel & Interface (Affichage IV/EV & Natures)"
+    },
+    "visual_launcher_desc": {
+        "en": "In-game IV/EV display (Press A on summary), Colored natures (+Red/-Blue), HD Arenas, 3D Camera...",
+        "fr": "Affichage IV/EV en jeu (Touche A sur résumé), Natures colorées (+Rouge/-Bleu), Arènes HD, Caméra 3D..."
+    },
+    "btn_configure_visual": {
+        "en": "Configure Visual Enhancements...",
+        "fr": "Configurer les options visuelles..."
+    },
+    "qol_modal_title": {
+        "en": "QUALITY OF LIFE & GAMEPLAY PATCHES (QoL)",
+        "fr": "PATCHS DE CONFORT & GAMEPLAY (QoL)"
+    },
+    "visual_modal_title": {
+        "en": "VISUAL & INTERFACE ENHANCEMENTS",
+        "fr": "OPTIONS VISUELLES & INTERFACE"
+    },
+    "infinite_tms_title": {
+        "en": "Infinite TMs (Gen 5+ Style)",
+        "fr": "Capsules Techniques Infinies (Style 5G+)"
+    },
+    "infinite_tms_desc": {
+        "en": "TMs are not consumed upon use and can be taught infinitely to your Pokémon.",
+        "fr": "Les CT ne sont plus détruites après utilisation et peuvent être enseignées à volonté à vos Pokémon."
+    },
+    "infinite_tms_badge": {
+        "en": "INFINITE TMS",
+        "fr": "CT INFINIES"
+    },
+    "trade_evos_title": {
+        "en": "Trade Evolutions Without Trading (Trade-Evos Fix)",
+        "fr": "Évolutions d'Échange sans Échange (Trade-Evos Fix)"
+    },
+    "trade_evos_desc": {
+        "en": "Enables Kadabra, Machoke, Graveler, Haunter to evolve by level (Lv 36), and item-trade Pokémon (Steelix, Scizor, etc.) to evolve using their items directly.",
+        "fr": "Permet à Kadabra, Machopeur, Gravalanch, Spectrum d'évoluer par niveau (Niv 36), et aux Pokémon nécessitant un objet d'échange (Steelix, Cizayox...) d'évoluer en utilisant directement l'objet."
+    },
+    "trade_evos_badge": {
+        "en": "SOLO EVOS",
+        "fr": "EVO SOLO"
+    },
+    "fast_text_title": {
+        "en": "Instant Text Speed (Fast Text)",
+        "fr": "Vitesse de Texte Instantanée (Fast Text)"
+    },
+    "fast_text_desc": {
+        "en": "Eliminates dialogue scrolling delay, rendering all text and dialogue boxes instantly.",
+        "fr": "Supprime le délai de défilement des dialogues, affichant immédiatement l'intégralité du texte des boîtes de message."
+    },
+    "fast_text_badge": {
+        "en": "FAST TEXT",
+        "fr": "TEXTE RAPIDE"
+    },
+    "run_indoors_title": {
+        "en": "Running Everywhere & Indoors",
+        "fr": "Courir Partout (Bâtiments & Intérieurs)"
+    },
+    "run_indoors_desc": {
+        "en": "Allows using running shoes inside all buildings, houses, and indoor facilities.",
+        "fr": "Autorise la course à pied à l'intérieur de tous les bâtiments, maisons et centres Pokémon."
+    },
+    "run_indoors_badge": {
+        "en": "INDOOR RUN",
+        "fr": "COURSE INTÉRIEURE"
+    },
+    "iv_ev_title": {
+        "en": "In-Game IV & EV Display",
+        "fr": "Affichage des IVs & EVs en Jeu"
+    },
+    "iv_ev_desc": {
+        "en": "On the Pokémon Summary stats screen (Page 2), press (A) to toggle between actual combat stats and exact IVs / EVs.",
+        "fr": "Dans la page des statistiques du résumé d'un Pokémon (Page 2), appuyer sur (A) fait basculer entre les stats de combat et les valeurs exactes d'IVs et d'EVs."
+    },
+    "iv_ev_badge": {
+        "en": "IV / EV",
+        "fr": "IV / EV"
+    },
+    "colored_natures_title": {
+        "en": "Colored Stat Natures (+Red / -Blue)",
+        "fr": "Natures Colorées (+ Rouge / - Bleu)"
+    },
+    "colored_natures_desc": {
+        "en": "In the Pokémon Summary screen, the stat boosted by nature is highlighted in Red (+10%) and the hindered stat in Blue (-10%).",
+        "fr": "Dans le résumé Pokémon, la statistique augmentée par la nature est mise en valeur en Rouge (+10%) et la statistique diminuée en Bleu (-10%)."
+    },
+    "colored_natures_badge": {
+        "en": "NATURES",
+        "fr": "NATURES"
+    },
+    "colored_natures_caption": {
+        "en": "Preview: Nature stat highlighting (+Red boosted / -Blue hindered)",
+        "fr": "Aperçu : Statistiques selon la nature (+Rouge boostée / -Bleu diminuée)"
+    },
+    "btn_close_modal": {
+        "en": "Save & Close",
+        "fr": "Enregistrer & Fermer"
     },
     "exp_share_title": {
         "en": "Shared Team EXP (Gen 6+ Style)",
@@ -487,36 +663,32 @@ TRANSLATIONS = {
         "fr": "Aucun (Conserver la ROM Vanilla sans multijoueur)"
     },
     "help_mp_base": {
-        "en": "The multiplayer language selected here automatically defines the language of the SoulLocke mod.",
-        "fr": "La langue du multijoueur choisie ici définit automatiquement la langue du mod SoulLocke."
+        "en": "The multiplayer language selected here automatically defines the language of the game and additional game modes (Soul Link, Nuzlocke, etc.).",
+        "fr": "La langue du multijoueur choisie ici définit automatiquement la langue du jeu et des modes additionnels (Soul Link, Nuzlocke, etc.)."
     },
     "label_addon_mode": {
         "en": "Additional Gameplay Mode:",
         "fr": "Mode de Jeu Additionnel :"
     },
-    "addon_standard_title": {
-        "en": "Standard / Official",
-        "fr": "Standard / Officiel"
-    },
     "addon_standard_desc": {
         "en": "Classic Project PM multiplayer experience without restrictions.",
         "fr": "Expérience multijoueur Project PM classique sans règles restrictives."
     },
-    "addon_soullink_title": {
-        "en": "SoulLocke",
-        "fr": "SoulLocke"
-    },
     "addon_soullink_desc": {
-        "en": "Linked souls between players (shared death, 1 encounter/zone, automatic graveyard).",
-        "fr": "Âmes liées entre joueurs (mort partagée, capture unique par zone, cimetière automatique)."
+        "en": "Linked souls between players (shared death, 1 encounter/zone, Graveyard Boxes 15-18).",
+        "fr": "Âmes liées entre joueurs (mort partagée, capture unique par zone, Boîtes Cimetière 15 à 18)."
+    },
+    "addon_nuzlocke_desc": {
+        "en": "Nuzlocke challenge: 1 catch per area, fainted Pokémon sent to the Graveyard (Boxes 15-18).",
+        "fr": "Défi Nuzlocke : 1 capture par zone, Pokémon K.O. envoyés au Cimetière (Boîtes 15 à 18)."
     },
     "addon_restore_title": {
-        "en": "Uninstall SoulLocke",
-        "fr": "Désinstaller le SoulLocke"
+        "en": "Uninstall Game Mods (Restore Original ROM)",
+        "fr": "Désinstaller les mods de jeu (Restaurer la ROM d'origine)"
     },
     "addon_restore_desc": {
-        "en": "Uninstalls the SoulLocke mod and restores the clean multiplayer ROM.",
-        "fr": "Désinstalle le mod SoulLocke et restaure la ROM multijoueur propre."
+        "en": "Uninstalls gameplay mods (Soul Link, Nuzlocke, etc.) and restores the original multiplayer ROM.",
+        "fr": "Désinstalle les mods de jeu (Soul Link, Nuzlocke, etc.) et restaure la ROM multijoueur d'origine."
     },
     # --- SECTION 3: VISUAL+ & PREVIEWS ---
     "card_visual_title": {
@@ -809,8 +981,8 @@ TRANSLATIONS = {
     },
     # Badges & Statuses
     "badge_clean_platine": {
-        "en": "Clean Platinum ROM",
-        "fr": "ROM Platine Propre"
+        "en": "Original Platinum ROM",
+        "fr": "ROM Platine d'origine"
     },
     "badge_already_rand": {
         "en": "Already Randomized",
@@ -880,8 +1052,8 @@ TRANSLATIONS = {
         "fr": "Project PM Addon Patcher & Randomizer"
     },
     "about_desc": {
-        "en": "All-in-one suite for the Pokémon Platinum community: Co-op Multiplayer, Soul Link / SoulLocke Mod, Visual+ enhancements, and high-compatibility randomizer engine.",
-        "fr": "Outil tout-en-un pour la communauté Pokémon Platine : Multijoueur coopératif, Mod Soul Link / SoulLocke, Améliorations visuelles Visual+, et moteur de randomisation haute compatibilité."
+        "en": "All-in-one suite for the Pokémon Platinum community: Co-op Multiplayer, Soul Link & Nuzlocke Mods, Visual+ enhancements, and high-compatibility randomizer engine.",
+        "fr": "Outil tout-en-un pour la communauté Pokémon Platine : Multijoueur coopératif, Mods Soul Link & Nuzlocke, Améliorations visuelles Visual+, et moteur de randomisation haute compatibilité."
     },
     "about_credits": {
         "en": "Developed with passion by <strong>Ekiii</strong>",
@@ -990,8 +1162,12 @@ TRANSLATIONS = {
         "fr": "Sauvegarde et synchronisation des fichiers .sav / .dsv..."
     },
     "progress_apply_soullocke": {
-        "en": "Applying SoulLink / SoulLocke mod...",
-        "fr": "Application du mod SoulLink / SoulLocke..."
+        "en": "Applying Soul Link mod...",
+        "fr": "Application du mod Soul Link..."
+    },
+    "progress_apply_nuzlocke": {
+        "en": "Applying Nuzlocke mod...",
+        "fr": "Application du mod Nuzlocke..."
     },
     "progress_restore_projectpm": {
         "en": "Restoring clean stock ProjectPM...",
@@ -1861,8 +2037,8 @@ TRANSLATIONS = {
         "fr": "Mod Soul Link & Suite Française"
     },
     "credits_soullink_desc": {
-        "en": "SoulLink/SoulLocke C mod payload, Direct P2P system, streaming overlay, and French translation & tool suite.",
-        "fr": "Développement du mod Soul Link / SoulLocke, Direct P2P, overlay streaming et adaptation intégrale en français."
+        "en": "Soul Link & Nuzlocke C mod payload, Direct P2P system, streaming overlay, and French translation & tool suite.",
+        "fr": "Développement des mods Soul Link & Nuzlocke, Direct P2P, overlay streaming et adaptation intégrale en français."
     },
     "credits_visual_title": {
         "en": "Visual+ & 3D Camera",
