@@ -362,6 +362,20 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
+            # 7. Free HMs & Poké-Rider Badge
+            if getattr(info, "has_free_hms", False):
+                badges.append({
+                    "key": "badge_free_hms_yes",
+                    "label": t("badge_free_hms_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_free_hms_no",
+                    "label": t("badge_free_hms_no"),
+                    "color": "slate"
+                })
+
             return {
                 "valid": True,
                 "path": rom_path.replace("\\", "/"),
@@ -378,6 +392,7 @@ class PatcherBridge:
                 "has_visualplus_bg": info.has_visualplus_bg,
                 "has_visualplus_cam": info.has_visualplus_cam,
                 "has_exp_share": bool(info.has_exp_share),
+                "has_free_hms": bool(getattr(info, "has_free_hms", False)),
                 "size_mb": round(os.path.getsize(rom_path) / (1024 * 1024), 1),
                 "suggested_output": sug_path,
                 "badges": badges

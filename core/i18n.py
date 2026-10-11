@@ -20,8 +20,8 @@ TRANSLATIONS = {
         "fr": "Gestionnaire de Mods & Addons pour Pokémon Platine"
     },
     "header_version": {
-        "en": "v1.0.2",
-        "fr": "v1.0.2"
+        "en": "v1.0.5",
+        "fr": "v1.0.5"
     },
     "section_rom": {
         "en": "1. SELECT YOUR ROM & DESTINATION",
@@ -94,6 +94,14 @@ TRANSLATIONS = {
     "badge_exp_share_no": {
         "en": "Shared EXP: Inactive",
         "fr": "Multi Exp : Inactif"
+    },
+    "badge_free_hms_yes": {
+        "en": "Free HMs: Active",
+        "fr": "CS Libres : Actif"
+    },
+    "badge_free_hms_no": {
+        "en": "Free HMs: Inactive",
+        "fr": "CS Libres : Inactif"
     },
     "badge_already_installed": {
         "en": "Already Installed on ROM",
@@ -258,6 +266,18 @@ TRANSLATIONS = {
     "exp_share_badge": {
         "en": "EXP ALL",
         "fr": "MULTI EXP"
+    },
+    "free_hms_title": {
+        "en": "Free HMs & Poké-Rider",
+        "fr": "CS Libres & Poké-Rider"
+    },
+    "free_hms_desc": {
+        "en": "Use field moves (Cut, Surf, Strength, Rock Smash, etc.) directly on obstacles with 'A' as long as you have the required Gym Badge. Allows forgetting HMs freely anytime.",
+        "fr": "Utilisez les CS (Coupe, Surf, Force, Éclate-Roc, etc.) directement sur les obstacles avec 'A' dès que vous avez le badge requis. Permet aussi d'oublier les CS librement sans Effaceur de Capacités."
+    },
+    "free_hms_badge": {
+        "en": "FREE HMS",
+        "fr": "CS LIBRES"
     },
     "section_visual": {
         "en": "4. VISUAL+ GRAPHICS OPTIONS",

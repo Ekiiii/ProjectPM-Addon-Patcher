@@ -37,7 +37,8 @@ def get_default_config() -> Dict[str, Any]:
         "backup_save": True,
         "addon_mode": "soullink",
         "mp_mode": "fr",
-        "team_exp_share": False
+        "team_exp_share": False,
+        "free_hms": False
     }
 
 def load_config() -> Dict[str, Any]:

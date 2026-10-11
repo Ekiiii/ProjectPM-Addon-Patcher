@@ -72,6 +72,7 @@ class RomInfo:
         self.has_visual_bg = False
         self.has_visual_cam = False
         self.has_exp_share = False
+        self.has_free_hms = False
         
         # Save & Rand
         self.companion_save = None
@@ -287,6 +288,13 @@ class RomInfo:
                 self.has_exp_share = is_exp_share_active(rom)
             except Exception:
                 self.has_exp_share = False
+
+            # Check Free HMs & Poké-Rider mod
+            try:
+                from core.hm_patcher import is_hm_patch_active
+                self.has_free_hms = is_hm_patch_active(rom)
+            except Exception:
+                self.has_free_hms = False
 
             # Companion Save Files (.dsv and .sav)
             dsv_candidate = base_no_ext + ".dsv"

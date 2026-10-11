@@ -94,6 +94,9 @@ def execute_patch_pipeline(
         team_exp_share = options.get("team_exp_share", False)
         if team_exp_share:
             log_cb("[Mods] Exp. Partagée d'équipe: Activée (Partage de l'expérience de combat avec toute l'équipe).")
+        free_hms = options.get("free_hms", False)
+        if free_hms:
+            log_cb("[Mods] CS Libres & Poké-Rider: Activé (Utilisation directe avec 'A' et oubli libre des CS).")
 
         # Multiplayer mode
         mp_enabled = options.get("mp_enabled", True)
@@ -289,6 +292,15 @@ def execute_patch_pipeline(
         elif is_exp_share_active(output_rom):
             _progress(0.88, t("exp_share_title"))
             apply_exp_share_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6c. Free HMs & Poké-Rider Mod
+        from core.hm_patcher import apply_hm_patch, is_hm_patch_active
+        if free_hms:
+            _progress(0.89, t("free_hms_title"))
+            apply_hm_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_hm_patch_active(output_rom):
+            _progress(0.89, t("free_hms_title"))
+            apply_hm_patch(output_rom, enable=False, log_cb=log_cb)
 
         # 7. Custom xDelta patch (applied before final randomizer restoration)
         custom_patch = options.get("custom_patch")

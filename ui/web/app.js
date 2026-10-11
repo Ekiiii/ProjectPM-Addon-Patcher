@@ -154,6 +154,10 @@ window.addEventListener('pywebviewready', async () => {
         const tExp = document.getElementById('toggle-team-exp-share');
         if (tExp) tExp.checked = cfg.team_exp_share;
       }
+      if (cfg.free_hms !== undefined) {
+        const tHms = document.getElementById('toggle-free-hms');
+        if (tHms) tHms.checked = cfg.free_hms;
+      }
     }
   } catch (err) {
     console.error('[App Init Error]', err);
@@ -181,6 +185,7 @@ function saveCurrentOptionsToConfig() {
       visual_cam: document.getElementById('toggle-visual-cam') ? document.getElementById('toggle-visual-cam').checked : true,
       backup_save: document.getElementById('toggle-backup-save') ? document.getElementById('toggle-backup-save').checked : true,
       team_exp_share: document.getElementById('toggle-team-exp-share') ? document.getElementById('toggle-team-exp-share').checked : false,
+      free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
       last_output_rom: dstInput ? dstInput.value : ''
     };
     window.pywebview.api.save_app_config(cfg);
@@ -411,6 +416,12 @@ async function processSelectedRom(path) {
     const toggleExp = document.getElementById('toggle-team-exp-share');
     if (toggleExp && res.has_exp_share !== undefined) {
       toggleExp.checked = !!res.has_exp_share;
+    }
+
+    // Sync Free HMs & Poké-Rider option from ROM
+    const toggleHMs = document.getElementById('toggle-free-hms');
+    if (toggleHMs && res.has_free_hms !== undefined) {
+      toggleHMs.checked = !!res.has_free_hms;
     }
 
     // Suggest in-place update by default for existing ProjectPM ROMs
@@ -675,6 +686,7 @@ async function startPatching() {
     cam_opt: document.getElementById('toggle-visual-cam').checked ? 'builtin' : 'none',
     backup_save: document.getElementById('toggle-backup-save').checked,
     team_exp_share: document.getElementById('toggle-team-exp-share') ? document.getElementById('toggle-team-exp-share').checked : false,
+    free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
     custom_patch: document.getElementById('input-custom-patch').value.trim() || null,
     rand_enabled: randEnabled,
     rand_settings: randEnabled ? getWizardSettingsObject() : null

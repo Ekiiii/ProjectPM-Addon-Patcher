@@ -1494,6 +1494,7 @@ class MainWindow(tk.Tk):
                 "cam_opt": cam_opt,
                 "backup_save": self.var_backup_save.get(),
                 "team_exp_share": getattr(self, "var_team_exp_share", tk.BooleanVar(value=False)).get(),
+                "free_hms": getattr(self, "var_free_hms", tk.BooleanVar(value=False)).get(),
                 "custom_patch": (self.entry_custom_patch.get().strip() if self.var_custom_patch_enabled.get() else None),
                 "rand_enabled": False,
                 "rand_settings": None

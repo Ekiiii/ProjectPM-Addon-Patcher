@@ -8,6 +8,10 @@
 > **An independent, modern community mod and addon manager for Pokémon Platinum & Project PM.**  
 > *Gestionnaire communautaire moderne et indépendant de mods et d'addons pour Pokémon Platine & Project PM.*
 
+<p align="center">
+  <img src="docs/images/patcher_main.png" alt="ProjectPM Addon Patcher Interface" width="920">
+</p>
+
 ---
 
 ## English (EN)
@@ -19,6 +23,7 @@
 - **Smart Direct Injection Engine**: Directly patches internal ROM code and file archives without relying on rigid full-ROM checksums. No xDelta hash mismatches: works seamlessly whether using a clean vanilla ROM or an existing modified/randomized ROM!
 - **In-Place Source ROM Overwrite / Direct Update**: Update your existing ProjectPM ROM directly without cluttering your folders with duplicate files. Automatically backs up your previous state to `PMBackups/`, preserves companion `.sav` and `.dsv` saves, and completely refreshes all 37 localized data files (dialogues, moves, abilities, items, French fonts, and Fairy type badges).
 - **Modern Team EXP Share (Gen 6+ Style)**: Optional in-game battle engine patch (Overlay 16) granting shared experience to your entire party (100% for active battlers, 50% for benched members). Features dynamic ROM detection with a real-time status pill (`Team EXP: Active` / `Team EXP: Inactive`).
+- **Free HMs & Poké-Rider**: Use field moves (Cut, Surf, Strength, Rock Smash, Waterfall, Rock Climb, Defog) directly on overworld obstacles by pressing 'A' once you have the required Gym Badge, without needing any Pokémon to learn the HM! Also removes the Move Deleter restriction, allowing you to freely overwrite or forget HM moves anytime.
 - **SoulLocke Edition & Clean Uninstaller**: Full multiplayer support for synchronized fainting, automated graveyard PC boxes (Box 18), single shared catch per area, and live streamer overlay. Includes a clean 1-click uninstaller to revert battle mechanics back to normal without corrupting save files.
 - **Visual+ Graphics Options**:
   - *Visual+ Battle Backgrounds*: Redrawn, high-detail battle scenes (`Enable` / `Disable` / `Keep As-Is`).
@@ -33,6 +38,10 @@
   - Dedicated individual options for Honey Trees and Stationary Legendaries
   - Gift Eggs, In-Game Trades, and ARM9 Shiny Odds patching (~1/100 to 1/8192)
   - Shareable `PMC-...` Co-op codes ensuring 100% multiplayer sync between players!
+
+<p align="center">
+  <img src="docs/images/patcher_randomizer.png" alt="Sinnoh Randomizer Configurator" width="800">
+</p>
 - **Physical Diagnostic Logging**: Real-time rotating diagnostic logs in `logs/` (`patcher_YYYY-MM-DD.log` and `patcher_latest.log`) with re-entrant thread safety (`threading.RLock`).
 - **Bilingual Interface & Persistent Settings**: Full French / English localization, initial language selection modal, and automatic preferences saving (`config.json`).
 - **Sinnoh Pixel Art Interface**: Authentic Nintendo DS Pokémon Platinum aesthetic featuring retro pixel typography, DS dialogue frames, animated components, and type badges.
@@ -56,6 +65,7 @@
 - **Moteur d'Injection Directe Intelligent** : Modifie directement le code et les fichiers internes de la ROM sans dépendre d'un patch xDelta rigide. Fini les erreurs de checksum : fonctionne aussi bien sur une ROM originale (Vanilla) que sur une ROM déjà patchée ou randomisée !
 - **Mise à Jour sur Place / Écrasement Direct de la ROM Source** : Mettez à jour directement votre ROM ProjectPM existante sans encombrer vos dossiers avec des fichiers doublons. Sauvegarde automatique horodatée dans `PMBackups/`, préservation intégrale des sauvegardes `.sav` et `.dsv`, et actualisation complète des 37 fichiers localisés (dialogues, capacités, talents, objets, polices françaises et badge authentique Type Fée).
 - **Expérience Partagée d'Équipe (Multi Exp Gen 6+)** : Patch in-game intégré sur l'Overlay 16 permettant le partage d'expérience à toute l'équipe (100% pour les combattants actifs, 50% pour les Pokémon sur le banc). Détection dynamique de l'état du Multi Exp sur la ROM chargée avec badge visuel en temps réel (`Multi Exp : Actif` / `Inactif`).
+- **CS Libres & Poké-Rider** : Utilisez les CS (Coupe, Surf, Force, Éclate-Roc, Cascade, Escalade, Anti-Brume) directement sur les obstacles du jeu avec le bouton 'A' dès que vous possédez le badge requis, sans qu'aucun Pokémon n'ait besoin d'apprendre la capacité ! Permet également d'oublier ou d'écraser librement les CS à tout moment sans passer par l'Effaceur de Capacités.
 - **Édition SoulLocke & Désinstallation Propre** : Destins liés en multijoueur, mort synchronisée, mise au cimetière automatique (boîte PC 18), règle d'une seule capture partagée par zone et overlay streamer en direct. Inclut une option de désinstallation propre en 1 clic pour restaurer le système de combat standard sans toucher aux sauvegardes.
 - **Options Graphiques Visual+** :
   - *Arrière-plans de combat détaillés (style HGSS)* (`Activer` / `Désactiver` / `Conserver`).
@@ -70,6 +80,10 @@
   - Options séparées et indépendantes pour les Arbres à miel et les Rencontres fixes / Légendaires
   - Œufs donnés, Échanges PNJs et seuil de Shiny ARM9 (~1/100 à 1/8192)
   - Génération de codes Co-op `PMC-...` garantissant une synchronisation multijoueur parfaite sans désync !
+
+<p align="center">
+  <img src="docs/images/patcher_randomizer.png" alt="Configurateur Randomizer Sinnoh" width="800">
+</p>
 - **Nouveau Système de Logs Physiques** : Journalisation en temps réel dans le dossier `logs/` (`patcher_YYYY-MM-DD.log` et `patcher_latest.log`) avec verrouillage réentrant (`threading.RLock`) pour une stabilité maximale.
 - **Interface Bilingue Complète & Préférences** : Traduction intégrale FR / EN, mémorisation des paramètres et des derniers chemins de ROMs dans `config.json`, et modal de sélection au tout premier lancement.
 - **Interface Pixel Art Sinnoh Authentique** : Esthétique soignée inspirée des menus Nintendo DS de Pokémon Platine avec typographies pixel, fenêtres de dialogue rétro, animations et badges de types officiels.

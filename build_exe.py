@@ -37,6 +37,7 @@ def build():
         "--hidden-import=ndspy.narc",
         "--hidden-import=ndspy.code",
         "--hidden-import=core.exp_share_patcher",
+        "--hidden-import=core.hm_patcher",
         "--hidden-import=core.logger",
         "--hidden-import=core.config_manager",
         "--hidden-import=core.save_manager",
