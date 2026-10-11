@@ -147,10 +147,15 @@ LEARNSET_MOVE_BITS = 9
 LEARNSET_MOVE_MASK = (1 << LEARNSET_MOVE_BITS) - 1
 
 COOP_KEYS = ('trainers', 'types', 'abilities', 'movesets')
+COOP_FLAGS = ('trainers', 'types', 'abilities', 'movesets', 'coop_simstr', 'coop_noleg')
+WORLD_FLAGS = ('wilds', 'starters', 'statics', 'grass', 'surf', 'fish', 'spec', 'noleg', 'battles', 'gifts', 'trade_get', 'trade_want', 'wild_special', 'every_species', 'starters_any', 'gba_flip')
 PERSONAL_KEYS = ('wilds', 'starters', 'statics', 'battles', 'gifts', 'trade_get', 'trade_want', 'wild_special', 'gba_slots')
 
 SHARE_PREFIX_COOP = 'PMC'
 SHARE_PREFIX_WORLD = 'PMW'
+SHARE_PREFIX_OLD = 'PM1'
+SHARE_MODES = ('area_1to1', 'global_1to1', 'completely_random')
+SHARE_RULES = ('none', 'similar_strength', 'type_theme')
 SHARE_B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 SPECIES_NAMES = (
@@ -1132,115 +1137,239 @@ def apply_shiny_odds(rom_path: str, threshold: int, log: Callable = print) -> Tu
     return (True, f"shiny odds set to ~1/{odds}")
 
 
-def _b32(n: int, width: int = 0) -> str:
-    out = []
-    while n:
-        n, rem = divmod(n, 32)
-        out.append(SHARE_B32_ALPHABET[rem])
-    res = ''.join(reversed(out)) or 'A'
-    return res.rjust(width, 'A')
+def _b32(raw: bytes) -> str:
+    return base64.b32encode(raw).decode('ascii').rstrip('=')
 
-def _unb32(s: str) -> int:
-    val = 0
-    for ch in s.upper():
-        idx = SHARE_B32_ALPHABET.find(ch)
-        if idx < 0:
-            raise ValueError(f"invalid base32 char: {ch}")
-        val = val * 32 + idx
-    return val
 
-def _pack_flags(flags: Dict[str, Any], keys: Tuple[str, ...]) -> int:
-    out = 0
-    for i, k in enumerate(keys):
-        if flags.get(k):
-            out |= (1 << i)
-    return out
+def _unb32(txt: str) -> bytes:
+    txt = txt.upper()
+    pad = (-len(txt)) % 8
+    return base64.b32decode(txt + '=' * pad)
 
-def _pack_seed(s: Any) -> str:
-    clean = str(s).strip() if s is not None else ''
-    if not clean:
-        return '0'
-    if clean.isdigit() and len(clean) <= 15:
-        return _b32(int(clean))
-    return 'X' + base64.b32encode(clean.encode('utf-8')).decode('ascii').rstrip('=')
 
-def _unpack_seed(s: str) -> str:
-    if not s or s == '0':
-        return ''
-    if s.startswith('X'):
-        pad = '=' * ((8 - len(s[1:]) % 8) % 8)
-        try:
-            return base64.b32decode((s[1:] + pad).encode('ascii')).decode('utf-8', errors='replace')
-        except Exception:
-            return ''
-    return str(_unb32(s))
+def _pack_flags(settings: Dict[str, Any], names: Tuple[str, ...]) -> int:
+    flags = 0
+    for i, key in enumerate(names):
+        if settings.get(key):
+            flags |= (1 << i)
+    return flags & 0xFFFF
 
-def _finish_code(prefix: str, payload: str) -> str:
-    ck = hashlib.sha256(f"{prefix}-{payload}".encode('ascii')).hexdigest()[:4]
-    return f"{prefix}-{payload}-{ck}"
+
+def _pack_seed(seed: Any) -> bytes:
+    s = str(seed or '').strip()
+    if s.isdigit() and s == str(int(s)):
+        n = int(s)
+        nbytes = (n.bit_length() + 7) // 8 or 1
+        return b'\x00' + n.to_bytes(nbytes, 'big')
+    return b'\x01' + s.encode('utf-8')[:64]
+
+
+def _unpack_seed(kind: int, raw: bytes) -> Optional[str]:
+    if kind == 0:
+        return str(int.from_bytes(raw, 'big')) if raw else ''
+    if kind == 1:
+        return raw.decode('utf-8', 'replace')
+    return None
+
+
+def _finish_code(prefix: str, raw: bytes) -> str:
+    return f"{prefix}-{_b32(raw)}-{hashlib.sha1(raw).hexdigest()[:4]}"
+
 
 def encode_coop_code(settings: Dict[str, Any]) -> str:
-    """Encodes co-op settings into a shareable PMC-XXXX-XXXX string."""
-    seed_str = _pack_seed(settings.get('coop_seed'))
-    flags = _pack_flags(settings, COOP_KEYS)
-    opt = 0
-    if settings.get('coop_noleg'):
-        opt |= 1
-    if settings.get('coop_simstr'):
-        opt |= 2
-    raw = f"{_b32(flags, 2)}{_b32(opt, 1)}{seed_str}"
+    """The must-match half: co-op categories, co-op modifiers, co-op seed.
+
+    100% interoperable with ProjectPMSetup.exe.
+    The modifiers only feed the trainer randomizer, so with trainers OFF they
+    are pinned to their defaults here: two players whose only difference is a
+    grayed-out checkbox must not be shown two different codes for what is the
+    same ROM.
+    """
+    st = dict(settings)
+    if not st.get('trainers'):
+        st['coop_simstr'] = False
+        st['coop_noleg'] = True
+    else:
+        if 'coop_noleg' not in st:
+            st['coop_noleg'] = True
+    raw = struct.pack('<BH', RAND_VERSION & 255, _pack_flags(st, COOP_FLAGS)) + _pack_seed(st.get('coop_seed'))
     return _finish_code(SHARE_PREFIX_COOP, raw)
 
+
 def encode_world_code(settings: Dict[str, Any]) -> str:
-    """Encodes personal/world settings into a shareable PMW-XXXX-XXXX string."""
-    seed_str = _pack_seed(settings.get('seed'))
-    flags = _pack_flags(settings, PERSONAL_KEYS)
-    mode_idx = 0
-    if settings.get('mode') == 'global_1to1':
+    """The personal half: wild categories, wild options, shiny, own seed.
+
+    100% interoperable with ProjectPMSetup.exe.
+    """
+    st = dict(settings)
+    mode_val = st.get('mode') or 'area_1to1'
+    if mode_val in ('Area 1-to-1', 'area_1to1'):
+        mode_idx = 0
+    elif mode_val in ('Global 1-to-1', 'global_1to1'):
         mode_idx = 1
-    elif settings.get('mode') == 'random':
+    elif mode_val in ('Completely Random', 'completely_random', 'random'):
         mode_idx = 2
-    rule_idx = 1 if settings.get('rule') == 'similar_strength' else 0
-    opt = (mode_idx & 3) | ((rule_idx & 1) << 2)
-    if settings.get('noleg'):
-        opt |= 8
-    shiny_thr = int(settings.get('shiny', SHINY_VANILLA))
-    raw = f"{_b32(flags, 3)}{_b32(opt, 1)}{_b32(shiny_thr, 2)}{seed_str}"
+    elif mode_val in SHARE_MODES:
+        mode_idx = SHARE_MODES.index(mode_val)
+    else:
+        mode_idx = 0
+
+    rule_val = st.get('rule') or 'none'
+    if rule_val in ('None', 'none'):
+        rule_idx = 0
+    elif rule_val in ('Similar Strength', 'similar_strength'):
+        rule_idx = 1
+    elif rule_val in ('Type Theme', 'type_theme'):
+        rule_idx = 2
+    elif rule_val in SHARE_RULES:
+        rule_idx = SHARE_RULES.index(rule_val)
+    else:
+        rule_idx = 0
+
+    shiny = int(st.get('shiny') or SHINY_VANILLA)
+    if st.get('wilds'):
+        for slot in ('grass', 'surf', 'fish', 'spec'):
+            if slot not in st:
+                st[slot] = True
+    if 'every_species' not in st:
+        st['every_species'] = True
+    if 'starters_any' not in st:
+        if st.get('starters_mode') == 'any':
+            st['starters_any'] = True
+        elif st.get('starters_mode') == 'balanced':
+            st['starters_any'] = False
+        else:
+            st['starters_any'] = not bool(st.get('starters_evolving', False))
+
+    st['gba_flip'] = bool(st.get('gba_slots')) != bool(st.get('wild_special'))
+    raw = struct.pack('<BHBBB', RAND_VERSION & 255, _pack_flags(st, WORLD_FLAGS), mode_idx, rule_idx, max(1, min(255, shiny))) + _pack_seed(st.get('seed'))
     return _finish_code(SHARE_PREFIX_WORLD, raw)
 
+
+def _decode_legacy_synthetic(prefix: str, payload: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Legacy decoder for alpha patcher share codes."""
+    try:
+        def _unb32_int(s: str) -> int:
+            val = 0
+            for ch in s.upper():
+                idx = SHARE_B32_ALPHABET.find(ch)
+                if idx < 0:
+                    raise ValueError
+                val = val * 32 + idx
+            return val
+
+        def _unpack_seed_legacy(s: str) -> str:
+            if not s or s == '0':
+                return ''
+            if s.startswith('X'):
+                pad = '=' * ((8 - len(s[1:]) % 8) % 8)
+                return base64.b32decode((s[1:] + pad).encode('ascii')).decode('utf-8', errors='replace')
+            return str(_unb32_int(s))
+
+        settings: Dict[str, Any] = {}
+        if prefix == SHARE_PREFIX_COOP:
+            flags = _unb32_int(payload[:2])
+            for i, k in enumerate(COOP_KEYS):
+                settings[k] = bool(flags & (1 << i))
+            opt = _unb32_int(payload[2:3])
+            settings['coop_noleg'] = bool(opt & 1)
+            settings['coop_simstr'] = bool(opt & 2)
+            settings['coop_seed'] = _unpack_seed_legacy(payload[3:])
+            return (settings, None)
+        elif prefix == SHARE_PREFIX_WORLD:
+            flags = _unb32_int(payload[:3])
+            for i, k in enumerate(PERSONAL_KEYS):
+                settings[k] = bool(flags & (1 << i))
+            opt = _unb32_int(payload[3:4])
+            mode_idx = opt & 3
+            settings['mode'] = 'global_1to1' if mode_idx == 1 else ('random' if mode_idx == 2 else 'area_1to1')
+            settings['rule'] = 'similar_strength' if (opt & 4) else 'none'
+            settings['noleg'] = bool(opt & 8)
+            settings['shiny'] = _unb32_int(payload[4:6])
+            settings['seed'] = _unpack_seed_legacy(payload[6:])
+            return (settings, None)
+    except Exception:
+        pass
+    return (None, "code altéré ou corrompu" if get_lang() == "fr" else "tampered or corrupted code")
+
+
 def decode_share_code(code: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-    """Decodes a PMC or PMW share code back into a settings dictionary."""
-    clean = re.sub(r'\s+', '', str(code).upper())
+    """Decodes a PMC (co-op) or PMW (world) share code back into a settings dictionary.
+
+    100% interoperable with ProjectPMSetup.exe.
+    """
+    if not code:
+        return (None, "Aucun code fourni." if get_lang() == "fr" else "No code given.")
+    clean = ''.join(str(code).split())
     parts = clean.split('-')
     if len(parts) != 3:
-        return (None, "format invalide (attendu: PREFIX-PAYLOAD-CHECKSUM)" if get_lang() == "fr" else "invalid format (expected: PREFIX-PAYLOAD-CHECKSUM)")
-    prefix, payload, ck = parts
-    expected_ck = hashlib.sha256(f"{prefix}-{payload}".encode('ascii')).hexdigest()[:4].upper()
-    if ck != expected_ck:
-        return (None, "code altéré ou corrompu (somme de contrôle incorrecte)" if get_lang() == "fr" else "tampered or corrupted code (checksum mismatch)")
-    settings: Dict[str, Any] = {}
+        return (None, "Format invalide (attendu: PREFIX-PAYLOAD-CHECKSUM)" if get_lang() == "fr" else "Invalid format (expected: PREFIX-PAYLOAD-CHECKSUM)")
+    prefix, body, crc = parts[0].upper(), parts[1], parts[2]
+
+    if prefix == SHARE_PREFIX_OLD:
+        return (None, "Ce code provient d'une ancienne version de l'outil." if get_lang() == "fr" else "That code is from an older version of this tool.")
+
     if prefix == SHARE_PREFIX_COOP:
-        flags = _unb32(payload[:2])
-        for i, k in enumerate(COOP_KEYS):
-            settings[k] = bool(flags & (1 << i))
-        opt = _unb32(payload[2:3])
-        settings['coop_noleg'] = bool(opt & 1)
-        settings['coop_simstr'] = bool(opt & 2)
-        settings['coop_seed'] = _unpack_seed(payload[3:])
-        return (settings, None)
+        kind = 'coop'
     elif prefix == SHARE_PREFIX_WORLD:
-        flags = _unb32(payload[:3])
-        for i, k in enumerate(PERSONAL_KEYS):
-            settings[k] = bool(flags & (1 << i))
-        opt = _unb32(payload[3:4])
-        mode_idx = opt & 3
-        settings['mode'] = 'global_1to1' if mode_idx == 1 else ('random' if mode_idx == 2 else 'area_1to1')
-        settings['rule'] = 'similar_strength' if (opt & 4) else 'none'
-        settings['noleg'] = bool(opt & 8)
-        settings['shiny'] = _unb32(payload[4:6])
-        settings['seed'] = _unpack_seed(payload[6:])
-        return (settings, None)
-    return (None, f"préfixe inconnu: {prefix}" if get_lang() == "fr" else f"unknown prefix: {prefix}")
+        kind = 'world'
+    else:
+        return (None, f"Préfixe inconnu: {prefix}" if get_lang() == "fr" else f"Unknown prefix: {prefix}")
+
+    try:
+        raw = _unb32(body)
+    except Exception:
+        return (None, "Code corrompu (caractères invalides)." if get_lang() == "fr" else "The code is damaged (bad characters).")
+
+    min_len = 4 if kind == 'coop' else 7
+    if len(raw) < min_len:
+        return (None, "Code trop court." if get_lang() == "fr" else "The code is too short.")
+
+    if hashlib.sha1(raw).hexdigest()[:4] != crc.lower():
+        # Fallback check for legacy synthetic codes
+        expected_sha256 = hashlib.sha256(f"{prefix}-{body}".encode('ascii')).hexdigest()[:4].lower()
+        if crc.lower() == expected_sha256:
+            return _decode_legacy_synthetic(prefix, body)
+        return (None, "Le code est endommagé (erreur de somme de contrôle)." if get_lang() == "fr" else "The code is damaged. Part of it was probably lost in copy and paste.")
+
+    ver, flags = struct.unpack('<BH', raw[:3])
+    if ver != RAND_VERSION:
+        return (None, f"Code créé avec la version {ver} (cette version est {RAND_VERSION})." if get_lang() == "fr" else f"That code was made by randomizer v{ver} and this tool is v{RAND_VERSION}.")
+
+    if kind == 'coop':
+        seed = _unpack_seed(raw[3], raw[4:])
+        if seed is None:
+            return (None, "Graine illisible dans le code." if get_lang() == "fr" else "Unreadable seed.")
+        d: Dict[str, Any] = {
+            'v': ver,
+            '_kind': 'coop',
+            'coop_seed': seed
+        }
+        for i, key in enumerate(COOP_FLAGS):
+            d[key] = bool(flags & (1 << i))
+        return (d, None)
+    else:
+        mode_i = raw[3]
+        rule_i = raw[4]
+        shiny = raw[5]
+        if mode_i >= len(SHARE_MODES) or rule_i >= len(SHARE_RULES):
+            return (None, "Option non supportée dans ce code." if get_lang() == "fr" else "The code names a setting this build doesn't have.")
+        seed = _unpack_seed(raw[6], raw[7:])
+        if seed is None:
+            return (None, "Graine illisible dans le code." if get_lang() == "fr" else "Unreadable seed.")
+        d = {
+            'v': ver,
+            '_kind': 'world',
+            'mode': SHARE_MODES[mode_i],
+            'rule': SHARE_RULES[rule_i],
+            'shiny': shiny,
+            'seed': seed
+        }
+        for i, key in enumerate(WORLD_FLAGS):
+            d[key] = bool(flags & (1 << i))
+        gba_flip = d.pop('gba_flip', False)
+        d['gba_slots'] = bool(d.get('wild_special')) != bool(gba_flip)
+        return (d, None)
 
 def roll_seed() -> str:
     """Generates a random 10-digit numeric seed string."""
@@ -1584,6 +1713,8 @@ def run_selftest() -> bool:
     assert _mon_stride(0, bytes(16)) == 0
     assert TRMON_SIZE_EXTENDED == {0: 16, 1: 24, 2: 20, 3: 28}
     assert TRMON_SIZE_VANILLA == {0: 8, 1: 16, 2: 12, 3: 20}
+    
+    # 1. Co-op test
     test_settings = {'coop_seed': '9854609529', 'trainers': True, 'coop_noleg': False, 'coop_simstr': False}
     c_code = encode_coop_code(test_settings)
     dec, err = decode_share_code(c_code)
@@ -1591,6 +1722,36 @@ def run_selftest() -> bool:
     assert dec['coop_seed'] == '9854609529'
     assert dec['trainers'] is True
     assert dec['coop_noleg'] is False
+    
+    # 2. Official ProjectPMSetup reference test code
+    ref_code = 'PMW-BD7X6AABBAAKTL4IBA-b9e7'
+    dec_ref, err_ref = decode_share_code(ref_code)
+    assert err_ref is None, f"Failed to decode official reference code: {err_ref}"
+    assert dec_ref['seed'] == '2846853128'
+    assert dec_ref['mode'] == 'area_1to1'
+    assert dec_ref['rule'] == 'similar_strength'
+    assert dec_ref['wilds'] is True
+    assert dec_ref['gba_slots'] is True
+    
+    # 3. World settings round-trip test
+    w_settings = {
+        'seed': '8236856015',
+        'wilds': True,
+        'starters': True,
+        'statics': True,
+        'mode': 'area_1to1',
+        'rule': 'none',
+        'shiny': 8,
+        'wild_special': True,
+        'gba_slots': False
+    }
+    w_code = encode_world_code(w_settings)
+    dec_w, err_w = decode_share_code(w_code)
+    assert err_w is None, f"Failed to decode world code: {err_w}"
+    assert dec_w['seed'] == '8236856015'
+    assert dec_w['wilds'] is True
+    assert dec_w['wild_special'] is True
+    assert dec_w['gba_slots'] is False
     return True
 
 if __name__ == '__main__':
