@@ -1,121 +1,49 @@
-# v1.0.7
+# v1.0.8
 
 ---
 
 ## 🇫🇷 Français
 
-### Nouveautés de la version 1.0.7
+### Nouveautés de la version 1.0.8
 
-- **Architecture multi-modes & prise en charge dédiée de Soul Link et Nuzlocke** :
-  - Support séparé et modulaire des modes de jeu additionnels : **Mod Soul Link** (âmes liées, K.O. synchronisés, boîtes cimetière) et **Mod Nuzlocke** (1 capture par zone, K.O. définitifs).
-  - Indicateur contextuel dynamique affichant automatiquement la variante linguistique active ou les avertissements de compatibilité selon le mode choisi.
-  - Rectification complète des textes d'aide et harmonisation du nommage des fichiers de sortie (`ProjectPM_FR_SoulLink.nds`, `ProjectPM_FR_Nuzlocke.nds`).
-  - Nouveaux badges d'analyse de ROM : `Soul Link Actif`, `Nuzlocke Actif`, `Standard (Sans Mod)`.
-- **Typographie DS Pixel-Art native avec support intégral des accents français** :
-  - Extension de la police de caractères `PlatinumDS.ttf` avec 38 nouveaux glyphes accentués et typographiques (`À`, `Â`, `É`, `È`, `Ê`, `Ë`, `Î`, `Ï`, `Ô`, `Ù`, `Û`, `Ü`, `Ç`, minuscules et majuscules, `œ`, `Œ`, `«`, `»`, `’`, etc.).
-  - Rendu visuel 100% fidèle et net sans aucun fallback vers des polices système génériques.
-- **Natures Colorées & Confort Visuel** :
-  - Intégration de l'aperçu HD calibré (216×120 px) pour l'option des Natures Colorées (statistique augmentée en rouge, statistique diminuée en bleu).
-  - Modal d'aperçu interactif avec activation/désactivation au clic.
-- **Améliorations de robustesse et compilation** :
-  - Synchronisation de toutes les dépendances binaires (ndspy, pywebview, pythonnet) pour un packaging autonome fiable sous Windows.
+- **Badges d'efficacité des types en combat (Capsules Pixel-Art Solo & Duo)** :
+  - Affichage dynamique de véritables badges capsules colorés (Vert `x4`/`x2`, Neutre `x1`, Orange/Rouge `x½`/`x¼`, Sombre `x0`) directement sur les boutons des attaques offensives.
+  - Prise en charge native des Combats Doubles : affichage d'une capsule scindée bicolore `[Gauche | Droite]` (19×12 pixels) indiquant instantanément l'efficacité sur chaque adversaire en vie.
+  - Écran de sélection des cibles (`BattleSubscreen_DrawTargetSelectMenu`) : badge capsule individuel affiché à côté du nom de chaque Pokémon ciblé.
+  - Les capacités de statut restent parfaitement neutres sans badge.
 
----
+- **Aperçus visuels interactifs et dépliables (Flèches d'aperçu)** :
+  - Remplacement des aperçus permanents par une flèche discrète en bas à droite de chaque carte d'option.
+  - Clic intuitif pour afficher ou masquer les images de démonstration en dessous de l'option sans surcharger l'interface.
 
-## 🇬🇧 English
+- **Écran de chargement (Splash Screen) épuré & moderne** :
+  - Simplification intégrale du splash screen natif et WebView : affichage centré du logo Project PM (`PM.ico`) avec une barre de progression discrète sur fond sombre.
+  - Suppression des cadres, sous-titres et éléments superflus pour un démarrage rapide et fluide.
 
-### What's New in Version 1.0.7
-
-- **Dedicated Multi-Mode Architecture (Soul Link & Nuzlocke)**:
-  - Full modular support for distinct gameplay modes: **Soul Link Mod** (linked souls, shared faints, graveyard boxes) and **Nuzlocke Mod** (1 catch per area, permanent faints).
-  - Dynamic contextual badge showing active mod language and compatibility status based on selected mode.
-  - Cleaned up multiplayer base help text and standardized output ROM naming (`ProjectPM_FR_SoulLink.nds`, `ProjectPM_FR_Nuzlocke.nds`).
-  - New ROM status badges: `Soul Link Active`, `Nuzlocke Active`, `Standard (No Mod)`.
-- **Authentic DS Pixel-Art Font with Full French Accent Support**:
-  - Extended embedded font `PlatinumDS.ttf` with 38 handcrafted pixel-art accented glyphs matching Pokémon Gen 4 typography (`À`, `É`, `è`, `ê`, `ç`, `ô`, `œ`, etc.).
-  - Eliminates OS font fallback for clean, consistent pixel-art UI typography.
-- **Colored Natures & Visual Enhancements**:
-  - Added calibrated 216×120 px preview matching Visual+ formatting for the Colored Natures enhancement (increased stat in red, decreased stat in blue).
-  - Interactive preview modal with click-to-toggle feature.
-- **Build System & Stability Improvements**:
-  - Packaging workflow enhanced with Python 3.12 and explicit binary dependencies bundling.
-
----
-
-# v1.0.6
-
----
-
-## 🇫🇷 Français
-
-### Nouveautés de la version 1.0.6
-
-- **Interopérabilité totale avec ProjectPMSetup.exe (Codes Co-Op et Monde)** :
-  - Intégration du format binaire officiel de partage de paramètres (Base32 natif, checksum SHA-1 4 caractères, packing binaire `struct`).
-  - Compatibilité bidirectionnelle à 100% : les codes générés par `ProjectPMSetup.exe` sont parfaitement décodés, et les codes générés par le Patcher sont validés et exécutés par `ProjectPMSetup.exe`.
-  - Maintien d'un fallback automatique pour les anciens codes de test alpha.
-- **Actualisation automatique des badges après patchage** :
-  - Lorsqu'une ROM est mise à jour sur place (écrasement direct), le Patcher relance automatiquement l'analyse binaire dès la fin du patchage.
-  - Les badges de statut (SoulLocke, Multi Exp, CS Libres, Rencontres aléatoires) s'actualisent instantanément sans avoir besoin de re-sélectionner le fichier.
-- **Mod CS Libres & Poké-Rider** :
-  - Détection et affichage du statut du mod dans les badges de la ROM.
-- **Documentation illustrée** :
-  - Captures d'écran et interface intégrées au README.
+- **Interface clarifiée & détection de ROM allégée** :
+  - Épuration de la zone d'analyse de ROM : suppression des étiquettes de statut encombrantes pour une lisibilité optimale.
+  - Retrait des options instables pour garantir une expérience de jeu parfaitement stable et sans crash.
 
 ---
 
 ## 🇬🇧 English
 
-### What's New in Version 1.0.6
+### What's New in Version 1.0.8
 
-- **100% Interoperability with Official ProjectPMSetup.exe (Co-Op & World Codes)**:
-  - Integration of official binary share code specifications (native Base32, 4-character SHA-1 checksum, packed `struct` binary headers).
-  - Flawless round-trip compatibility: codes created by `ProjectPMSetup.exe` import cleanly, and codes generated by this Patcher execute directly inside `ProjectPMSetup.exe`.
-  - Automatic backward-compatible fallback for legacy alpha share codes.
-- **Automatic Badge Refresh After Patching**:
-  - When updating a ROM in-place (direct overwrite), the patcher automatically triggers a binary re-scan upon completion.
-  - Status badges (SoulLocke, Team EXP Share, Free HMs, Randomizer) refresh instantly without needing to re-select the ROM file.
-- **Free HMs & Poké-Rider Mod**:
-  - Detection and real-time badge indicator for the Free HMs mod.
-- **Illustrated Documentation**:
-  - Screenshots and UI visual walkthrough added to README.
+- **In-Battle Move Effectiveness Capsule Badges (Single & Double Battles)**:
+  - Dynamic pixel-art capsule badges (Green `x4`/`x2`, Neutral `x1`, Orange/Red `x½`/`x¼`, Dark `x0`) rendered on damaging move touchscreen buttons.
+  - Full Double Battle support: dual-color split capsule `[Left | Right]` (19×12 px) displaying simultaneous effectiveness for each active opponent.
+  - Target selection menu (`BattleSubscreen_DrawTargetSelectMenu`): individual multiplier capsule displayed alongside each targeted Pokémon's name.
+  - Status moves remain clean without badges.
 
----
+- **Collapsible Interactive Previews (Preview Chevron)**:
+  - Replaced persistent preview thumbnails with a discreet arrow button on visual option cards.
+  - Click to expand/collapse sample screenshots directly under the option card without cluttering the UI.
 
-# v1.0.5
+- **Minimalist & Streamlined Splash Screen**:
+  - Redesigned native PyInstaller and WebView boot splash: centered Project PM logo (`PM.ico`) with an elegant progress track.
+  - Removed bulky borders and status texts for faster, cleaner app launch.
 
----
-
-## 🇫🇷 Français
-
-### Nouveautés de la version 1.0.5
-
-- **Mise à jour sur place (In-Place Update)** :
-  - Possibilité de mettre à jour ou réappliquer des patchs directement sur une ROM Project PM existante sans créer de fichier doublon.
-  - Option dédiée `Écraser la ROM source directement (Mise à jour sur place)` activée automatiquement lors de la sélection d'une ROM Project PM.
-  - Remplacement atomique sécurisé : aucune corruption possible en cas d'erreur ou d'interruption.
-  - Sauvegarde de secours automatique conservée dans le dossier `PMBackups/`.
-- **Actualisation des composants multijoueur** :
-  - Synchronisation complète des 37 fichiers localisés (dialogues, attaques, talents, objets, polices françaises et badge authentique Type Fée).
-  - Nettoyage préventif des anciens hooks avant réinjection des mods.
-- **Préservation des données** :
-  - Sauvegardes `.sav` et melonDS `.dsv` protégées et maintenues compatibles.
-  - Tables de randomisation préservées à 100% sur les ROMs déjà randomisées.
-
----
-
-## 🇬🇧 English
-
-### What's New in Version 1.0.5
-
-- **In-Place Source ROM Update**:
-  - Update or re-apply mods directly on existing Project PM ROMs without generating redundant duplicate files.
-  - Automatic `Overwrite source ROM directly (In-place update)` option enabled when a Project PM ROM is detected.
-  - Safe atomic replacement ensuring no risk of file corruption during patching.
-  - Automatic timestamped backups preserved inside `PMBackups/`.
-- **Multiplayer Components Refresh**:
-  - Full synchronization of all 37 localized data files (dialogues, moves, abilities, items, French fonts, and authentic in-battle Fairy type badges).
-  - Pre-cleaning of outdated hooks before re-injecting fresh addons.
-- **Data & Save Preservation**:
-  - `.sav` and melonDS `.dsv` saves safely backed up and preserved.
-  - 100% preservation of randomized tables on pre-randomized ROMs.
+- **Refined User Interface & Clean ROM Header**:
+  - Streamlined ROM detection header by removing cluttered status tags.
+  - Cleaned up obsolete experimental toggles to ensure maximum stability and crash-free gameplay.

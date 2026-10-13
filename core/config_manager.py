@@ -44,7 +44,13 @@ def get_default_config() -> Dict[str, Any]:
         "fast_text": False,
         "run_indoors": False,
         "iv_ev_display": False,
-        "colored_natures": False
+        "colored_natures": False,
+        "fast_hp_bar": False,
+        "type_effectiveness": True,
+        "fast_transitions": False,
+        "level_scaling": False,
+        "lr_shortcuts": False,
+        "battle_inspector": False
     }
 
 def load_config() -> Dict[str, Any]:

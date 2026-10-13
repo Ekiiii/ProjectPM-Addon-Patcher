@@ -77,19 +77,42 @@ function windowClose() {
 }
 
 // ============================================================================
-// INITIALIZATION
+// INITIALIZATION & BOOT SPLASH
 // ============================================================================
+function setBootSplash(percent, statusText) {
+  const bar = document.getElementById('boot-splash-bar');
+  const txt = document.getElementById('boot-splash-status');
+  if (bar && percent !== undefined) bar.style.width = `${percent}%`;
+  if (txt && statusText) txt.textContent = statusText;
+}
+
+function hideBootSplash() {
+  const splash = document.getElementById('app-boot-splash');
+  if (splash && !splash.classList.contains('splash-hidden')) {
+    setBootSplash(100, currentLang === 'fr' ? 'Prêt !' : 'Ready!');
+    setTimeout(() => {
+      splash.classList.add('splash-hidden');
+    }, 120);
+  }
+}
+
+// Fallback safety timer in case pywebviewready is delayed
+setTimeout(hideBootSplash, 4500);
+
 window.addEventListener('pywebviewready', async () => {
   console.log('[App] PyWebView Ready. Initializing...');
   try {
+    setBootSplash(40, 'Chargement de la configuration et des traductions...');
     const initData = await window.pywebview.api.init_app();
     currentLang = initData.lang || 'en';
     translations = initData.translations || {};
     pokemonNames = initData.pokemon_names || {};
     
+    setBootSplash(70, currentLang === 'fr' ? 'Préparation de l\'interface...' : 'Preparing user interface...');
+
     // Set version
     const verEl = document.getElementById('app-version');
-    if (verEl) verEl.innerText = initData.version || 'v1.0.7';
+    if (verEl) verEl.innerText = initData.version || 'v1.0.8';
     
     // Set initial seeds & codes
     if (initData.initial_coop) {
@@ -124,10 +147,6 @@ window.addEventListener('pywebviewready', async () => {
     // Restore saved user preferences & ROM paths
     if (initData.saved_config) {
       const cfg = initData.saved_config;
-      if (cfg.last_source_rom) {
-        document.getElementById('input-source-rom').value = cfg.last_source_rom;
-        await processSelectedRom(cfg.last_source_rom);
-      }
       if (cfg.last_output_rom) {
         document.getElementById('input-output-rom').value = cfg.last_output_rom;
       }
@@ -166,6 +185,14 @@ window.addEventListener('pywebviewready', async () => {
         const tEvo = document.getElementById('toggle-trade-evos');
         if (tEvo) tEvo.checked = cfg.trade_evos;
       }
+      if (cfg.fast_hp_bar !== undefined) {
+        const tHp = document.getElementById('toggle-fast-hp-bar');
+        if (tHp) tHp.checked = cfg.fast_hp_bar;
+      }
+      if (cfg.type_effectiveness !== undefined) {
+        const tEff = document.getElementById('toggle-type-effectiveness');
+        if (tEff) tEff.checked = cfg.type_effectiveness;
+      }
       if (cfg.iv_ev_display !== undefined) {
         const tIv = document.getElementById('toggle-iv-ev-display');
         if (tIv) tIv.checked = cfg.iv_ev_display;
@@ -175,9 +202,17 @@ window.addEventListener('pywebviewready', async () => {
         if (tNat) tNat.checked = cfg.colored_natures;
       }
       updatePatchSummaryBadges();
+
+      if (cfg.last_source_rom) {
+        setBootSplash(88, currentLang === 'fr' ? 'Analyse de la dernière ROM...' : 'Scanning last ROM...');
+        document.getElementById('input-source-rom').value = cfg.last_source_rom;
+        await processSelectedRom(cfg.last_source_rom);
+      }
     }
   } catch (err) {
     console.error('[App Init Error]', err);
+  } finally {
+    hideBootSplash();
   }
 });
 
@@ -205,6 +240,12 @@ function saveCurrentOptionsToConfig() {
       free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
       infinite_tms: document.getElementById('toggle-infinite-tms') ? document.getElementById('toggle-infinite-tms').checked : false,
       trade_evos: document.getElementById('toggle-trade-evos') ? document.getElementById('toggle-trade-evos').checked : false,
+      fast_hp_bar: document.getElementById('toggle-fast-hp-bar') ? document.getElementById('toggle-fast-hp-bar').checked : false,
+      type_effectiveness: document.getElementById('toggle-type-effectiveness') ? document.getElementById('toggle-type-effectiveness').checked : true,
+      fast_transitions: false,
+      level_scaling: false,
+      lr_shortcuts: false,
+      battle_inspector: false,
       iv_ev_display: document.getElementById('toggle-iv-ev-display') ? document.getElementById('toggle-iv-ev-display').checked : false,
       colored_natures: document.getElementById('toggle-colored-natures') ? document.getElementById('toggle-colored-natures').checked : false,
       last_output_rom: dstInput ? dstInput.value : ''
@@ -222,7 +263,9 @@ function updatePatchSummaryBadges() {
     'toggle-team-exp-share',
     'toggle-free-hms',
     'toggle-infinite-tms',
-    'toggle-trade-evos'
+    'toggle-trade-evos',
+    'toggle-fast-hp-bar',
+    'toggle-type-effectiveness'
   ];
   let activeQol = 0;
   qolToggles.forEach(id => {
@@ -540,6 +583,30 @@ async function processSelectedRom(path, isRefresh = false) {
       toggleEvo.checked = !!res.has_trade_evos;
     }
 
+    // Sync Fast HP/EXP from ROM
+    const toggleFastHp = document.getElementById('toggle-fast-hp-bar');
+    if (toggleFastHp && res.has_fast_hp !== undefined) {
+      toggleFastHp.checked = !!res.has_fast_hp;
+    }
+
+    // Sync Move Type Effectiveness from ROM
+    const toggleTypeEff = document.getElementById('toggle-type-effectiveness');
+    if (toggleTypeEff && res.has_type_eff !== undefined) {
+      toggleTypeEff.checked = !!res.has_type_eff;
+    }
+
+    // Sync Fast Transitions from ROM
+    const toggleFastTrans = document.getElementById('toggle-fast-transitions');
+    if (toggleFastTrans && res.has_fast_transitions !== undefined) {
+      toggleFastTrans.checked = !!res.has_fast_transitions;
+    }
+
+    // Sync Battle Inspector from ROM
+    const toggleInspector = document.getElementById('toggle-battle-inspector');
+    if (toggleInspector && res.has_battle_inspector !== undefined) {
+      toggleInspector.checked = !!res.has_battle_inspector;
+    }
+
     // Sync IV/EV display from ROM
     const toggleIv = document.getElementById('toggle-iv-ev-display');
     if (toggleIv && res.has_iv_ev !== undefined) {
@@ -573,11 +640,10 @@ async function processSelectedRom(path, isRefresh = false) {
 }
 
 function renderPatcherBadges(res) {
-  const badgesHtml = res.badges.map(b => {
-    const label = (b.key && translations[b.key]) ? translations[b.key] : b.label;
-    return `<span class="status-badge ${b.color}">${label}</span>`;
-  }).join('');
-  document.getElementById('rom-badges-container').innerHTML = badgesHtml;
+  // ROM status tags are intentionally not displayed anymore.
+  const badgesBox = document.getElementById('rom-badges-container');
+  badgesBox.innerHTML = '';
+  badgesBox.style.display = 'none';
 }
 
 async function browseDestRom() {
@@ -823,6 +889,12 @@ async function startPatching() {
     free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
     infinite_tms: document.getElementById('toggle-infinite-tms') ? document.getElementById('toggle-infinite-tms').checked : false,
     trade_evos: document.getElementById('toggle-trade-evos') ? document.getElementById('toggle-trade-evos').checked : false,
+    fast_hp_bar: document.getElementById('toggle-fast-hp-bar') ? document.getElementById('toggle-fast-hp-bar').checked : false,
+    type_effectiveness: document.getElementById('toggle-type-effectiveness') ? document.getElementById('toggle-type-effectiveness').checked : true,
+    fast_transitions: document.getElementById('toggle-fast-transitions') ? document.getElementById('toggle-fast-transitions').checked : false,
+    level_scaling: false,
+    lr_shortcuts: false,
+    battle_inspector: document.getElementById('toggle-battle-inspector') ? document.getElementById('toggle-battle-inspector').checked : false,
     iv_ev_display: document.getElementById('toggle-iv-ev-display') ? document.getElementById('toggle-iv-ev-display').checked : false,
     colored_natures: document.getElementById('toggle-colored-natures') ? document.getElementById('toggle-colored-natures').checked : false,
     custom_patch: document.getElementById('input-custom-patch') ? (document.getElementById('input-custom-patch').value.trim() || null) : null,
@@ -913,6 +985,9 @@ function openRandomizerWizard(mode) {
   
   if (mode === 'codes') {
     switchModalTab('codes');
+  } else if (mode === 'seed' || mode === 'summary') {
+    switchModalTab('wizard');
+    goToWizardStep(16);
   } else {
     switchModalTab('wizard');
     goToWizardStep(1);
@@ -1246,6 +1321,26 @@ async function refreshWizardCodes() {
     wizardState.coop_seed = Math.floor(1000000000 + Math.random() * 9000000000).toString();
   }
 
+  // Update seed inputs in Step 16 (if not actively being typed by user)
+  const cInput = document.getElementById('wiz-input-coop-seed');
+  if (cInput && document.activeElement !== cInput) {
+    cInput.value = wizardState.coop_seed;
+  }
+  const wInput = document.getElementById('wiz-input-world-seed');
+  if (wInput && document.activeElement !== wInput) {
+    wInput.value = wizardState.seed;
+  }
+
+  // Update header and main active seed badge displays
+  const headerSeed = document.getElementById('wiz-header-seed-val');
+  if (headerSeed) {
+    headerSeed.innerText = wizardState.coop_seed || wizardState.seed || '--------';
+  }
+  const mainActiveSeed = document.getElementById('main-active-seed-display');
+  if (mainActiveSeed) {
+    mainActiveSeed.innerText = wizardState.coop_seed || wizardState.seed || '--------';
+  }
+
   const s = getWizardSettingsObject();
   try {
     const [wRes, cRes] = await Promise.all([
@@ -1258,8 +1353,6 @@ async function refreshWizardCodes() {
       const wMain = document.getElementById('main-world-code');
       if (wEl) wEl.value = wRes.code;
       if (wMain) wMain.value = wRes.code;
-      const wSeed = document.getElementById('wiz-world-seed-display');
-      if (wSeed) wSeed.innerText = wizardState.seed;
     }
     if (cRes && cRes.code) {
       wizardState.coop_code = cRes.code;
@@ -1267,12 +1360,57 @@ async function refreshWizardCodes() {
       const cMain = document.getElementById('main-coop-code');
       if (cEl) cEl.value = cRes.code;
       if (cMain) cMain.value = cRes.code;
-      const cSeed = document.getElementById('wiz-coop-seed-display');
-      if (cSeed) cSeed.innerText = wizardState.coop_seed;
     }
   } catch (err) {
     console.error('[Refresh Codes Error]', err);
   }
+}
+
+function onWizardCoopSeedInput(val) {
+  const clean = String(val || '').trim();
+  wizardState.coop_seed = clean;
+  refreshWizardCodes();
+}
+
+function onWizardWorldSeedInput(val) {
+  const clean = String(val || '').trim();
+  wizardState.seed = clean;
+  refreshWizardCodes();
+}
+
+function rerollWizardCoopSeed() {
+  wizardState.coop_seed = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+  const el = document.getElementById('wiz-input-coop-seed');
+  if (el) el.value = wizardState.coop_seed;
+  refreshWizardCodes();
+}
+
+function rerollWizardWorldSeed() {
+  wizardState.seed = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+  const el = document.getElementById('wiz-input-world-seed');
+  if (el) el.value = wizardState.seed;
+  refreshWizardCodes();
+}
+
+function syncWorldSeedWithCoop() {
+  wizardState.seed = wizardState.coop_seed;
+  const el = document.getElementById('wiz-input-world-seed');
+  if (el) el.value = wizardState.seed;
+  refreshWizardCodes();
+}
+
+function copyWizardCoopSeed() {
+  const val = wizardState.coop_seed || (document.getElementById('wiz-input-coop-seed') ? document.getElementById('wiz-input-coop-seed').value : '');
+  if (!val) return;
+  navigator.clipboard.writeText(val);
+  alert(currentLang === 'fr' ? "Graine Co-op copiée dans le presse-papier !" : "Co-op Seed copied to clipboard!");
+}
+
+function copyWizardWorldSeed() {
+  const val = wizardState.seed || (document.getElementById('wiz-input-world-seed') ? document.getElementById('wiz-input-world-seed').value : '');
+  if (!val) return;
+  navigator.clipboard.writeText(val);
+  alert(currentLang === 'fr' ? "Graine Monde copiée dans le presse-papier !" : "World Seed copied to clipboard!");
 }
 
 function updateQuickSummaryText() {
@@ -1525,6 +1663,15 @@ async function executeImportCodes() {
       const res = await window.pywebview.api.decode_code(coopCode);
       if (res.success && res.settings) {
         const s = res.settings;
+        if (s._kind === 'raw_seed') {
+          wizardState.coop_seed = s.coop_seed;
+          wizardState.seed = s.seed;
+          await refreshWizardCodes();
+          syncWizardUIFromState();
+          applyWizardAndClose();
+          alert(currentLang === 'fr' ? "Graine aléatoire importée et synchronisée avec succès !" : "Seed successfully imported and synchronized!");
+          return;
+        }
         wizardState.coop_code = coopCode;
         if (s.coop_seed) wizardState.coop_seed = s.coop_seed;
         if (s.trainers !== undefined) wizardState.trainers = s.trainers;
@@ -1544,6 +1691,15 @@ async function executeImportCodes() {
       const res = await window.pywebview.api.decode_code(worldCode);
       if (res.success && res.settings) {
         const s = res.settings;
+        if (s._kind === 'raw_seed') {
+          wizardState.seed = s.seed;
+          wizardState.coop_seed = s.coop_seed;
+          await refreshWizardCodes();
+          syncWizardUIFromState();
+          applyWizardAndClose();
+          alert(currentLang === 'fr' ? "Graine aléatoire importée et synchronisée avec succès !" : "Seed successfully imported and synchronized!");
+          return;
+        }
         wizardState.world_code = worldCode;
         if (s.seed) wizardState.seed = s.seed;
         if (s.wilds !== undefined) wizardState.wilds = s.wilds;
@@ -1662,3 +1818,57 @@ window.onUpdateCheckResult = (data) => {
     `;
   }
 };
+
+// ============================================================================
+// PREVIEW ARROWS: any .toggle-card with data-preview="path|i18nKey;path2|i18nKey2"
+// gets a small chevron that expands/collapses its example images below the card.
+// ============================================================================
+function initPreviewArrows() {
+  document.querySelectorAll('.toggle-card[data-preview]').forEach(card => {
+    if (card.dataset.previewReady) return;
+    card.dataset.previewReady = '1';
+
+    const arrow = document.createElement('button');
+    arrow.type = 'button';
+    arrow.className = 'preview-arrow';
+    arrow.title = 'Aperçu / Preview';
+    arrow.innerHTML = '<svg viewBox="0 0 10 10"><path d="M1 3 L5 7 L9 3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+    card.appendChild(arrow);
+
+    const panel = document.createElement('div');
+    panel.className = 'preview-panel';
+    card.after(panel);
+
+    let built = false;
+    arrow.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!built) {
+        built = true;
+        const row = document.createElement('div');
+        row.className = 'pp-row';
+        card.dataset.preview.split(';').map(x => x.trim()).filter(Boolean).forEach(spec => {
+          const [src, key] = spec.split('|');
+          const item = document.createElement('div');
+          item.className = 'pp-item';
+          const img = document.createElement('img');
+          img.src = src;
+          item.appendChild(img);
+          const text = key && translations[key];
+          if (text) {
+            const cap = document.createElement('span');
+            cap.className = 'pp-caption';
+            cap.textContent = text;
+            item.appendChild(cap);
+          }
+          row.appendChild(item);
+        });
+        panel.appendChild(row);
+      }
+      const open = !panel.classList.contains('open');
+      panel.classList.toggle('open', open);
+      arrow.classList.toggle('open', open);
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', initPreviewArrows);

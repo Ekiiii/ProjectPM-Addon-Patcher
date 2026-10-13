@@ -1313,12 +1313,17 @@ def decode_share_code(code: str) -> Tuple[Optional[Dict[str, Any]], Optional[str
 
     100% interoperable with ProjectPMSetup.exe.
     """
-    if not code:
-        return (None, "Aucun code fourni." if get_lang() == "fr" else "No code given.")
     clean = ''.join(str(code).split())
     parts = clean.split('-')
     if len(parts) != 3:
-        return (None, "Format invalide (attendu: PREFIX-PAYLOAD-CHECKSUM)" if get_lang() == "fr" else "Invalid format (expected: PREFIX-PAYLOAD-CHECKSUM)")
+        if len(clean) >= 1 and ('-' not in clean):
+            return ({
+                '_kind': 'raw_seed',
+                'seed': clean,
+                'coop_seed': clean,
+                'world_seed': clean
+            }, None)
+        return (None, "Format invalide (attendu: PREFIX-PAYLOAD-CHECKSUM ou un numéro de Graine)" if get_lang() == "fr" else "Invalid format (expected: PREFIX-PAYLOAD-CHECKSUM or numeric seed)")
     prefix, body, crc = parts[0].upper(), parts[1], parts[2]
 
     if prefix == SHARE_PREFIX_OLD:
@@ -1426,7 +1431,11 @@ def roll_seed() -> str:
     return str(random.randint(1000000000, 9999999999))
 
 def coop_categories_on(settings: Dict[str, Any]) -> bool:
-    return any(bool(settings.get(k)) for k in COOP_KEYS)
+    return (
+        any(bool(settings.get(k)) for k in COOP_KEYS)
+        or (settings.get('evolutions_mode', 'vanilla') != 'vanilla')
+        or bool(settings.get('coop_seed'))
+    )
 
 def must_match_categories(settings: Dict[str, Any]) -> List[str]:
     if get_lang() == "en":
@@ -1496,7 +1505,8 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
              do_battles: bool = False, do_gifts: bool = False, do_trade_get: bool = False,
              do_trade_want: bool = False, do_wild_special: bool = False,
              starters_any: bool = False, starters_pick: Optional[Tuple[int, int, int]] = None,
-             do_gba_slots: bool = False, do_honey: bool = True, evo_mode: str = 'vanilla') -> Tuple[bool, Dict[str, Any]]:
+             do_gba_slots: bool = False, do_honey: bool = True, evo_mode: str = 'vanilla',
+             coop_seed: Any = None) -> Tuple[bool, Dict[str, Any]]:
     """Core wild encounters, starters, statics, and trades randomizer routine."""
     if seed is not None and seed != '':
         try:
@@ -1592,7 +1602,8 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
 
     honey = None
     if do_honey:
-        seed_norm = seed if seed not in (None, '') else None
+        h_seed = coop_seed if coop_seed not in (None, '') else seed
+        seed_norm = h_seed if h_seed not in (None, '') else None
         honey = statics_honey(rom, db, pool, mode, rule, rand_substream('honey', seed_norm), log)
 
     eggs = None
@@ -1602,7 +1613,8 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
 
     evolutions = None
     if evo_mode and evo_mode != 'vanilla':
-        seed_norm = seed if seed not in (None, '') else None
+        e_seed = coop_seed if coop_seed not in (None, '') else seed
+        seed_norm = e_seed if e_seed not in (None, '') else None
         evolutions = evo_randomize(rom, db, pool, evo_mode, rand_substream('evolutions', seed_norm), log)
 
     starters = None
@@ -1700,8 +1712,26 @@ def randomize_rom(
     noleg = bool(settings.get('noleg', True))
     starters_any = bool(settings.get('starters_any', False))
     starters_pick = settings.get('starters_pick')
-    seed = settings.get('seed') or roll_seed()
+    # Synchronize seeds so entering one seed affects all elements
+    raw_world_seed = settings.get('seed') or settings.get('world_seed')
+    raw_coop_seed = settings.get('coop_seed')
+
+    if not raw_world_seed and not raw_coop_seed:
+        base_seed = roll_seed()
+        seed = base_seed
+        coop_seed = base_seed
+    elif raw_world_seed and not raw_coop_seed:
+        seed = str(raw_world_seed).strip()
+        coop_seed = seed
+    elif raw_coop_seed and not raw_world_seed:
+        coop_seed = str(raw_coop_seed).strip()
+        seed = coop_seed
+    else:
+        seed = str(raw_world_seed).strip()
+        coop_seed = str(raw_coop_seed).strip()
+
     settings['seed'] = seed
+    settings['coop_seed'] = coop_seed
 
     log(t("rand_log_start_world"))
     ok, summary = rand_run(
@@ -1712,7 +1742,7 @@ def randomize_rom(
         do_battles=do_battles, do_gifts=do_gifts, do_trade_get=do_trade_get,
         do_trade_want=do_trade_want, do_wild_special=do_wild_special,
         starters_any=starters_any, starters_pick=starters_pick, do_gba_slots=do_gba_slots,
-        do_honey=do_honey, evo_mode=evo_mode
+        do_honey=do_honey, evo_mode=evo_mode, coop_seed=coop_seed
     )
     if not ok:
         return (False, {})
@@ -1720,8 +1750,6 @@ def randomize_rom(
     coop_on = coop_categories_on(settings)
     coop_code = None
     if coop_on:
-        coop_seed = settings.get('coop_seed') or roll_seed()
-        settings['coop_seed'] = coop_seed
         log(t("rand_log_start_coop"))
         rom = RandNDSRom(out_rom)
         db = rand_load_pokemon_db(rom)

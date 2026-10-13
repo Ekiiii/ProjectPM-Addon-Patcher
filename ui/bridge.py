@@ -396,6 +396,34 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
+            # 8b. QoL: Fast HP/EXP Bar Animation Badge
+            if getattr(info, "has_fast_hp", False):
+                badges.append({
+                    "key": "badge_fast_hp_yes",
+                    "label": t("badge_fast_hp_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_fast_hp_no",
+                    "label": t("badge_fast_hp_no"),
+                    "color": "slate"
+                })
+
+            # 8c. QoL: Move Type Effectiveness Badge
+            if getattr(info, "has_type_eff", False):
+                badges.append({
+                    "key": "badge_type_eff_yes",
+                    "label": t("badge_type_eff_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_type_eff_no",
+                    "label": t("badge_type_eff_no"),
+                    "color": "slate"
+                })
+
             # 9. Visual: In-Game IV & EV Display Badge
             if getattr(info, "has_iv_ev", False):
                 badges.append({
@@ -473,6 +501,12 @@ class PatcherBridge:
                 "has_infinite_tms": bool(getattr(info, "has_infinite_tms", False)),
                 "has_fast_text": bool(getattr(info, "has_fast_text", False)),
                 "has_trade_evos": bool(getattr(info, "has_trade_evos", False)),
+                "has_fast_hp": bool(getattr(info, "has_fast_hp", False)),
+                "has_type_eff": bool(getattr(info, "has_type_eff", False)),
+                "has_fast_transitions": bool(getattr(info, "has_fast_transitions", False)),
+                "has_level_scaling": bool(getattr(info, "has_level_scaling", False)),
+                "has_lr_shortcuts": bool(getattr(info, "has_lr_shortcuts", False)),
+                "has_battle_inspector": bool(getattr(info, "has_battle_inspector", False)),
                 "has_iv_ev": bool(getattr(info, "has_iv_ev", False)),
                 "has_colored_natures": bool(getattr(info, "has_colored_natures", False)),
                 "size_mb": round(os.path.getsize(rom_path) / (1024 * 1024), 1),

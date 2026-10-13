@@ -103,12 +103,23 @@ def execute_patch_pipeline(
         infinite_tms = options.get("infinite_tms", False)
         if infinite_tms:
             log_cb("[QoL] CT Infinies (Style 5G+): Activé.")
+        fast_hp_bar = options.get("fast_hp_bar", False)
+        if fast_hp_bar:
+            log_cb("[QoL] Accélération Barres PV & EXP: Activé.")
+        type_effectiveness = options.get("type_effectiveness", True)
+        if type_effectiveness:
+            log_cb("[QoL] Badges Capsules d'Efficacité en Combat (Solo & Duo): Activé.")
+        fast_transitions = False
+        level_scaling = False
+        lr_shortcuts = False
+        battle_inspector = False
         colored_natures = options.get("colored_natures", False)
         if colored_natures:
             log_cb("[Visuel] Natures colorées (+Rouge / -Bleu): Activé.")
         iv_ev_display = options.get("iv_ev_display", False)
         if iv_ev_display:
             log_cb("[Visuel] Affichage IVs & EVs en jeu: Activé.")
+
 
 
         # Multiplayer mode
@@ -338,6 +349,66 @@ def execute_patch_pipeline(
             _progress(0.91, t("infinite_tms_title"))
             apply_infinite_tms_patch(output_rom, enable=True, log_cb=log_cb)
 
+        # 6e2. Fast HP / EXP Bar Animation
+        from core.qol_patcher import apply_fast_healthbar_patch, is_fast_healthbar_active, apply_type_effectiveness_patch, is_type_effectiveness_active
+        if fast_hp_bar:
+            _progress(0.915, t("fast_hp_title"))
+            speed_val = "instant" if fast_hp_bar == "instant" else "fast"
+            apply_fast_healthbar_patch(output_rom, enable=True, speed=speed_val, log_cb=log_cb)
+        elif is_fast_healthbar_active(output_rom):
+            _progress(0.915, t("fast_hp_title"))
+            apply_fast_healthbar_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6e3. Move Type Effectiveness Display (Gen 7+ Style)
+        if type_effectiveness:
+            _progress(0.918, t("type_eff_title"))
+            apply_type_effectiveness_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_type_effectiveness_active(output_rom):
+            _progress(0.918, t("type_eff_title"))
+            apply_type_effectiveness_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6e3b. Infinite Rare Candy & Empty Pocket OOB Crash Fix
+        from core.qol_patcher import apply_infinite_candy_patch
+        apply_infinite_candy_patch(output_rom, enable=True, log_cb=log_cb)
+
+        # 6e4. Fast Overworld Transitions (1-frame fades)
+        from core.qol_patcher import (
+            apply_fast_transitions_patch, is_fast_transitions_active,
+            apply_level_scaling_patch, is_level_scaling_active,
+            apply_lr_shortcuts_patch, is_lr_shortcuts_active,
+            apply_battle_inspector_patch, is_battle_inspector_active
+        )
+        if fast_transitions:
+            _progress(0.919, t("fast_transitions_title"))
+            apply_fast_transitions_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_fast_transitions_active(output_rom):
+            _progress(0.919, t("fast_transitions_title"))
+            apply_fast_transitions_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6e5. Dynamic Trainer Level Scaling
+        if level_scaling:
+            _progress(0.920, t("level_scaling_title"))
+            apply_level_scaling_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_level_scaling_active(output_rom):
+            _progress(0.920, t("level_scaling_title"))
+            apply_level_scaling_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6e6. Quick Overworld Shortcuts (L = Town Map / R = Bicycle)
+        if lr_shortcuts:
+            _progress(0.921, t("lr_shortcuts_title"))
+            apply_lr_shortcuts_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_lr_shortcuts_active(output_rom):
+            _progress(0.921, t("lr_shortcuts_title"))
+            apply_lr_shortcuts_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6e7. In-Battle Stat & Turn Inspector
+        if battle_inspector:
+            _progress(0.922, t("battle_inspector_title"))
+            apply_battle_inspector_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_battle_inspector_active(output_rom):
+            _progress(0.922, t("battle_inspector_title"))
+            apply_battle_inspector_patch(output_rom, enable=False, log_cb=log_cb)
+
 
         # 6f. Visual Enhancements (Colored Natures & IV/EV Display)
         from core.visual_enhancements import apply_colored_natures_patch, apply_iv_ev_patch, is_colored_natures_active
@@ -403,7 +474,11 @@ def execute_patch_pipeline(
                     (0x01 if team_exp_share else 0) |
                     (0x02 if free_hms else 0) |
                     (0x04 if trade_evos else 0) |
-                    (0x08 if infinite_tms else 0)
+                    (0x08 if infinite_tms else 0) |
+                    (0x10 if fast_hp_bar else 0) |
+                    (0x20 if type_effectiveness else 0) |
+                    (0x40 if fast_transitions else 0) |
+                    (0x80 if level_scaling else 0)
                 )
                 vis_flags = (
                     (0x01 if iv_ev_display else 0) |
@@ -417,7 +492,11 @@ def execute_patch_pipeline(
                         mode_flag = 2
                     else:
                         mode_flag = 1
-                tag_data = b"PPM\x01" + bytes([qol_flags, vis_flags, mode_flag, 0])
+                qol2_flags = (
+                    (0x01 if lr_shortcuts else 0) |
+                    (0x02 if battle_inspector else 0)
+                )
+                tag_data = b"PPM\x01" + bytes([qol_flags, vis_flags, mode_flag, qol2_flags])
                 with open(output_rom, "r+b") as f:
                     f.seek(0x1E0)
                     f.write(tag_data)

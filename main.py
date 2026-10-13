@@ -17,9 +17,18 @@ else:
 if APP_ROOT not in sys.path:
     sys.path.insert(0, APP_ROOT)
 
+def _close_native_splash():
+    try:
+        import pyi_splash
+        if pyi_splash.is_alive():
+            pyi_splash.close()
+    except Exception:
+        pass
+
 def launch_legacy():
     from ui.main_window import MainWindow
     app = MainWindow(root_dir=APP_ROOT)
+    _close_native_splash()
     app.mainloop()
 
 def launch_webview():
@@ -42,6 +51,7 @@ def launch_webview():
         background_color="#0b101b"
     )
     bridge.set_window(window)
+    window.events.loaded += _close_native_splash
     webview.start(gui="edgechromium")
 
 def main():
@@ -58,8 +68,10 @@ def main():
     try:
         launch_webview()
     except Exception as e:
+        _close_native_splash()
         print(f"[Launcher] PyWebView initialization failed ({e}), falling back to Tkinter GUI...")
         launch_legacy()
 
 if __name__ == "__main__":
     main()
+

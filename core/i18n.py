@@ -20,8 +20,8 @@ TRANSLATIONS = {
         "fr": "Gestionnaire de Mods & Addons pour Pokémon Platine"
     },
     "header_version": {
-        "en": "v1.0.7",
-        "fr": "v1.0.7"
+        "en": "v1.0.8",
+        "fr": "v1.0.8"
     },
     "section_rom": {
         "en": "1. SELECT YOUR ROM & DESTINATION",
@@ -130,6 +130,70 @@ TRANSLATIONS = {
     "badge_trade_evos_no": {
         "en": "Solo Evos: Inactive",
         "fr": "Évolutions Solo : Inactif"
+    },
+    "badge_fast_hp_yes": {
+        "en": "Fast HP/EXP: Active",
+        "fr": "Barres PV/EXP : Actif"
+    },
+    "badge_fast_hp_no": {
+        "en": "Fast HP/EXP: Inactive",
+        "fr": "Barres PV/EXP : Inactif"
+    },
+    "badge_type_eff_yes": {
+        "en": "Type Effectiveness: Active",
+        "fr": "Efficacité Types : Actif"
+    },
+    "badge_type_eff_no": {
+        "en": "Type Effectiveness: Inactive",
+        "fr": "Efficacité Types : Inactif"
+    },
+    "type_eff_title": {
+        "en": "Move Effectiveness Capsule Badges (x4, x2, x1, x½, x¼, x0)",
+        "fr": "Badges Capsules d'Efficacité en Combat (x4, x2, x1, x½, x¼, x0)"
+    },
+    "type_eff_desc": {
+        "en": "Displays color-coded pixel-art capsule badges (Green x4/x2, Neutral x1, Orange-Red x½/x¼, Dark x0) on move buttons (including split [Left|Right] capsules in Double Battles) and next to each Pokémon on the target selection screen.",
+        "fr": "Affiche des badges capsules pixel-art colorés (Vert x4/x2, Gris x1, Orange/Rouge x½/x¼, Sombre x0) sur les boutons d'attaque (avec capsule bicolore [Gauche|Droite] en Combat Double) et à côté de chaque cible lors du choix de la cible."
+    },
+    "type_eff_caption_moves": {
+        "en": "Move selection (Double Battle: split capsule per opponent)",
+        "fr": "Choix de l'attaque (Combat Double : capsule bicolore par adversaire)"
+    },
+    "type_eff_caption_targets": {
+        "en": "Target selection (badge next to each Pokémon)",
+        "fr": "Choix de la cible (badge à côté de chaque Pokémon)"
+    },
+    "badge_fast_transitions_yes": {
+        "en": "Fast Transitions: Active",
+        "fr": "Transitions Rapides : Actif"
+    },
+    "badge_fast_transitions_no": {
+        "en": "Fast Transitions: Inactive",
+        "fr": "Transitions Rapides : Inactif"
+    },
+    "badge_level_scaling_yes": {
+        "en": "Level Scaling: Active",
+        "fr": "Échelle Niveaux : Actif"
+    },
+    "badge_level_scaling_no": {
+        "en": "Level Scaling: Inactive",
+        "fr": "Échelle Niveaux : Inactif"
+    },
+    "badge_lr_shortcuts_yes": {
+        "en": "L/R Shortcuts: Active",
+        "fr": "Raccourcis L/R : Actif"
+    },
+    "badge_lr_shortcuts_no": {
+        "en": "L/R Shortcuts: Inactive",
+        "fr": "Raccourcis L/R : Inactif"
+    },
+    "badge_battle_inspector_yes": {
+        "en": "Battle Inspector: Active",
+        "fr": "Inspecteur Combat : Actif"
+    },
+    "badge_battle_inspector_no": {
+        "en": "Battle Inspector: Inactive",
+        "fr": "Inspecteur Combat : Inactif"
     },
     "badge_iv_ev_yes": {
         "en": "IV/EV: Active",
@@ -374,6 +438,70 @@ TRANSLATIONS = {
     "trade_evos_badge": {
         "en": "SOLO EVOS",
         "fr": "EVO SOLO"
+    },
+    "fast_hp_title": {
+        "en": "Fast HP & EXP Bar Animation",
+        "fr": "Accélération de la Barre de PV et d'EXP"
+    },
+    "fast_hp_desc": {
+        "en": "Speeds up the notoriously slow Gen 4 HP drainage and EXP bar animation by 4x for snappier battles.",
+        "fr": "Accélère par 4× le vidage et le remplissage de la jauge de PV et d'EXP en combat pour dynamiser le rythme de jeu."
+    },
+    "fast_hp_badge": {
+        "en": "FAST HP/EXP",
+        "fr": "PV/EXP RAPIDE"
+    },
+    "type_eff_badge": {
+        "en": "TYPE EFFECTIVENESS",
+        "fr": "EFFICACITÉ TYPES"
+    },
+    "fast_transitions_title": {
+        "en": "Fast Environment Transitions (Instant Screen Fades)",
+        "fr": "Transitions d'Environnement Rapides (Fondu 1-Frame)"
+    },
+    "fast_transitions_desc": {
+        "en": "Speeds up screen fades when entering doors, climbing stairs, crossing gates, or warping between maps to 1 frame.",
+        "fr": "Réduit à 1 seule frame les temps d'animation et de fondu lors des portes de péage, escaliers et téléportations de zones."
+    },
+    "fast_transitions_badge": {
+        "en": "FAST FADES",
+        "fr": "FONDU RAPIDE"
+    },
+    "level_scaling_title": {
+        "en": "Dynamic Trainer Level Scaling",
+        "fr": "Échelle de Niveau Dynamique des Dresseurs (Level Scaling)"
+    },
+    "level_scaling_desc": {
+        "en": "Automatically scales all opponent trainer and gym leader Pokémon levels and stats to match your current party's level cap.",
+        "fr": "Ajuste automatiquement les niveaux et statistiques des Pokémon des dresseurs adverses et des champions au niveau max de votre équipe."
+    },
+    "level_scaling_badge": {
+        "en": "LEVEL SCALING",
+        "fr": "LEVEL SCALING"
+    },
+    "lr_shortcuts_title": {
+        "en": "Unused Shoulder Button Field Shortcuts (L / R)",
+        "fr": "Raccourcis de Terrain sur Gâchettes L / R"
+    },
+    "lr_shortcuts_desc": {
+        "en": "Press R on the overworld to instantly mount/dismount your Bicycle without registering it, and press L to immediately open the Town Map.",
+        "fr": "Appuyez sur R sur le terrain pour monter/descendre instantanément du Vélo sans l'enregistrer, et sur L pour ouvrir directement la Carte."
+    },
+    "lr_shortcuts_badge": {
+        "en": "L/R SHORTCUTS",
+        "fr": "RACCOURCIS L/R"
+    },
+    "battle_inspector_title": {
+        "en": "In-Battle Stat & Turn Inspector",
+        "fr": "Inspecteur de Combat (Stats & Tours de Météo)"
+    },
+    "battle_inspector_desc": {
+        "en": "Displays active stat stage boosts (+1 Atk, -1 Spe) and remaining turns for weather, Trick Room, screens, and entry hazards directly on the battle touch screen.",
+        "fr": "Affiche les modificateurs de statistiques (+1 Atq, -1 Vit) et les tours restants de météo, distorsion et protections en direct sur l'écran tactile."
+    },
+    "battle_inspector_badge": {
+        "en": "INSPECTOR",
+        "fr": "INSPECTEUR"
     },
     "fast_text_title": {
         "en": "Instant Text Speed (Fast Text)",
@@ -1995,12 +2123,36 @@ TRANSLATIONS = {
         "fr": "STARTER #3"
     },
     "rand_coop_seed_lbl": {
-        "en": "Co-Op Seed:",
-        "fr": "Seed Co-Op :"
+        "en": "Co-Op Seed (Trainers, Evolutions, Types, Moves...):",
+        "fr": "Graine Co-op (Dresseurs, Évolutions, Types, Capacités...) :"
     },
     "rand_world_seed_lbl": {
-        "en": "World Seed:",
-        "fr": "Seed Monde :"
+        "en": "World Seed (Wilds, Starters, Honey trees, Events...):",
+        "fr": "Graine Monde (Sauvages, Starters, Arbres à miel, Événements...) :"
+    },
+    "rand_seed_badge_lbl": {
+        "en": "Seed:",
+        "fr": "Graine :"
+    },
+    "rand_seed_banner_title": {
+        "en": "🌱 Seeds & Randomizer Sync",
+        "fr": "🌱 Graines & Synchronisation Aléatoire"
+    },
+    "rand_seed_banner_desc": {
+        "en": "The seed dictates all randomized generation. Changing seeds below instantly recalculates your Base32 share codes for your friends in real time!",
+        "fr": "La graine détermine l'ensemble du tirage aléatoire. En modifiant les graines ci-dessous, vos codes de partage se mettent à jour automatiquement en temps réel pour vos amis !"
+    },
+    "btn_sync_world_coop": {
+        "en": "Link to Co-op",
+        "fr": "Lier au Co-op"
+    },
+    "main_seed_label": {
+        "en": "🌱 Active Seed:",
+        "fr": "🌱 Graine active :"
+    },
+    "main_seed_edit_btn": {
+        "en": "✏️ Edit Seed...",
+        "fr": "✏️ Modifier la Graine..."
     },
     # Footer
     "footer_status_ready": {

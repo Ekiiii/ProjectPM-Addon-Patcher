@@ -77,6 +77,12 @@ class RomInfo:
         self.has_infinite_tms = False
         self.has_fast_text = False
         self.has_trade_evos = False
+        self.has_fast_hp = False
+        self.has_type_eff = False
+        self.has_fast_transitions = False
+        self.has_level_scaling = False
+        self.has_lr_shortcuts = False
+        self.has_battle_inspector = False
         self.has_iv_ev = False
         self.has_colored_natures = False
         
@@ -298,14 +304,21 @@ class RomInfo:
                 qol_f = content[0x1E4]
                 vis_f = content[0x1E5]
                 mode_f = content[0x1E6]
+                qol2_f = content[0x1E7]
                 if (qol_f & 0x01): self.has_exp_share = True
                 if (qol_f & 0x02): self.has_free_hms = True
                 if (qol_f & 0x04): self.has_trade_evos = True
                 if (qol_f & 0x08): self.has_infinite_tms = True
+                if (qol_f & 0x10): self.has_fast_hp = True
+                if (qol_f & 0x20): self.has_type_eff = True
+                if (qol_f & 0x40): self.has_fast_transitions = True
+                if (qol_f & 0x80): self.has_level_scaling = True
                 if (vis_f & 0x01): self.has_iv_ev = True
                 if (vis_f & 0x02): self.has_colored_natures = True
                 if (vis_f & 0x04): self.has_visual_bg = True
                 if (vis_f & 0x08): self.has_visual_cam = True
+                if (qol2_f & 0x01): self.has_lr_shortcuts = True
+                if (qol2_f & 0x02): self.has_battle_inspector = True
 
                 if mode_f == 2:
                     self.is_nuzlocke = True
@@ -369,6 +382,53 @@ class RomInfo:
                 from core.qol_patcher import is_trade_evos_active
                 if is_trade_evos_active(rom):
                     self.has_trade_evos = True
+            except Exception:
+                pass
+
+            # Check Fast HP/EXP
+            try:
+                from core.qol_patcher import is_fast_healthbar_active
+                if is_fast_healthbar_active(rom):
+                    self.has_fast_hp = True
+            except Exception:
+                pass
+
+            # Check Move Type Effectiveness
+            try:
+                from core.qol_patcher import is_type_effectiveness_active
+                self.has_type_eff = is_type_effectiveness_active(rom)
+            except Exception:
+                pass
+
+            # Check Fast Transitions
+            try:
+                from core.qol_patcher import is_fast_transitions_active
+                if is_fast_transitions_active(rom):
+                    self.has_fast_transitions = True
+            except Exception:
+                pass
+
+            # Check Level Scaling
+            try:
+                from core.qol_patcher import is_level_scaling_active
+                if is_level_scaling_active(rom):
+                    self.has_level_scaling = True
+            except Exception:
+                pass
+
+            # Check L/R Shortcuts
+            try:
+                from core.qol_patcher import is_lr_shortcuts_active
+                if is_lr_shortcuts_active(rom):
+                    self.has_lr_shortcuts = True
+            except Exception:
+                pass
+
+            # Check Battle Inspector
+            try:
+                from core.qol_patcher import is_battle_inspector_active
+                if is_battle_inspector_active(rom):
+                    self.has_battle_inspector = True
             except Exception:
                 pass
 

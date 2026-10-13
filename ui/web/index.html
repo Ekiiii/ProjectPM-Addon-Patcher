@@ -7,6 +7,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- BOOT SPLASH OVERLAY -->
+  <div id="app-boot-splash">
+    <img src="assets/PM.ico" alt="Project PM" class="boot-splash-logo">
+    <div class="boot-progress-track">
+      <div class="boot-progress-fill" id="boot-splash-bar"></div>
+    </div>
+  </div>
+
   <!-- SVG ICON DEFS (FLAT VECTOR PIXEL ART ICONS) -->
   <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
     <defs>
@@ -141,7 +149,7 @@
       <div class="titlebar-left">
         <svg class="titlebar-pokeball-svg" viewBox="0 0 32 32"><use href="#icon-pokeball-detailed"></use></svg>
         <span class="titlebar-app-name">PROJECT PM <span class="title-accent">PATCHER & RANDOMIZER</span></span>
-        <span class="version-pill" id="app-version">v1.0.7</span>
+        <span class="version-pill" id="app-version">v1.0.8</span>
       </div>
 
       <div class="titlebar-center">
@@ -437,6 +445,17 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Current Active Seed Bar -->
+              <div class="seed-summary-bar mt-2" style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 6px 12px; font-size: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="text-muted" data-i18n="main_seed_label">🌱 Graine active :</span>
+                  <strong id="main-active-seed-display" style="font-family: monospace; color: #34d399; letter-spacing: 0.5px;">--------</strong>
+                </div>
+                <button type="button" class="pixel-btn mini" onclick="openRandomizerWizard('seed')" title="Modifier la graine aléatoire">
+                  <span data-i18n="main_seed_edit_btn">✏️ Modifier la Graine...</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -717,6 +736,9 @@
             <div class="wizard-top-header">
               <div class="wizard-step-info">
                 <span class="wizard-badge" id="wiz-cat-badge" data-i18n="wiz_badge_wilds">WILD ENCOUNTERS</span>
+                <button type="button" class="wizard-seed-badge" id="wiz-header-seed-btn" onclick="goToWizardStep(16)" title="Cliquer pour voir / modifier les graines">
+                  🌱 <span data-i18n="rand_seed_badge_lbl">Graine:</span> <strong id="wiz-header-seed-val">--------</strong>
+                </button>
                 <span class="wizard-step-counter" id="wiz-step-counter">Question 1 / 15</span>
               </div>
               <div class="wizard-pills-row">
@@ -1163,6 +1185,14 @@
                 <h3 class="step-heading" data-i18n="wiz_q16_title">16. Summary & Share Codes</h3>
                 <p class="panel-desc-note" data-i18n="wiz_q16_desc">Your randomizer configuration is ready! Share your Co-op Code with your friend so both of you play with identical trainer teams and rules.</p>
 
+                <!-- Seed Sync Banner -->
+                <div class="seed-info-banner mt-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 10px 14px; font-size: 13px; line-height: 1.4;">
+                  <div style="font-weight: 600; color: #34d399; margin-bottom: 4px;">
+                    <span data-i18n="rand_seed_banner_title">🌱 Graines & Synchronisation Aléatoire</span>
+                  </div>
+                  <span data-i18n="rand_seed_banner_desc">La graine détermine l'ensemble du tirage aléatoire. En modifiant les graines ci-dessous, vos codes de partage se mettent à jour automatiquement en temps réel pour vos amis !</span>
+                </div>
+
                 <!-- Co-op Code Card -->
                 <div class="code-box mt-3">
                   <div class="code-box-header">
@@ -1176,8 +1206,18 @@
                       <span data-i18n="btn_copy">Copy</span>
                     </button>
                   </div>
-                  <div class="seed-preview mt-2">
-                    <span data-i18n="rand_coop_seed_lbl">Co-Op Seed: </span><strong id="wiz-coop-seed-display">--------</strong>
+                  <!-- Editable Co-op Seed Control -->
+                  <div class="seed-edit-section mt-3 pt-2" style="border-top: 1px dashed rgba(255,255,255,0.15);">
+                    <label class="form-label" style="font-size: 12px; color: #a7f3d0;" data-i18n="rand_coop_seed_lbl">Graine Co-op (Dresseurs, Évolutions, Types, Capacités...) :</label>
+                    <div class="code-input-group mt-1">
+                      <input type="text" id="wiz-input-coop-seed" class="pixel-input code-input" placeholder="Graine Co-op (ex: 4829104821)" oninput="onWizardCoopSeedInput(this.value)" style="font-family: monospace; font-size: 13px;">
+                      <button type="button" class="pixel-btn" onclick="rerollWizardCoopSeed()" title="Générer une nouvelle graine Co-op aléatoire">
+                        🎲 <span data-i18n="btn_roll_seed">Relancer</span>
+                      </button>
+                      <button type="button" class="pixel-btn" onclick="copyWizardCoopSeed()" title="Copier la graine Co-op">
+                        📋
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1194,8 +1234,21 @@
                       <span data-i18n="btn_copy">Copy</span>
                     </button>
                   </div>
-                  <div class="seed-preview mt-2">
-                    <span data-i18n="rand_world_seed_lbl">World Seed: </span><strong id="wiz-world-seed-display">--------</strong>
+                  <!-- Editable World Seed Control -->
+                  <div class="seed-edit-section mt-3 pt-2" style="border-top: 1px dashed rgba(255,255,255,0.15);">
+                    <label class="form-label" style="font-size: 12px; color: #93c5fd;" data-i18n="rand_world_seed_lbl">Graine Monde (Sauvages, Starters, Arbres à miel, Événements...) :</label>
+                    <div class="code-input-group mt-1">
+                      <input type="text" id="wiz-input-world-seed" class="pixel-input code-input" placeholder="Graine Monde (ex: 4829104821)" oninput="onWizardWorldSeedInput(this.value)" style="font-family: monospace; font-size: 13px;">
+                      <button type="button" class="pixel-btn" onclick="rerollWizardWorldSeed()" title="Générer une nouvelle graine Monde aléatoire">
+                        🎲 <span data-i18n="btn_roll_seed">Relancer</span>
+                      </button>
+                      <button type="button" class="pixel-btn" onclick="syncWorldSeedWithCoop()" title="Synchroniser avec la graine Co-op pour tout unifier">
+                        🔗 <span data-i18n="btn_sync_world_coop">Lier au Co-op</span>
+                      </button>
+                      <button type="button" class="pixel-btn" onclick="copyWizardWorldSeed()" title="Copier la graine Monde">
+                        📋
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1341,6 +1394,34 @@
             </div>
           </div>
 
+          <!-- 5. Fast HP / EXP Bar Animation -->
+          <div class="toggle-card mt-3">
+            <div class="toggle-info">
+              <span class="toggle-title" data-i18n="fast_hp_title">Fast HP & EXP Bar Animation</span>
+              <span class="toggle-desc" data-i18n="fast_hp_desc">Speeds up the notoriously slow Gen 4 HP drainage and EXP bar animation by 4x for snappier battles.</span>
+            </div>
+            <div class="toggle-control">
+              <label class="pixel-switch">
+                <input type="checkbox" id="toggle-fast-hp-bar" onchange="onToggleOptionChange()">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 6. Move Type Effectiveness Display -->
+          <div data-preview="assets/preview_type_eff_moves.png|type_eff_caption_moves;assets/preview_type_eff_targets.png|type_eff_caption_targets" class="toggle-card mt-3">
+            <div class="toggle-info">
+              <span class="toggle-title" data-i18n="type_eff_title">Move Effectiveness Capsule Badges (x4, x2, x1, x½, x¼, x0)</span>
+              <span class="toggle-desc" data-i18n="type_eff_desc">Displays color-coded pixel-art capsule badges (Green x4/x2, Neutral x1, Orange-Red x½/x¼, Dark x0) on move buttons (including split [Left|Right] capsules in Double Battles) and next to each Pokémon on the target selection screen.</span>
+            </div>
+            <div class="toggle-control">
+              <label class="pixel-switch">
+                <input type="checkbox" id="toggle-type-effectiveness" checked onchange="onToggleOptionChange()">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
 
           <div class="mt-4">
             <button type="button" class="pixel-btn primary w-100" onclick="closeQolModal()">
@@ -1394,7 +1475,7 @@
           </div>
 
           <!-- 2. Colored Stat Natures -->
-          <div class="toggle-card visual-feature-card mt-3">
+          <div data-preview="assets/preview_colored_natures.png|colored_natures_caption" class="toggle-card visual-feature-card mt-3">
             <div class="toggle-header-row">
               <div class="toggle-info">
                 <span class="toggle-title" data-i18n="colored_natures_title">Colored Stat Natures (+Red / -Blue)</span>
@@ -1407,14 +1488,10 @@
                 </label>
               </div>
             </div>
-            <div class="visual-preview-box">
-              <img src="assets/preview_colored_natures.png" alt="Colored Stat Natures Preview" class="visual-preview-img" onclick="document.getElementById('toggle-colored-natures').click()">
-              <span class="visual-preview-caption" data-i18n="colored_natures_caption">Preview: Nature stat highlighting (+Red boosted / -Blue hindered)</span>
-            </div>
           </div>
 
           <!-- 3. Visual+ HD Battle Backgrounds -->
-          <div class="toggle-card visual-feature-card mt-3">
+          <div data-preview="assets/preview_visualplus_bg.png|visual_bg_caption" class="toggle-card visual-feature-card mt-3">
             <div class="toggle-header-row">
               <div class="toggle-info">
                 <span class="toggle-title" data-i18n="visual_battle_bg">HD Battle Backgrounds (Visual+)</span>
@@ -1427,14 +1504,10 @@
                 </label>
               </div>
             </div>
-            <div class="visual-preview-box">
-              <img src="assets/preview_visualplus_bg.png" alt="HD Battle Backgrounds Preview" class="visual-preview-img" onclick="document.getElementById('toggle-visual-bg').click()">
-              <span class="visual-preview-caption" data-i18n="visual_bg_caption">Preview: High-resolution 3D battle arena</span>
-            </div>
           </div>
 
           <!-- 4. Visual+ 3D Camera -->
-          <div class="toggle-card visual-feature-card mt-3">
+          <div data-preview="assets/preview_visualplus_cam_town.png|visual_cam_town;assets/preview_visualplus_cam_center.png|visual_cam_center" class="toggle-card visual-feature-card mt-3">
             <div class="toggle-header-row">
               <div class="toggle-info">
                 <span class="toggle-title" data-i18n="visual_camera">Extended 3D Camera (Visual+)</span>
@@ -1445,16 +1518,6 @@
                   <input type="checkbox" id="toggle-visual-cam" onchange="onToggleOptionChange()">
                   <span class="slider"></span>
                 </label>
-              </div>
-            </div>
-            <div class="visual-preview-box visual-preview-dual">
-              <div class="dual-thumb">
-                <img src="assets/preview_visualplus_cam_town.png" alt="Overworld Town View" class="visual-preview-img" onclick="document.getElementById('toggle-visual-cam').click()">
-                <span class="visual-preview-subcaption" data-i18n="visual_cam_town">Overworld / Town</span>
-              </div>
-              <div class="dual-thumb">
-                <img src="assets/preview_visualplus_cam_center.png" alt="Pokemon Center View" class="visual-preview-img" onclick="document.getElementById('toggle-visual-cam').click()">
-                <span class="visual-preview-subcaption" data-i18n="visual_cam_center">Pokémon Center</span>
               </div>
             </div>
           </div>

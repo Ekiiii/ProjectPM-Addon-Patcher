@@ -22,3 +22,4 @@ Thumbs.db
 # App local runtime files
 config.json
 logs/
+.agents/

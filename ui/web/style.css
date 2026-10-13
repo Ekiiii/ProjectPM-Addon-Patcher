@@ -1692,6 +1692,26 @@ body {
   color: var(--text-muted);
 }
 
+.wizard-seed-badge {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wizard-seed-badge:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #34d399;
+}
+
 .wizard-pills-row {
   display: flex;
   justify-content: center;
@@ -1924,3 +1944,122 @@ body {
   align-items: center;
 }
 
+/* ==========================================================================
+   BOOT SPLASH SCREEN OVERLAY
+   ========================================================================== */
+#app-boot-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0b101b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  user-select: none;
+}
+
+#app-boot-splash.splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.boot-splash-logo {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
+}
+
+.boot-progress-track {
+  width: 220px;
+  height: 6px;
+  background: #161f33;
+  border: 1px solid #1e293b;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.boot-progress-fill {
+  height: 100%;
+  width: 15%;
+  background: linear-gradient(90deg, #ef4444, #f59e0b);
+  transition: width 0.25s ease;
+}
+
+/* ==========================================================================
+   PREVIEW ARROW (small chevron expanding example images under an option)
+   ========================================================================== */
+.toggle-card[data-preview] { position: relative; }
+
+.preview-arrow {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  width: 22px;
+  height: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #23314d;
+  border-radius: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.preview-arrow:hover { color: #fff; border-color: var(--color-accent); }
+
+.preview-arrow svg {
+  width: 10px;
+  height: 10px;
+  transition: transform 0.15s ease;
+}
+
+.preview-arrow.open svg { transform: rotate(180deg); }
+
+.preview-panel {
+  display: none;
+  margin-top: -1px;
+  background-color: #070a12;
+  border: 1px solid #23314d;
+  border-top: none;
+  padding: 8px;
+}
+
+.preview-panel.open { display: block; }
+
+.preview-panel .pp-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.preview-panel .pp-item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-panel img {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  border: 1px solid #1e293b;
+}
+
+.preview-panel .pp-caption {
+  margin-top: 5px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+}

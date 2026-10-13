@@ -11,6 +11,7 @@ import shutil
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
 ICON_PATH = os.path.join(ASSETS_DIR, "PM.ico")
+SPLASH_PATH = os.path.join(ASSETS_DIR, "splash.png")
 DIST_DIR = os.path.join(ROOT_DIR, "dist")
 BUILD_DIR = os.path.join(ROOT_DIR, "build")
 
@@ -25,10 +26,19 @@ def build():
         "--windowed",
         "--name=ProjectPM-Addon-Patcher",
         f"--icon={ICON_PATH}",
+        f"--splash={SPLASH_PATH}",
         f"--add-data={os.path.join(ROOT_DIR, 'assets')};assets",
         f"--add-data={os.path.join(ROOT_DIR, 'payloads')};payloads",
         f"--add-data={os.path.join(ROOT_DIR, 'core')};core",
         f"--add-data={os.path.join(ROOT_DIR, 'ui')};ui",
+        "--exclude-module=numpy",
+        "--exclude-module=scipy",
+        "--exclude-module=matplotlib",
+        "--exclude-module=pandas",
+        "--exclude-module=pytest",
+        "--exclude-module=unicorn",
+        "--exclude-module=capstone",
+        "--exclude-module=keystone",
         "--hidden-import=PIL",
         "--hidden-import=PIL.Image",
         "--hidden-import=PIL.ImageTk",
@@ -44,6 +54,11 @@ def build():
         "--hidden-import=core.config_manager",
         "--hidden-import=core.save_manager",
         "--hidden-import=core.lang_switcher",
+        "--hidden-import=core.randomizer",
+        "--hidden-import=core.rand_manager",
+        "--hidden-import=core.smart_injector",
+        "--hidden-import=core.patch_pipeline",
+        "--hidden-import=core.rom_detector",
         "--hidden-import=webview",
         "--hidden-import=webview.platforms.winforms",
         "--hidden-import=webview.platforms.edgechromium",
