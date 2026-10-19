@@ -38,21 +38,29 @@ from core.i18n import get_lang
 # All 15 calls are redirected from PrintStringToWindow to our routine.
 # Static windows and PokemonSummaryScreen_Init are NEVER touched, ensuring 0% freeze/black screen!
 
-NATURES_FUNC_OFFSET = 0x100810
+NATURES_FUNC_OFFSET_045 = 0x100810
+NATURES_FUNC_OFFSET     = 0x100A34
+NATURES_FUNC_OFFSET_047 = 0x100B68
 
-# 108 bytes routine assembled with Keystone
+# 108 bytes routine template assembled with Keystone
 NATURES_FUNC_PATCHED = bytes.fromhex(
     "70b59524a4000459002c26d00d1b102d08d0202d08d0302d0ad0402d0ad0502d04d01ae0002506e0012504e0022502e0032500e00425292424010334045d182c0bd8052674436419054e3457002c01dc02db02e0034a00e0034a95f7adfd70bd057a0f020006050000040300"
 )
 
-VANILLA_PRINT_STRING = 0x020963C8
-PATCHED_PRINT_STRING = 0x02100810
+VANILLA_PRINT_STRING_045 = 0x020963C8
+PATCHED_PRINT_STRING_045 = 0x02100810
+VANILLA_PRINT_STRING     = 0x0209661C
+PATCHED_PRINT_STRING     = 0x02100A34
+VANILLA_PRINT_STRING_047 = 0x02096750
+PATCHED_PRINT_STRING_047 = 0x02100B68
 
-STAT_CALL_SITES = [
+STAT_CALL_SITES_045 = [
     0x0209702E, 0x02097052, 0x02097076, 0x0209709C, 0x020970C0,  # IVs (Atk, Def, SpA, SpD, Spe)
     0x0209710C, 0x02097132, 0x02097156, 0x0209717A, 0x0209719E,  # EVs (Atk, Def, SpA, SpD, Spe)
     0x020971FA, 0x0209721E, 0x02097244, 0x020972AA, 0x020972D0,  # Combat Stats (Atk, Def, SpA, SpD, Spe)
 ]
+STAT_CALL_SITES     = [s + 0x254 for s in STAT_CALL_SITES_045]
+STAT_CALL_SITES_047 = [s + 0x134 for s in STAT_CALL_SITES]
 
 
 def make_thumb_bl(from_addr: int, to_addr: int) -> bytes:
@@ -61,6 +69,36 @@ def make_thumb_bl(from_addr: int, to_addr: int) -> bytes:
     hw1 = 0xF000 | ((offset >> 11) & 0x7FF)
     hw2 = 0xF800 | (offset & 0x7FF)
     return bytes([hw1 & 0xFF, hw1 >> 8, hw2 & 0xFF, hw2 >> 8])
+
+
+def _get_natures_params(arm9: bytes):
+    import struct
+    bss = struct.unpack_from("<I", arm9, 0xBAC)[0] if len(arm9) >= 0xBB0 else 0
+    if bss == 0x021094E0:
+        func_off = NATURES_FUNC_OFFSET_047
+        func_addr = PATCHED_PRINT_STRING_047
+        van_print = VANILLA_PRINT_STRING_047
+        sites = STAT_CALL_SITES_047
+        aff_table = 0x020F7D5D
+    elif bss == 0x02109180:
+        func_off = NATURES_FUNC_OFFSET_045
+        func_addr = PATCHED_PRINT_STRING_045
+        van_print = VANILLA_PRINT_STRING_045
+        sites = STAT_CALL_SITES_045
+        aff_table = 0x020F7A05
+    else:
+        func_off = NATURES_FUNC_OFFSET
+        func_addr = PATCHED_PRINT_STRING
+        van_print = VANILLA_PRINT_STRING
+        sites = STAT_CALL_SITES
+        aff_table = 0x020F7C29
+
+    fn_buf = bytearray(NATURES_FUNC_PATCHED)
+    fn_buf[0x5A:0x5E] = make_thumb_bl(func_addr + 0x5A, van_print)
+    struct.pack_into("<I", fn_buf, 0x60, aff_table)
+    van_calls = {s: make_thumb_bl(s, van_print) for s in sites}
+    pat_calls = {s: make_thumb_bl(s, func_addr) for s in sites}
+    return func_off, bytes(fn_buf), sites, van_calls, pat_calls
 
 
 # Precomputed bl calls for instant lookup
@@ -105,6 +143,7 @@ def apply_colored_natures_patch(
             save_path = output_path
 
         arm9 = bytearray(rom.arm9)
+        func_off, func_bytes, sites, van_calls, pat_calls = _get_natures_params(arm9)
 
         # Cleanup legacy hook at PrintStringToWindow (0x963CC) if present
         if len(arm9) >= OLD_HOOK_GLOBAL_OFFSET + len(OLD_HOOK_GLOBAL_VANILLA):
@@ -117,15 +156,15 @@ def apply_colored_natures_patch(
                 arm9[OLD_HOOK_OFFSET:OLD_HOOK_OFFSET + len(OLD_HOOK_VANILLA)] = OLD_HOOK_VANILLA
 
         if enable:
-            if len(arm9) < NATURES_FUNC_OFFSET + len(NATURES_FUNC_PATCHED):
+            if len(arm9) < func_off + len(func_bytes):
                 log("[Natures] Error: ARM9 binary too small.")
                 return False
 
-            # Inject the nature color handler function at 0x100810
-            arm9[NATURES_FUNC_OFFSET:NATURES_FUNC_OFFSET + len(NATURES_FUNC_PATCHED)] = NATURES_FUNC_PATCHED
+            # Inject the nature color handler function
+            arm9[func_off:func_off + len(func_bytes)] = func_bytes
 
             # Redirect stat printing calls in DrawSkillsPageWindows
-            for site, patched_bl in STAT_CALL_PATCHED.items():
+            for site, patched_bl in pat_calls.items():
                 offset = site - 0x02000000
                 arm9[offset:offset + 4] = patched_bl
 
@@ -137,12 +176,12 @@ def apply_colored_natures_patch(
             log(msg)
         else:
             # Restore vanilla bl calls
-            for site, vanilla_bl in STAT_CALL_VANILLA.items():
+            for site, vanilla_bl in van_calls.items():
                 offset = site - 0x02000000
                 arm9[offset:offset + 4] = vanilla_bl
 
-            if len(arm9) >= NATURES_FUNC_OFFSET + len(NATURES_FUNC_PATCHED):
-                arm9[NATURES_FUNC_OFFSET:NATURES_FUNC_OFFSET + len(NATURES_FUNC_PATCHED)] = b"\x00" * len(NATURES_FUNC_PATCHED)
+            if len(arm9) >= func_off + len(func_bytes):
+                arm9[func_off:func_off + len(func_bytes)] = b"\x00" * len(func_bytes)
 
             msg = (
                 "[Natures] Natures colorées désactivées (affichage standard restauré)."
@@ -223,11 +262,12 @@ def is_colored_natures_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) ->
             rom = rom_input
 
         arm9 = rom.arm9
-        # Check primary combat stat site (Attack at 0x020971FA)
-        offset = 0x020971FA - 0x02000000
+        _, _, sites, _, pat_calls = _get_natures_params(arm9)
+        primary_site = sites[10]  # Attack combat stat
+        offset = primary_site - 0x02000000
         if len(arm9) < offset + 4:
             return False
-        return arm9[offset:offset + 4] == STAT_CALL_PATCHED[0x020971FA]
+        return arm9[offset:offset + 4] == pat_calls[primary_site]
     except Exception:
         return False
 

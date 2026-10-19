@@ -25,6 +25,12 @@ KNOWN_HASHES = {
     "0862ec35b24de5c7e2dcb88c9eea0873110d755c": {"type": "vanilla_us", "name": "Vanilla Platinum (USA Rev 1)"},
     "f4448555e5dfad41763740e53a25cb8ec89ef239": {"type": "vanilla_fr", "name": "Vanilla Platinum (France)"},
     "41ea92f794560e347cd9509f5ec9e9d479a4bbf1": {"type": "vanilla_fr", "name": "Vanilla Platinum (France)"},
+    # ProjectPM 0.4.7
+    "bff2d5c10f327ecaf7d13eb886b91ddf93df36f2": {"type": "projectpm_fr", "name": "ProjectPM 0.4.7 (FR - Standard)"},
+    "d7c2aa2ad36e06cbd89951e2ed54a617d7aa043b": {"type": "projectpm_us", "name": "ProjectPM 0.4.7 (USA)"},
+    # ProjectPM 0.4.6
+    "99770452858e197fbac80b7e3fc680fc92b50d8b": {"type": "projectpm_fr", "name": "ProjectPM 0.4.6 (FR - Standard)"},
+    "8c1426650efba095fbdd66eda5d371f776afab30": {"type": "projectpm_us", "name": "ProjectPM 0.4.6 (USA)"},
     # ProjectPM FR 0.4.5
     "7914acff08156d4c2be6d7babb275afe2d60a3b0": {"type": "projectpm_fr", "name": "ProjectPM 0.4.5 (FR - Standard)"},
     "534992df5165d8ed182da8b922da09614fd70022": {"type": "projectpm_fr", "name": "ProjectPM 0.4.5 (FR - Visual+)"},
@@ -65,6 +71,7 @@ class RomInfo:
         # Multiplayer Base state
         self.has_multiplayer = False
         self.mp_lang = "en"        # "en" or "fr"
+        self._detected_mp_version = "0.4.7"
         
         # Mod states
         self.is_soullocke = False
@@ -72,6 +79,7 @@ class RomInfo:
         self.is_randomized = False
         self.has_visual_bg = False
         self.has_visual_cam = False
+        self.has_visual_engine = False
         self.has_exp_share = False
         self.has_free_hms = False
         self.has_infinite_tms = False
@@ -125,7 +133,7 @@ class RomInfo:
 
     @property
     def mp_version(self) -> str:
-        return "0.4.5"
+        return self._detected_mp_version
 
     def _analyze(self):
         try:
@@ -190,6 +198,13 @@ class RomInfo:
             if 122 in ovs:
                 self.has_multiplayer = True
                 self.category = "projectpm"
+            if self.has_multiplayer and 16 in ovs:
+                if ovs[16].ramAddress == 0x0224A700:
+                    self._detected_mp_version = "0.4.5"
+                elif ovs[16].ramAddress == 0x0224A920:
+                    self._detected_mp_version = "0.4.6"
+                else:
+                    self._detected_mp_version = "0.4.7"
 
             # Determine Language precisely via internal text bank (msgdata/pl_msg.narc file 412)
             detected_lang = None
@@ -234,7 +249,7 @@ class RomInfo:
 
             if self.has_multiplayer:
                 if not self.display_name:
-                    self.display_name = f"ProjectPM 0.4.5 ({'Français' if self.lang == 'fr' else 'English'})"
+                    self.display_name = f"ProjectPM {self.mp_version} ({'Français' if self.lang == 'fr' else 'English'})"
             else:
                 if not self.display_name:
                     if "POKEMON PL" in self.game_title:
@@ -247,45 +262,34 @@ class RomInfo:
                     else:
                         self.display_name = f"Custom ROM ({self.game_title})"
 
-            # Check SoulLocke / Nuzlocke: Hook H1 at 0x02055FA8 (arm9 offset 0x55FA8)
+            # Check SoulLocke / Nuzlocke: Hook H1 at 0x5624C (0.4.7), 0x56110 (0.4.6), or 0x55FA8 (0.4.5)
             arm9 = rom.arm9
             has_h1 = False
-            if len(arm9) > 0x55FA8 + 4:
-                h1_bytes = arm9[0x55FA8 : 0x55FA8 + 4]
-                if h1_bytes != bytes.fromhex("6850301c") and len(h1_bytes) == 4 and (h1_bytes[1] & 0xF0) == 0xF0:
-                    has_h1 = True
+            for h1_off in (0x5624C, 0x56110, 0x55FA8):
+                if len(arm9) > h1_off + 4:
+                    h1_bytes = arm9[h1_off : h1_off + 4]
+                    if h1_bytes != bytes.fromhex("6850301c") and len(h1_bytes) == 4 and (h1_bytes[1] & 0xF0) == 0xF0:
+                        has_h1 = True
+                        break
 
             base_no_ext = os.path.splitext(self.path)[0]
+            rand_candidate = base_no_ext + ".rand.txt"
+            if not os.path.isfile(rand_candidate) and os.path.isfile(self.path + ".rand.txt"):
+                rand_candidate = self.path + ".rand.txt"
+            if os.path.isfile(rand_candidate):
+                self.has_rand_sidecar = True
+                self.rand_file = rand_candidate
 
-            # Check Randomizer: If ROM matches an exact clean vanilla or stock ProjectPM hash, it is NOT randomized
+            # Check Randomizer: Use rand_manager scanner for authoritative check of internal ROM tables
             if self.sha1.lower() in KNOWN_HASHES:
                 self.is_randomized = False
             else:
-                # Check Randomizer via sidecar, filename, or candidate NARC tables
-                rand_candidate = base_no_ext + ".rand.txt"
-                if not os.path.isfile(rand_candidate) and os.path.isfile(self.path + ".rand.txt"):
-                    rand_candidate = self.path + ".rand.txt"
-                if os.path.isfile(rand_candidate):
-                    self.has_rand_sidecar = True
-                    self.rand_file = rand_candidate
-                    self.is_randomized = True
-
-                if "random" in self.filename.lower() or "rand" in self.filename.lower():
-                    self.is_randomized = True
-
-                if len(rom.files) > 331 and rom.files[331]:
-                    enc_hash = hashlib.sha1(rom.files[331]).hexdigest()
-                    if enc_hash not in STANDARD_ENC_HASHES:
-                        self.is_randomized = True
-
-                # Use rand_manager scanner for deep check
                 try:
                     from core.rand_manager import extract_randomizer_data
                     rand_check = extract_randomizer_data(self.path)
-                    if rand_check["is_randomized"]:
-                        self.is_randomized = True
+                    self.is_randomized = bool(rand_check.get("is_randomized"))
                 except Exception:
-                    pass
+                    self.is_randomized = False
 
             # Check Visual+ Battle BG: file 159 pl_batt_bg.narc > 1MB
             if len(rom.files) > 159 and rom.files[159]:
@@ -293,11 +297,17 @@ class RomInfo:
                 if bg_size > 1000000:
                     self.has_visual_bg = True
 
-            # Check Visual+ 3D Camera: check presence of camera byte tables
-            if CAM_VISUAL_BYTES in content:
+            # Check Visual+ 3D Camera & Custom 60 FPS Visual Engine separately
+            from core.visual_patcher import is_camera_patch_active, is_visual_engine_active
+            if is_camera_patch_active(rom):
+                self.has_visual_cam = True
+            elif CAM_VISUAL_BYTES in content:
                 self.has_visual_cam = True
             elif 5 in ovs and CAM_VISUAL_BYTES in ovs[5].data:
                 self.has_visual_cam = True
+
+            if is_visual_engine_active(rom):
+                self.has_visual_engine = True
 
             # Check PPM Header Tag at 0x1E0 (persisted by patcher)
             if len(content) > 0x1E8 and content[0x1E0:0x1E4] == b"PPM\x01":
@@ -317,6 +327,7 @@ class RomInfo:
                 if (vis_f & 0x02): self.has_colored_natures = True
                 if (vis_f & 0x04): self.has_visual_bg = True
                 if (vis_f & 0x08): self.has_visual_cam = True
+                if (vis_f & 0x10): self.has_visual_engine = True
                 if (qol2_f & 0x01): self.has_lr_shortcuts = True
                 if (qol2_f & 0x02): self.has_battle_inspector = True
 

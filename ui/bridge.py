@@ -209,17 +209,33 @@ class PatcherBridge:
         """Opens native save file picker for destination ROM."""
         if not self._window:
             return None
-        file_types = ('Nintendo DS ROM (*.nds)',)
-        result = self._window.create_file_dialog(
-            webview.SAVE_DIALOG,
-            save_filename=default_name or "ProjectPM_modded.nds",
-            file_types=file_types
-        )
-        if result:
-            p = result if isinstance(result, str) else result[0]
-            if not p.lower().endswith(".nds"):
-                p += ".nds"
-            return os.path.abspath(p).replace("\\", "/")
+        raw = (default_name or "ProjectPM_modded.nds").replace("/", "\\")
+        dir_path = os.path.dirname(raw) if ("\\" in raw) else ""
+        base_name = os.path.basename(raw) or "ProjectPM_modded.nds"
+        if not base_name.lower().endswith(".nds"):
+            base_name += ".nds"
+        file_types = ('Nintendo DS ROMs (*.nds)', 'All Files (*.*)')
+        kwargs = {
+            "save_filename": base_name,
+            "file_types": file_types,
+        }
+        if dir_path and os.path.isdir(dir_path):
+            kwargs["directory"] = os.path.abspath(dir_path)
+        try:
+            dialog_type = getattr(webview, "FileDialog", None)
+            save_mode = dialog_type.SAVE if dialog_type else webview.SAVE_DIALOG
+            result = self._window.create_file_dialog(save_mode, **kwargs)
+            if result:
+                if isinstance(result, (list, tuple)):
+                    p = result[0] if len(result) > 0 else None
+                else:
+                    p = str(result)
+                if p:
+                    if not p.lower().endswith(".nds"):
+                        p += ".nds"
+                    return os.path.abspath(p).replace("\\", "/")
+        except Exception as e:
+            log_error(f"browse_save_rom dialog error: {e}", e)
         return None
 
     def browse_patch_file(self) -> Optional[str]:
@@ -293,10 +309,17 @@ class PatcherBridge:
 
             # 2. Multiplayer Badge
             if info.has_multiplayer:
+                mp_ver = getattr(info, "mp_version", None) or "0.4.7"
+                mp_lang_str = "FR" if info.mp_lang == "fr" else "EN"
                 mp_key = "badge_mp_active_fr" if info.mp_lang == "fr" else "badge_mp_active_en"
+                mp_label = (
+                    f"ProjectPM {mp_ver} ({mp_lang_str}) Actif"
+                    if cur_l == "fr"
+                    else f"ProjectPM {mp_ver} ({mp_lang_str}) Active"
+                )
                 badges.append({
-                    "key": mp_key,
-                    "label": t(mp_key),
+                    "key": mp_key if mp_ver == "0.4.7" else None,
+                    "label": mp_label,
                     "color": "emerald"
                 })
             else:
@@ -424,6 +447,34 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
+            # 8d. QoL: Fast Transitions Badge
+            if getattr(info, "has_fast_transitions", False):
+                badges.append({
+                    "key": "badge_fast_transitions_yes",
+                    "label": t("badge_fast_transitions_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_fast_transitions_no",
+                    "label": t("badge_fast_transitions_no"),
+                    "color": "slate"
+                })
+
+            # 8e. QoL: Battle Inspector Badge
+            if getattr(info, "has_battle_inspector", False):
+                badges.append({
+                    "key": "badge_battle_inspector_yes",
+                    "label": t("badge_battle_inspector_yes"),
+                    "color": "emerald"
+                })
+            else:
+                badges.append({
+                    "key": "badge_battle_inspector_no",
+                    "label": t("badge_battle_inspector_no"),
+                    "color": "slate"
+                })
+
             # 9. Visual: In-Game IV & EV Display Badge
             if getattr(info, "has_iv_ev", False):
                 badges.append({
@@ -480,6 +531,20 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
+            # 13. Visual: 60 FPS Visual Engine (Lighting & Clouds) Badge
+            if getattr(info, "has_visual_engine", False):
+                badges.append({
+                    "key": "badge_vengine_yes",
+                    "label": t("badge_vengine_yes"),
+                    "color": "cyan"
+                })
+            else:
+                badges.append({
+                    "key": "badge_vengine_no",
+                    "label": t("badge_vengine_no"),
+                    "color": "slate"
+                })
+
             return {
                 "valid": True,
                 "path": rom_path.replace("\\", "/"),
@@ -496,6 +561,7 @@ class PatcherBridge:
                 "is_randomized": info.is_randomized,
                 "has_visualplus_bg": info.has_visualplus_bg,
                 "has_visualplus_cam": info.has_visualplus_cam,
+                "has_visual_engine": bool(getattr(info, "has_visual_engine", False)),
                 "has_exp_share": bool(info.has_exp_share),
                 "has_free_hms": bool(getattr(info, "has_free_hms", False)),
                 "has_infinite_tms": bool(getattr(info, "has_infinite_tms", False)),

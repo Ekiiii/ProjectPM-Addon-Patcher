@@ -15,30 +15,49 @@ import ndspy.code
 
 from core.i18n import get_lang
 
-# Patch definitions for Overlay 16 (RAM base 0x0224A700)
+# Patch definitions for Overlay 16 (0.4.6 RAM base 0x0224A920, 0.4.5 RAM base 0x0224A700)
 # Point 1: In BtlCmd_CalcExpGain: force 100%/50% calculation
-# 0x022516a2: '20d0' (beq) -> '20e0' (b)
-ADDR_PT1 = 0x022516A2
+ADDR_PT1 = 0x022518EA
 VANILLA_PT1 = bytes.fromhex("20d0")
 PATCH_PT1   = bytes.fromhex("20e0")
 
 # Point 2: In BtlCmd_CalcExpGain: calculate sharedExp = gainedExp / 2
-# 0x022516f2 (26 bytes)
-ADDR_PT2 = 0x022516F2
+ADDR_PT2 = 0x0225193A
 VANILLA_PT2 = bytes.fromhex("281c9c300068002803d1281c01219c3001600020a035286003e0")
 PATCH_PT2   = bytes.fromhex("002800d10120086004314008002800d10120086005e0c046c046")
 
 # Point 3: In BattleScript_GetExpTask: loop through all party slots
-# 0x02258d88 (4 bytes): '332810d0' -> '11e0c046'
-ADDR_PT3 = 0x02258D88
+ADDR_PT3 = 0x02258FFC
 VANILLA_PT3 = bytes.fromhex("332810d0")
 PATCH_PT3   = bytes.fromhex("11e0c046")
 
 # Point 4: In Case 0 of GetExpTask: give gainedExp to battlers and sharedExp to bench
-# 0x02258f5c (30 bytes)
-ADDR_PT4 = 0x02258F5C
+ADDR_PT4 = 0x022591D0
 VANILLA_PT4 = bytes.fromhex("03d009989c3000680e900698332806d10998a030099001680e9840180e90")
 PATCH_PT4   = bytes.fromhex("03d009989c30006802e00998a03000680e9004e0c046c046c046c046c046")
+
+
+def _get_exp_share_offsets(base: int):
+    if base == 0x0224AAE0:
+        return (
+            0x02251AAE - base,
+            0x02251AFE - base,
+            0x022591C0 - base,
+            0x02259394 - base,
+        )
+    if base == 0x0224A700:
+        return (
+            0x022516A2 - base,
+            0x022516F2 - base,
+            0x02258D88 - base,
+            0x02258F5C - base,
+        )
+    return (
+        ADDR_PT1 - base,
+        ADDR_PT2 - base,
+        ADDR_PT3 - base,
+        ADDR_PT4 - base,
+    )
 
 
 def is_exp_share_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
@@ -57,9 +76,8 @@ def is_exp_share_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
         if 16 not in ovs:
             return False
         ov16 = ovs[16]
-        base = ov16.ramAddress
-        off3 = ADDR_PT3 - base
-        if off3 + 2 > len(ov16.data):
+        _, _, off3, _ = _get_exp_share_offsets(ov16.ramAddress)
+        if off3 < 0 or off3 + 2 > len(ov16.data):
             return False
         return ov16.data[off3:off3 + 2] == PATCH_PT3[:2]
     except Exception:
@@ -102,10 +120,7 @@ def apply_exp_share_patch(
         base = ov16.ramAddress
         data = bytearray(ov16.data)
 
-        off1 = ADDR_PT1 - base
-        off2 = ADDR_PT2 - base
-        off3 = ADDR_PT3 - base
-        off4 = ADDR_PT4 - base
+        off1, off2, off3, off4 = _get_exp_share_offsets(base)
 
         if enable:
             data[off1:off1 + len(PATCH_PT1)] = PATCH_PT1

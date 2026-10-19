@@ -44,9 +44,14 @@ def switch_projectpm_lang(src_rom: str, dst_rom: str, target_lang: str, assets_d
 
         rom = ndspy.rom.NintendoDSRom.fromFile(src_rom)
 
-        # Inject the 37 localized files
+        if "arm9" in pack_data:
+            rom.arm9 = pack_data["arm9"]
+        if "arm9OverlayTable" in pack_data:
+            rom.arm9OverlayTable = pack_data["arm9OverlayTable"]
+
+        # Inject the localized and core files
         for idx, data in pack_data.items():
-            if idx < len(rom.files):
+            if isinstance(idx, int) and idx < len(rom.files):
                 rom.files[idx] = data
 
         rom_bytes = bytearray(rom.save())

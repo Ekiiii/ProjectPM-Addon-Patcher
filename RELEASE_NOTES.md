@@ -1,49 +1,41 @@
-# v1.0.8
+# v1.0.9
 
 ---
 
 ## 🇫🇷 Français
 
-### Nouveautés de la version 1.0.8
+### Nouveautés de la version 1.0.9
 
-- **Badges d'efficacité des types en combat (Capsules Pixel-Art Solo & Duo)** :
-  - Affichage dynamique de véritables badges capsules colorés (Vert `x4`/`x2`, Neutre `x1`, Orange/Rouge `x½`/`x¼`, Sombre `x0`) directement sur les boutons des attaques offensives.
-  - Prise en charge native des Combats Doubles : affichage d'une capsule scindée bicolore `[Gauche | Droite]` (19×12 pixels) indiquant instantanément l'efficacité sur chaque adversaire en vie.
-  - Écran de sélection des cibles (`BattleSubscreen_DrawTargetSelectMenu`) : badge capsule individuel affiché à côté du nom de chaque Pokémon ciblé.
-  - Les capacités de statut restent parfaitement neutres sans badge.
+- **Support complet de Project PM v0.4.7 (Français & USA / Anglais)** :
+  - Mise à jour intégrale des patchs de base `.xdelta` (`PlatinumMultiplayerV0.4.7_FR.xdelta`, `PlatinumMultiplayerV0.4.7_FR-From-USA.xdelta`, `PlatinumMultiplayerV0.4.7.xdelta`) et des packs de localisation (`lang_fr.pack`, `lang_en.pack`).
+  - Conservation à 100 % de la traduction française intégrale (724 banques de textes dont les dialogues `617`/`618`, polices FR et 32 NARCs graphiques).
+  - Intégration native du correctif `0.4.7` des **Pokémon Shiny capturés en Coopération** (`Overlay 16`) et compatibilité réseau multijoueur `0.4.7` (`Overlay 122`, protocole `0x9E120018`).
 
-- **Aperçus visuels interactifs et dépliables (Flèches d'aperçu)** :
-  - Remplacement des aperçus permanents par une flèche discrète en bas à droite de chaque carte d'option.
-  - Clic intuitif pour afficher ou masquer les images de démonstration en dessous de l'option sans surcharger l'interface.
+- **Mise à jour des Modes Soul Link & Nuzlocke et de tous les Patchs QoL / Visuels pour la v0.4.7** :
+  - Réalignement complet des moteurs C **SoulLocke** et **Nuzlocke** (FR & EN) sur la mémoire `0.4.7` (tout en conservant la rétrocompatibilité `0.4.6` et `0.4.5`).
+  - Réalignement de tous les patchs **QoL & Visuels** pour `0.4.7` : Badges Capsules d'Efficacité des Types (Solo & Duo), Multi Exp d'Équipe, CS Libres & Poké-Rider, CT Infinies, Évolutions Solo, Barres PV/EXP Rapides, Natures Colorées et Affichage IV/EV.
+  - Correctif du **Super Bonbon Infini (Infinite Rare Candy)** : l'objet n'est plus consommé lors de son utilisation depuis le sac (`Bag_TryRemoveItem`) et protection anti-crash lorsque la poche du sac devient vide.
 
-- **Écran de chargement (Splash Screen) épuré & moderne** :
-  - Simplification intégrale du splash screen natif et WebView : affichage centré du logo Project PM (`PM.ico`) avec une barre de progression discrète sur fond sombre.
-  - Suppression des cadres, sous-titres et éléments superflus pour un démarrage rapide et fluide.
-
-- **Interface clarifiée & détection de ROM allégée** :
-  - Épuration de la zone d'analyse de ROM : suppression des étiquettes de statut encombrantes pour une lisibilité optimale.
-  - Retrait des options instables pour garantir une expérience de jeu parfaitement stable et sans crash.
+- **Nouvelle Option Graphique Expérimentale : Éclairage Dynamique, Ombres de Nuages & Eau** :
+  - Ajout d'une option dédiée (indépendante de Visual+) intégrant les transitions fluides d'éclairage jour/nuit et météo, les ombres de nuages défilantes au sol et les reflets d'eau animés (compatible `0.4.7`, `0.4.6` et `0.4.5`).
+  - Ajout des badges `NOUVEAU` et `EXPÉRIMENTAL` sur les nouvelles options de l'interface.
 
 ---
 
 ## 🇬🇧 English
 
-### What's New in Version 1.0.8
+### What's New in Version 1.0.9
 
-- **In-Battle Move Effectiveness Capsule Badges (Single & Double Battles)**:
-  - Dynamic pixel-art capsule badges (Green `x4`/`x2`, Neutral `x1`, Orange/Red `x½`/`x¼`, Dark `x0`) rendered on damaging move touchscreen buttons.
-  - Full Double Battle support: dual-color split capsule `[Left | Right]` (19×12 px) displaying simultaneous effectiveness for each active opponent.
-  - Target selection menu (`BattleSubscreen_DrawTargetSelectMenu`): individual multiplier capsule displayed alongside each targeted Pokémon's name.
-  - Status moves remain clean without badges.
+- **Full Project PM v0.4.7 Support (French & USA / English)**:
+  - Updated all base `.xdelta` patches (`PlatinumMultiplayerV0.4.7_FR.xdelta`, `PlatinumMultiplayerV0.4.7_FR-From-USA.xdelta`, `PlatinumMultiplayerV0.4.7.xdelta`) and localization packs (`lang_fr.pack`, `lang_en.pack`).
+  - Preserved 100% of the complete French localization (all 724 text banks including `617`/`618`, French fonts, and 32 localized graphical NARCs).
+  - Native `0.4.7` **Co-Op Shiny Capture** fix (`Overlay 16`) and `0.4.7` multiplayer network protocol compatibility (`Overlay 122`, protocol `0x9E120018`).
 
-- **Collapsible Interactive Previews (Preview Chevron)**:
-  - Replaced persistent preview thumbnails with a discreet arrow button on visual option cards.
-  - Click to expand/collapse sample screenshots directly under the option card without cluttering the UI.
+- **Updated Soul Link, Nuzlocke & All QoL / Visual Patches for v0.4.7**:
+  - Re-aligned the **SoulLocke** and **Nuzlocke** C engines (FR & EN) for `0.4.7` memory offsets (while maintaining backward compatibility with `0.4.6` and `0.4.5`).
+  - Updated all **QoL & Visual** patches for `0.4.7`: Move Effectiveness Capsule Badges (Single & Double Battles), Shared Team EXP, Free HMs & Poké-Rider, Infinite TMs, Trade Evolutions Without Trading, Fast HP/EXP Bars, Colored Natures, and In-Game IV/EV Display.
+  - Fixed **Infinite Rare Candy** consumption in `Bag_TryRemoveItem` and added empty-pocket OOB crash protection.
 
-- **Minimalist & Streamlined Splash Screen**:
-  - Redesigned native PyInstaller and WebView boot splash: centered Project PM logo (`PM.ico`) with an elegant progress track.
-  - Removed bulky borders and status texts for faster, cleaner app launch.
-
-- **Refined User Interface & Clean ROM Header**:
-  - Streamlined ROM detection header by removing cluttered status tags.
-  - Cleaned up obsolete experimental toggles to ensure maximum stability and crash-free gameplay.
+- **New Experimental Graphics Option: Dynamic Lighting, Cloud Shadows & Water**:
+  - Added a standalone option (separate from Visual+) featuring smooth day/night & weather lighting transitions, drifting cumulus cloud shadows on the ground, and animated water reflections (compatible with `0.4.7`, `0.4.6`, and `0.4.5`).
+  - Added `NEW` and `EXPERIMENTAL` UI badges on new options.

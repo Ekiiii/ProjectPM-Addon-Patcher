@@ -15,16 +15,38 @@ import ndspy.narc
 import ndspy.code
 
 ARM9_BASE = 0x02000000
-OV16_RAM  = 0x0224A700
+OV16_RAM  = 0x0224AAE0
 ROM_TARGET_SIZE = 134217728  # 128 MB
 
-VANILLA_ARM9_LEN = 0x109858
+VANILLA_ARM9_LEN = 0x109BB8
 MODULE_PARAMS_OFF = 0x0BA0
-VANILLA_MODULE_PARAMS = (0x02109840, 0x02109858, 0x02109180, 0x02109180, 0x021E0280, 0x00000000)
-AUTOLOAD_LIST_OFF = 0x109840
+VANILLA_MODULE_PARAMS = (0x02109BA0, 0x02109BB8, 0x021094E0, 0x021094E0, 0x021E0600, 0x00000000)
+AUTOLOAD_LIST_OFF = 0x109BA0
 VANILLA_AUTOLOAD_LIST = (0x01FF8000, 0x660, 0, 0x027E0000, 0x60, 0x20)
 ARENA_HI_DEFAULT = 0x023E0000
-LIT_MAIN_ARENA_HI = 0x020C9B9C
+LIT_MAIN_ARENA_HI = 0x020C9F24
+
+def _get_version_params(ov16_ram):
+    if ov16_ram == 0x0224A700:
+        return (
+            0x0224A700,
+            0x109840,
+            0x020C9B9C,
+            (0x02109840, 0x02109858, 0x02109180, 0x02109180, 0x021E0280, 0x00000000),
+        )
+    elif ov16_ram == 0x0224A920:
+        return (
+            0x0224A920,
+            0x109A60,
+            0x020C9DF0,
+            (0x02109A60, 0x02109A78, 0x021093A0, 0x021093A0, 0x021E04A0, 0x00000000),
+        )
+    return (
+        OV16_RAM,
+        AUTOLOAD_LIST_OFF,
+        LIT_MAIN_ARENA_HI,
+        VANILLA_MODULE_PARAMS,
+    )
 
 MSG_BANK = 368
 MSG_INDEX = 1301
@@ -100,12 +122,13 @@ def apply_soullocke(input_path, output_path, payload_json_path, log_cb=None):
     rom = ndspy.rom.NintendoDSRom.fromFile(input_path)
     arm9 = bytearray(rom.arm9)
     ovs = rom.loadArm9Overlays()
-    if 16 not in ovs or ovs[16].ramAddress != OV16_RAM:
+    if 16 not in ovs or ovs[16].ramAddress not in (OV16_RAM, 0x0224A920, 0x0224A700):
         raise ValueError("Overlay 16 not found or address mismatch.")
     ov16 = ovs[16]
+    ov16_ram, autoload_off, lit_arena_hi, _ = _get_version_params(ov16.ramAddress)
     ov16_data = bytearray(ov16.data)
 
-    regions = {"arm9": (ARM9_BASE, arm9), "ov16": (OV16_RAM, ov16_data)}
+    regions = {"arm9": (ARM9_BASE, arm9), "ov16": (ov16_ram, ov16_data)}
 
     # Apply hooks
     log("[Injector] Applying hooks...")
@@ -120,16 +143,34 @@ def apply_soullocke(input_path, output_path, payload_json_path, log_cb=None):
         patch_bytes = bytes.fromhex(hook_hex)
         buf[off: off + len(patch_bytes)] = patch_bytes
 
-    # Autoload table
+    # Autoload table (preserve any existing non-SoulLocke custom autoload entries)
     log(f"[Injector] Setting Autoload entry 3 -> 0x{origin:08X} ({len(payload)} bytes)...")
-    old_list = bytes(arm9[AUTOLOAD_LIST_OFF: AUTOLOAD_LIST_OFF + 24])
-    new_arm9 = bytearray(arm9[:AUTOLOAD_LIST_OFF])
-    new_arm9 += payload
+    old_start, old_end = struct.unpack_from("<2I", arm9, MODULE_PARAMS_OFF)
+    start_off = old_start - ARM9_BASE
+    end_off = old_end - ARM9_BASE
+    custom_entries = [(origin, payload, 0)]
+    if 0 <= start_off <= len(arm9) and 0 <= end_off <= len(arm9) and end_off >= start_off + 24:
+        data_cursor = autoload_off
+        for entry_pos in range(start_off + 24, end_off, 12):
+            if entry_pos + 12 <= len(arm9):
+                dest, sz, bss = struct.unpack_from("<3I", arm9, entry_pos)
+                if 0x023C0000 <= dest < 0x023E0000 and 0 < sz <= 0x10000 and data_cursor + sz <= start_off:
+                    blob = bytes(arm9[data_cursor:data_cursor + sz])
+                    data_cursor += sz
+                    if dest not in (origin, 0x023DD240, 0x023DD4E0, 0x023DE240, 0x023DE4E0, 0x023DF240, 0x023DF280, 0x023DF4E0):
+                        custom_entries.append((dest, blob, bss))
+
+    new_arm9 = bytearray(arm9[:autoload_off])
+    for _, blob, _ in custom_entries:
+        new_arm9 += blob
     list_start = ARM9_BASE + len(new_arm9)
-    new_arm9 += old_list
-    new_arm9 += struct.pack("<3I", origin, len(payload), 0)
+    new_arm9 += struct.pack("<6I", *VANILLA_AUTOLOAD_LIST)
+    for dest, blob, bss in custom_entries:
+        new_arm9 += struct.pack("<3I", dest, len(blob), bss)
     struct.pack_into("<2I", new_arm9, MODULE_PARAMS_OFF, list_start, ARM9_BASE + len(new_arm9))
-    struct.pack_into("<I", new_arm9, LIT_MAIN_ARENA_HI - ARM9_BASE, origin)
+    high_arena_dests = [d & ~0x1F for d, _, _ in custom_entries if 0x023C0000 <= d < 0x023E0000]
+    arena_hi = min(high_arena_dests) if high_arena_dests else ARENA_HI_DEFAULT
+    struct.pack_into("<I", new_arm9, lit_arena_hi - ARM9_BASE, arena_hi)
     arm9 = new_arm9
 
     # Message injection
@@ -191,9 +232,10 @@ def restore_clean_projectpm(input_path, output_path, payload_json_path, log_cb=N
     arm9 = bytearray(rom.arm9)
     ovs = rom.loadArm9Overlays()
     ov16 = ovs[16]
+    ov16_ram, autoload_off, lit_arena_hi, vanilla_mod_params = _get_version_params(ov16.ramAddress)
     ov16_data = bytearray(ov16.data)
 
-    regions = {"arm9": (ARM9_BASE, arm9), "ov16": (OV16_RAM, ov16_data)}
+    regions = {"arm9": (ARM9_BASE, arm9), "ov16": (ov16_ram, ov16_data)}
 
     # Revert hooks to orig_hex
     log("[Restore] Reverting hooks to stock ProjectPM bytes...")
@@ -205,18 +247,19 @@ def restore_clean_projectpm(input_path, output_path, payload_json_path, log_cb=N
         base, buf = regions[reg]
         off = addr - base
         orig_bytes = bytes.fromhex(orig_hex)
-        buf[off: off + len(orig_bytes)] = orig_bytes
+        if 0 <= off and off + len(orig_bytes) <= len(buf):
+            buf[off: off + len(orig_bytes)] = orig_bytes
 
     # Restore Autoload table and arena hi
     log("[Restore] Restoring Arena Hi to 0x023E0000...")
-    struct.pack_into("<I", arm9, LIT_MAIN_ARENA_HI - ARM9_BASE, ARENA_HI_DEFAULT)
+    struct.pack_into("<I", arm9, lit_arena_hi - ARM9_BASE, ARENA_HI_DEFAULT)
     
     # Restore Nitro-SDK Module Parameters at 0xBA0
     log("[Restore] Restoring Nitro-SDK Module Parameters at 0xBA0...")
-    struct.pack_into("<6I", arm9, MODULE_PARAMS_OFF, *VANILLA_MODULE_PARAMS)
+    struct.pack_into("<6I", arm9, MODULE_PARAMS_OFF, *vanilla_mod_params)
 
-    # Truncate ARM9 to AUTOLOAD_LIST_OFF (0x109840) to strip the injected C payload
-    arm9 = bytearray(arm9[:AUTOLOAD_LIST_OFF])
+    # Truncate ARM9 to autoload_off to strip the injected C payload
+    arm9 = bytearray(arm9[:autoload_off])
 
     # Append clean 24-byte Autoload List (2 entries: ITCM 0x01FF8000 and DTCM 0x027E0000)
     clean_autoload = struct.pack("<6I", 0x01FF8000, 0x660, 0, 0x027E0000, 0x60, 0x20)

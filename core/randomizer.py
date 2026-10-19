@@ -455,6 +455,25 @@ def _cat_rng(seed: Any, category: str) -> random.Random:
     return random.Random(f"{seed}|{category}|v{RAND_VERSION}")
 
 
+STARTER_TABLE_TAG = 0x54534D50  # 'PMST'
+
+def starter_table_offset(data: bytearray) -> Optional[int]:
+    """Locates the 0.4.6+ 'PMST' starter table in Overlay 78."""
+    needle = struct.pack('<I3H', STARTER_TABLE_TAG, *VANILLA_STARTERS)
+    first = data.find(needle)
+    if first >= 0:
+        if data.find(needle, first + 1) >= 0:
+            raise ValueError('starter patch: starter table tag duplicated in ROM')
+        return first + 4
+    # Fallback if starters were already modified in a 0.4.6+ ROM
+    tag_bytes = struct.pack('<I', STARTER_TABLE_TAG)
+    first_tag = data.find(tag_bytes)
+    if first_tag >= 0 and data.find(tag_bytes, first_tag + 1) < 0:
+        s0, s1, s2 = struct.unpack_from('<3H', data, first_tag + 4)
+        if all(1 <= s <= MAX_SPECIES_ID for s in (s0, s1, s2)):
+            return first_tag + 4
+    return None
+
 def _starter_sigs():
     blocks = [struct.pack('<HHHHH', 8704 | (129 + i), 146, 6312, 7209, 14848 | (129 + i)) for i in range(3)]
     selector = struct.pack('<14H', 46344, 10240, 53252, 10241, 53252, 10242, 53252, 57349, 18436, 48392, 18436, 48392, 18436, 48392)
@@ -470,7 +489,10 @@ def _starter_find_once(data: bytearray, sig: bytes, what: str) -> int:
     return first
 
 def starter_find_sites(data: bytearray) -> Dict[str, Any]:
-    """Locates the 4 patch sites in the ROM for starter briefcase selection."""
+    """Locates the patch sites in the ROM for starter briefcase selection."""
+    table = starter_table_offset(data)
+    if table is not None:
+        return {'table': table}
     blocks, selector, pool = _starter_sigs()
     b = [_starter_find_once(data, s, f"sprite-arg block {i}") for i, s in enumerate(blocks)]
     if b[1] - b[0] != 14 or b[2] - b[1] != 14:
@@ -510,7 +532,9 @@ def starter_build_pool(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], evolving_
             if struct.unpack_from('<H', entry, i * 6)[0] != 0:
                 evolves.add(sid)
                 break
-    pool = [sid for sid in range(1, 494) if sid not in STARTER_UNENCODABLE and (not evolving_only or sid in evolves)]
+    has_table = (starter_table_offset(rom.data) is not None)
+    unencodable = set() if has_table else STARTER_UNENCODABLE
+    pool = [sid for sid in range(1, 494) if sid not in unencodable and (not evolving_only or sid in evolves)]
     if len(pool) < 3:
         raise ValueError(f"starter patch: pool has only {len(pool)} species - refusing")
     return pool
@@ -523,7 +547,7 @@ def starter_pick(pool: List[int], seed_norm: Any) -> Tuple[int, int, int]:
         rng = random.Random(f"PLMP-starters|v{RAND_VERSION}|{seed_norm}")
     return tuple(rng.sample(pool, 3))
 
-def starter_arrange(trio: Tuple[int, int, int]) -> Tuple[int, int, int]:
+def starter_arrange(trio: Tuple[int, int, int], any_slot: bool = False) -> Tuple[int, int, int]:
     """Orders a trio into slot positions that the briefcase code can encode."""
     trio = tuple(int(x) for x in trio)
     if len(trio) != 3:
@@ -533,6 +557,8 @@ def starter_arrange(trio: Tuple[int, int, int]) -> Tuple[int, int, int]:
         raise ValueError('not a Pokemon: ' + ', '.join(str(x) for x in bad))
     if len(set(trio)) != 3:
         raise ValueError('the three starters must be different Pokemon')
+    if any_slot:
+        return trio
     never = [x for x in trio if not any(starter_encodable(i, x) for i in range(3))]
     if never:
         raise ValueError(f"{', '.join(species_name(x) for x in never)} cannot be a starter (no slot fits #256-260)")
@@ -544,6 +570,17 @@ def starter_arrange(trio: Tuple[int, int, int]) -> Tuple[int, int, int]:
 def starter_apply(rom: RandNDSRom, trio: Tuple[int, int, int], log: Callable = print) -> None:
     """Applies the starter trio patch into the ROM in place."""
     sites = starter_find_sites(rom.data)
+    if 'table' in sites:
+        off = sites['table']
+        for i, sp in enumerate(trio):
+            if not (1 <= int(sp) <= MAX_SPECIES_ID):
+                raise ValueError(f"starter patch: invalid species {sp} for slot {i}")
+        struct.pack_into('<3H', rom.data, off, *[int(x) for x in trio])
+        for i, sp in enumerate(trio):
+            log(f"    starter slot {i}: {VANILLA_STARTERS[i]} -> {sp} (table @0x{off + 2 * i:X})")
+        if struct.unpack_from('<3H', rom.data, off) != tuple(int(x) for x in trio):
+            raise ValueError('starter patch: readback mismatch - aborting')
+        return
     for i, sp in enumerate(trio):
         starter_encode_arg(i, sp)
     for i, sp in enumerate(trio):
@@ -1618,14 +1655,15 @@ def rand_run(rom_path: str, out_path: str, mode: str, rule: str,
         evolutions = evo_randomize(rom, db, pool, evo_mode, rand_substream('evolutions', seed_norm), log)
 
     starters = None
+    has_starter_table = (starter_table_offset(rom.data) is not None)
     if do_starters and starters_pick:
-        starters = starter_arrange(starters_pick)
+        starters = starter_arrange(starters_pick, any_slot=has_starter_table)
         starter_apply(rom, starters, log)
         log(f"[rand] starters (chosen): {' / '.join(species_name(x) for x in starters)}")
     elif do_starters:
         spool = starter_build_pool(rom, db, evolving_only=(not starters_any))
         starters = starter_pick(spool, seed if seed not in (None, '') else None)
-        starters = starter_arrange(starters)
+        starters = starter_arrange(starters, any_slot=has_starter_table)
         starter_apply(rom, starters, log)
         log(f"[rand] starters: {species_name(starters[0])} / {species_name(starters[1])} / {species_name(starters[2])}")
 

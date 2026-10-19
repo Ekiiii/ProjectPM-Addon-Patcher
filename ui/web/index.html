@@ -149,7 +149,7 @@
       <div class="titlebar-left">
         <svg class="titlebar-pokeball-svg" viewBox="0 0 32 32"><use href="#icon-pokeball-detailed"></use></svg>
         <span class="titlebar-app-name">PROJECT PM <span class="title-accent">PATCHER & RANDOMIZER</span></span>
-        <span class="version-pill" id="app-version">v1.0.8</span>
+        <span class="version-pill" id="app-version">v1.0.9</span>
       </div>
 
       <div class="titlebar-center">
@@ -278,8 +278,8 @@
               <div class="form-group">
                 <label class="form-label" id="i18n-label-mp-base" data-i18n="label_mp_base">Project PM Multiplayer Base (Required):</label>
                 <select id="select-mp-mode" class="pixel-select" onchange="onMpModeChange()">
-                  <option value="fr" data-i18n="opt_mp_fr">Project PM French Multiplayer (v0.4.5)</option>
-                  <option value="en" data-i18n="opt_mp_en">Project PM USA / English Multiplayer (v0.4.5)</option>
+                  <option value="fr" data-i18n="opt_mp_fr">Project PM French Multiplayer (v0.4.7)</option>
+                  <option value="en" data-i18n="opt_mp_en">Project PM USA / English Multiplayer (v0.4.7)</option>
                   <option value="none" data-i18n="opt_mp_none">None (Keep Vanilla ROM without multiplayer)</option>
                 </select>
                 <div class="mp-detect-indicator" id="mp-detect-indicator"></div>
@@ -317,10 +317,11 @@
                   <div class="launcher-title-group">
                     <svg class="launcher-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg>
                     <strong class="launcher-title" data-i18n="qol_launcher_title">Gameplay & QoL Patches</strong>
+                    <span class="new-feature-badge" data-i18n="badge_new">NEW</span>
                   </div>
                   <span class="status-badge emerald" id="badge-qol-summary">0 Active</span>
                 </div>
-                <p class="launcher-desc" data-i18n="qol_launcher_desc">Team EXP Share (Gen 6+), Free HMs & Poké-Rider, Infinite TMs, Solo Evolutions...</p>
+                <p class="launcher-desc" data-i18n="qol_launcher_desc">Move Effectiveness Badges (x4/x2/x0), Fast HP/EXP Bar, Team EXP Share (Gen 6+), Free HMs, Infinite TMs, Solo Evos...</p>
                 <button type="button" class="pixel-btn primary w-100 mt-2" onclick="event.stopPropagation(); openQolModal()">
                   <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-backpack"></use></svg>
                   <span data-i18n="btn_configure_qol">Configure QoL Patches...</span>
@@ -333,10 +334,11 @@
                   <div class="launcher-title-group">
                     <svg class="launcher-svg text-cyan" viewBox="0 0 16 16"><use href="#icon-star"></use></svg>
                     <strong class="launcher-title" data-i18n="visual_launcher_title">Visual & Interface</strong>
+                    <span class="new-feature-badge" data-i18n="badge_new">NEW</span>
                   </div>
                   <span class="status-badge blue" id="badge-visual-summary">0 Active</span>
                 </div>
-                <p class="launcher-desc" data-i18n="visual_launcher_desc">In-game IV/EV display (Press A on summary), Colored natures (+Red/-Blue), HD Arenas, 3D Camera...</p>
+                <p class="launcher-desc" data-i18n="visual_launcher_desc">In-game IV/EV display (Press A on summary), Colored natures (+Red/-Blue), HD Arenas, 3D Camera & Clouds...</p>
                 <button type="button" class="pixel-btn w-100 mt-2" onclick="event.stopPropagation(); openVisualModal()">
                   <svg class="btn-svg" viewBox="0 0 16 16"><use href="#icon-star"></use></svg>
                   <span data-i18n="btn_configure_visual">Configure Visual Patches...</span>
@@ -1397,7 +1399,10 @@
           <!-- 5. Fast HP / EXP Bar Animation -->
           <div class="toggle-card mt-3">
             <div class="toggle-info">
-              <span class="toggle-title" data-i18n="fast_hp_title">Fast HP & EXP Bar Animation</span>
+              <div class="toggle-title-row">
+                <span class="toggle-title" data-i18n="fast_hp_title">Fast HP & EXP Bar Animation</span>
+                <span class="new-feature-badge" data-i18n="badge_new">NEW</span>
+              </div>
               <span class="toggle-desc" data-i18n="fast_hp_desc">Speeds up the notoriously slow Gen 4 HP drainage and EXP bar animation by 4x for snappier battles.</span>
             </div>
             <div class="toggle-control">
@@ -1411,7 +1416,10 @@
           <!-- 6. Move Type Effectiveness Display -->
           <div data-preview="assets/preview_type_eff_moves.png|type_eff_caption_moves;assets/preview_type_eff_targets.png|type_eff_caption_targets" class="toggle-card mt-3">
             <div class="toggle-info">
-              <span class="toggle-title" data-i18n="type_eff_title">Move Effectiveness Capsule Badges (x4, x2, x1, x½, x¼, x0)</span>
+              <div class="toggle-title-row">
+                <span class="toggle-title" data-i18n="type_eff_title">Move Effectiveness Capsule Badges (x4, x2, x1, x½, x¼, x0)</span>
+                <span class="new-feature-badge" data-i18n="badge_new">NEW</span>
+              </div>
               <span class="toggle-desc" data-i18n="type_eff_desc">Displays color-coded pixel-art capsule badges (Green x4/x2, Neutral x1, Orange-Red x½/x¼, Dark x0) on move buttons (including split [Left|Right] capsules in Double Battles) and next to each Pokémon on the target selection screen.</span>
             </div>
             <div class="toggle-control">
@@ -1478,7 +1486,10 @@
           <div data-preview="assets/preview_colored_natures.png|colored_natures_caption" class="toggle-card visual-feature-card mt-3">
             <div class="toggle-header-row">
               <div class="toggle-info">
-                <span class="toggle-title" data-i18n="colored_natures_title">Colored Stat Natures (+Red / -Blue)</span>
+                <div class="toggle-title-row">
+                  <span class="toggle-title" data-i18n="colored_natures_title">Colored Stat Natures (+Red / -Blue)</span>
+                  <span class="new-feature-badge" data-i18n="badge_new">NEW</span>
+                </div>
                 <span class="toggle-desc" data-i18n="colored_natures_desc">In the Pokémon Summary screen, the stat boosted by nature is highlighted in Red (+10%) and the hindered stat in Blue (-10%).</span>
               </div>
               <div class="toggle-control">
@@ -1511,11 +1522,31 @@
             <div class="toggle-header-row">
               <div class="toggle-info">
                 <span class="toggle-title" data-i18n="visual_camera">Extended 3D Camera (Visual+)</span>
-                <span class="toggle-desc" data-i18n="visual_camera_desc">Closer overworld camera angle in towns and routes for stronger 3D depth.</span>
+                <span class="toggle-desc" data-i18n="visual_camera_desc">Closer, dynamic 3D overworld camera perspective across Sinnoh.</span>
               </div>
               <div class="toggle-control">
                 <label class="pixel-switch">
                   <input type="checkbox" id="toggle-visual-cam" onchange="onToggleOptionChange()">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Custom Visual Engine (Dynamic Lighting, Drifting Clouds & Water) -->
+          <div class="toggle-card visual-feature-card mt-3">
+            <div class="toggle-header-row">
+              <div class="toggle-info">
+                <div class="toggle-title-row">
+                  <span class="toggle-title" data-i18n="visual_engine_title">Dynamic Lighting, Cloud Shadows & Water</span>
+                  <span class="new-feature-badge" data-i18n="badge_new">NEW</span>
+                  <span class="exp-feature-badge" data-i18n="badge_experimental">EXPERIMENTAL</span>
+                </div>
+                <span class="toggle-desc" data-i18n="visual_engine_desc">Adds smooth day/night & weather lighting transitions, drifting cumulus cloud shadows on the ground, and animated water reflections.</span>
+              </div>
+              <div class="toggle-control">
+                <label class="pixel-switch">
+                  <input type="checkbox" id="toggle-visual-engine" onchange="onToggleOptionChange()">
                   <span class="slider"></span>
                 </label>
               </div>

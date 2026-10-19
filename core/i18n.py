@@ -20,8 +20,8 @@ TRANSLATIONS = {
         "fr": "Gestionnaire de Mods & Addons pour Pokémon Platine"
     },
     "header_version": {
-        "en": "v1.0.8",
-        "fr": "v1.0.8"
+        "en": "v1.0.9",
+        "fr": "v1.0.9"
     },
     "section_rom": {
         "en": "1. SELECT YOUR ROM & DESTINATION",
@@ -52,12 +52,12 @@ TRANSLATIONS = {
         "fr": "Analyse de la ROM en cours..."
     },
     "badge_mp_active_fr": {
-        "en": "ProjectPM 0.4.5 (FR) Active",
-        "fr": "ProjectPM 0.4.5 (FR) Actif"
+        "en": "ProjectPM 0.4.7 (FR) Active",
+        "fr": "ProjectPM 0.4.7 (FR) Actif"
     },
     "badge_mp_active_en": {
-        "en": "ProjectPM 0.4.5 (EN) Active",
-        "fr": "ProjectPM 0.4.5 (EN) Actif"
+        "en": "ProjectPM 0.4.7 (EN) Active",
+        "fr": "ProjectPM 0.4.7 (EN) Actif"
     },
     "badge_mp_none": {
         "en": "Vanilla ROM (No Multiplayer)",
@@ -98,6 +98,14 @@ TRANSLATIONS = {
     "badge_vcam_no": {
         "en": "3D Camera: Inactive",
         "fr": "Caméra 3D : Inactif"
+    },
+    "badge_vengine_yes": {
+        "en": "Visual Engine: Active",
+        "fr": "Éclairage & Nuages : Actif"
+    },
+    "badge_vengine_no": {
+        "en": "Visual Engine: Inactive",
+        "fr": "Éclairage & Nuages : Inactif"
     },
     "badge_exp_share_yes": {
         "en": "Shared EXP: Active",
@@ -300,12 +308,12 @@ TRANSLATIONS = {
         "fr": "Aucun (Conserver la ROM Vanilla)"
     },
     "mp_opt_fr": {
-        "en": "ProjectPM Multiplayer 0.4.5 (Français)",
-        "fr": "ProjectPM Multijoueur 0.4.5 (Français)"
+        "en": "ProjectPM Multiplayer 0.4.7 (Français)",
+        "fr": "ProjectPM Multijoueur 0.4.7 (Français)"
     },
     "mp_opt_en": {
-        "en": "ProjectPM Multiplayer 0.4.5 (English)",
-        "fr": "ProjectPM Multijoueur 0.4.5 (Anglais)"
+        "en": "ProjectPM Multiplayer 0.4.7 (English)",
+        "fr": "ProjectPM Multijoueur 0.4.7 (Anglais)"
     },
     "section_addons": {
         "en": "3. ADDONS & MODS",
@@ -388,8 +396,8 @@ TRANSLATIONS = {
         "fr": "Patchs de Confort & Gameplay (QoL)"
     },
     "qol_launcher_desc": {
-        "en": "Team EXP Share (Gen 6+), Free HMs & Poké-Rider, Infinite TMs, Solo Evolutions...",
-        "fr": "Multi Exp d'équipe (Gen 6+), CS Libres & Poké-Rider, CT infinies, Évolutions Solo..."
+        "en": "Move Effectiveness Badges (x4/x2/x0), Fast HP/EXP Bar, Team EXP Share (Gen 6+), Free HMs, Infinite TMs, Solo Evos...",
+        "fr": "Badges d'Efficacité en Combat (x4/x2/x0), Barres PV/EXP Rapides, Multi Exp (Gen 6+), CS Libres, CT Infinies, Évolutions Solo..."
     },
     "btn_configure_qol": {
         "en": "Configure QoL Patches...",
@@ -400,8 +408,8 @@ TRANSLATIONS = {
         "fr": "Visuel & Interface (Affichage IV/EV & Natures)"
     },
     "visual_launcher_desc": {
-        "en": "In-game IV/EV display (Press A on summary), Colored natures (+Red/-Blue), HD Arenas, 3D Camera...",
-        "fr": "Affichage IV/EV en jeu (Touche A sur résumé), Natures colorées (+Rouge/-Bleu), Arènes HD, Caméra 3D..."
+        "en": "In-game IV/EV display (Press A on summary), Colored natures (+Red/-Blue), HD Arenas, 3D Camera & Clouds...",
+        "fr": "Affichage IV/EV en jeu (Touche A sur résumé), Natures colorées (+Rouge/-Bleu), Arènes HD, Caméra 3D & Nuages..."
     },
     "btn_configure_visual": {
         "en": "Configure Visual Enhancements...",
@@ -595,13 +603,29 @@ TRANSLATIONS = {
         "en": "Replaces the battle backgrounds with redrawn, high-detail illustrations.",
         "fr": "Remplace les arrière-plans de combat par des illustrations détaillées en HD."
     },
+    "badge_new": {
+        "en": "NEW",
+        "fr": "NOUVEAU"
+    },
+    "badge_experimental": {
+        "en": "EXPERIMENTAL",
+        "fr": "EXPÉRIMENTAL"
+    },
     "visual_camera": {
-        "en": "Visual+ 3D Camera",
+        "en": "Extended 3D Camera (Visual+)",
         "fr": "Visual+ Caméra 3D"
     },
     "visual_camera_desc": {
-        "en": "Moves the overworld camera closer for an enhanced 3D perspective.",
+        "en": "Closer overworld camera angle in towns and routes for stronger 3D depth.",
         "fr": "Rapproche la caméra en extérieur pour un effet 3D renforcé."
+    },
+    "visual_engine_title": {
+        "en": "Dynamic Lighting, Cloud Shadows & Water",
+        "fr": "Éclairage Dynamique, Ombres de Nuages & Eau"
+    },
+    "visual_engine_desc": {
+        "en": "Adds smooth day/night & weather lighting transitions, drifting cumulus cloud shadows on the ground, and animated water reflections.",
+        "fr": "Ajoute les transitions fluides d'éclairage jour/nuit et météo, les ombres de nuages défilantes au sol et les reflets d'eau animés."
     },
     "opt_builtin": {
         "en": "Enable",
@@ -779,12 +803,12 @@ TRANSLATIONS = {
         "fr": "Langue du Multijoueur Project PM (Base obligatoire) :"
     },
     "opt_mp_fr": {
-        "en": "Project PM French Multiplayer (v0.4.5)",
-        "fr": "Project PM Multijoueur Français (v0.4.5)"
+        "en": "Project PM French Multiplayer (v0.4.7)",
+        "fr": "Project PM Multijoueur Français (v0.4.7)"
     },
     "opt_mp_en": {
-        "en": "Project PM USA / English Multiplayer (v0.4.5)",
-        "fr": "Project PM Multijoueur USA / Anglais (v0.4.5)"
+        "en": "Project PM USA / English Multiplayer (v0.4.7)",
+        "fr": "Project PM Multijoueur USA / Anglais (v0.4.7)"
     },
     "opt_mp_none": {
         "en": "None (Keep Vanilla ROM without multiplayer)",
@@ -837,11 +861,11 @@ TRANSLATIONS = {
     },
     "visual_cam_title": {
         "en": "Extended 3D Camera (Visual+)",
-        "fr": "Caméra 3D Élargie (Visual+)"
+        "fr": "Caméra 3D étendue (Visual+)"
     },
     "visual_cam_desc": {
-        "en": "Closer overworld camera angle in towns and routes for stronger 3D depth.",
-        "fr": "Angle de vue optimisé dans les villes et les routes pour une meilleure immersion."
+        "en": "Lowers and tilts the 3D overworld camera for a modern perspective.",
+        "fr": "Rapproche et incline la caméra 3D du monde extérieur pour une vue dynamique."
     },
     "visual_cam_town": {
         "en": "Overworld / Town",

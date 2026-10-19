@@ -8,19 +8,19 @@ Allows easily adding new multiplayer localizations and new community addons in t
 MULTIPLAYER_VERSIONS = [
     {
         "id": "fr",
-        "name": "ProjectPM Multiplayer 0.4.5 (Français)",
+        "name": "ProjectPM Multiplayer 0.4.7 (Français)",
         "short_name": "Français",
         "lang": "fr",
-        "patch_fr": "PlatinumMultiplayerV0.4.5_FR.xdelta",
-        "patch_us": "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta",
+        "patch_fr": "PlatinumMultiplayerV0.4.7_FR.xdelta",
+        "patch_us": "PlatinumMultiplayerV0.4.7_FR-From-USA.xdelta",
         "supported_rom_langs": ["fr", "en"],  # Can be installed on Platine France or Platinum USA Rev 1
     },
     {
         "id": "en",
-        "name": "ProjectPM Multiplayer 0.4.5 (English)",
+        "name": "ProjectPM Multiplayer 0.4.7 (English)",
         "short_name": "English",
         "lang": "en",
-        "patch_us": "PlatinumMultiplayerV0.4.5.xdelta",
+        "patch_us": "PlatinumMultiplayerV0.4.7.xdelta",
         "supported_rom_langs": ["en"],        # Only Platinum USA Rev 1
     },
 ]

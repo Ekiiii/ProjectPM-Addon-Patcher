@@ -50,6 +50,7 @@ def build():
         "--hidden-import=core.hm_patcher",
         "--hidden-import=core.qol_patcher",
         "--hidden-import=core.visual_enhancements",
+        "--hidden-import=core.visual_patcher",
         "--hidden-import=core.logger",
         "--hidden-import=core.config_manager",
         "--hidden-import=core.save_manager",

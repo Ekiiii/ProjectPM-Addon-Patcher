@@ -21,10 +21,32 @@ from core.i18n import get_lang
 # Options_TextFrameDelay at RAM 0x02028BA0 (ARM9 offset 0x28BA0)
 # Vanilla: push {r3, lr}; bl #0x2028b84 (Options_TextSpeed)
 # Patch:   movs r0, #0; bx lr (00 20 70 47) -> returns 0-frame delay
-FAST_TEXT_ADDR = 0x02028BA0
-FAST_TEXT_OFF  = 0x28BA0
+FAST_TEXT_ADDR = 0x02028BE8
+FAST_TEXT_OFF  = 0x28BE8
+FAST_TEXT_OFF_045 = 0x28BA0
+FAST_TEXT_OFF_047 = 0x28C14
 FAST_TEXT_PATCH   = bytes.fromhex("00207047")
 FAST_TEXT_VANILLA = bytes.fromhex("08b5fff7efff")  # push {r3, lr}; bl Options_TextSpeed
+
+
+def _is_arm9_045(arm9: bytes) -> bool:
+    if len(arm9) < 0xBB0:
+        return False
+    data_start, bss_start = struct.unpack_from("<2I", arm9, 0xBA8)
+    return data_start == 0x02109180 or bss_start == 0x02109180
+
+
+def _is_arm9_047(arm9: bytes) -> bool:
+    if len(arm9) < 0xBB0:
+        return False
+    data_start, bss_start = struct.unpack_from("<2I", arm9, 0xBA8)
+    return data_start == 0x021094E0 or bss_start == 0x021094E0
+
+
+def _get_fast_text_off(arm9: bytes) -> int:
+    if _is_arm9_047(arm9):
+        return FAST_TEXT_OFF_047
+    return FAST_TEXT_OFF_045 if _is_arm9_045(arm9) else FAST_TEXT_OFF
 
 
 def is_fast_text_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
@@ -38,9 +60,10 @@ def is_fast_text_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
             rom = rom_input
 
         arm9 = rom.arm9
-        if len(arm9) < FAST_TEXT_OFF + 4:
+        ft_off = _get_fast_text_off(arm9)
+        if len(arm9) < ft_off + 4:
             return False
-        return arm9[FAST_TEXT_OFF:FAST_TEXT_OFF + 4] == FAST_TEXT_PATCH
+        return arm9[ft_off:ft_off + 4] == FAST_TEXT_PATCH
     except Exception:
         return False
 
@@ -71,12 +94,13 @@ def apply_fast_text_patch(
             save_path = output_path
 
         arm9 = bytearray(rom.arm9)
-        if len(arm9) < FAST_TEXT_OFF + 4:
+        ft_off = _get_fast_text_off(arm9)
+        if len(arm9) < ft_off + 4:
             log("[Fast Text] Error: ARM9 binary too short.")
             return False
 
         if enable:
-            arm9[FAST_TEXT_OFF:FAST_TEXT_OFF + 4] = FAST_TEXT_PATCH
+            arm9[ft_off:ft_off + 4] = FAST_TEXT_PATCH
             msg = (
                 "[Fast Text] Patch Vitesse de Texte Instantanée appliqué (0 frame de délai)."
                 if is_fr else
@@ -85,8 +109,8 @@ def apply_fast_text_patch(
             log(msg)
         else:
             # If currently patched, restore vanilla instruction
-            if arm9[FAST_TEXT_OFF:FAST_TEXT_OFF + 4] == FAST_TEXT_PATCH:
-                arm9[FAST_TEXT_OFF:FAST_TEXT_OFF + 4] = FAST_TEXT_VANILLA[:4]
+            if arm9[ft_off:ft_off + 4] == FAST_TEXT_PATCH:
+                arm9[ft_off:ft_off + 4] = FAST_TEXT_VANILLA[:4]
             msg = (
                 "[Fast Text] Vitesse de texte d'origine restaurée."
                 if is_fr else
@@ -542,10 +566,11 @@ def _build_type_effectiveness_routine(
         win_add  = _resolve_thumb_bl_target(ov16_data, p_off + 0x48, ov16_ram)
         txt_prt  = _resolve_thumb_bl_target(ov16_data, p_off + 0x64, ov16_ram)
     else:
-        calc_dim = 0x0227D6E0
+        is_045 = (ov16_ram == 0x0224A700)
+        calc_dim = 0x0227D6E0 if is_045 else 0x0227DAB4
         win_rem  = 0x0201B01C
         win_init = 0x0201AEBC
-        get_bg   = 0x0224D558
+        get_bg   = 0x0224D558 if is_045 else 0x0224D780
         win_add  = 0x0201AF90
         txt_prt  = 0x0201DFC8
 
@@ -563,6 +588,13 @@ def _build_type_effectiveness_routine(
         new_font_oam | 1,
     )
     struct.pack_into("<10I", buf, 0x28, *api_ptrs)
+
+    # Adjust BattleContext selectedMoveNo offset for Vanilla Platinum (0x30B4) vs ProjectPM (0x30F4)
+    if ov16_ram < 0x02240000:
+        lit_off = buf.find(b"\xf4\x30\x00\x00")
+        if lit_off != -1:
+            struct.pack_into("<I", buf, lit_off, 0x30B4)
+
     return bytes(buf)
 
 
@@ -621,14 +653,17 @@ def is_type_effectiveness_active(rom_input: Union[str, ndspy.rom.NintendoDSRom])
         ovs = rom.loadArm9Overlays([16])
         if 16 not in ovs:
             return False
-        ov16_data = ovs[16].data
+        ov16 = ovs[16]
+        ov16_data = ov16.data
         hook_pat = bytes.fromhex("28880521")
         hook_pos = ov16_data.find(hook_pat)
         if hook_pos == -1:
             return False
         call_pos = hook_pos + 22
-        current_target = _resolve_thumb_bl_target(ov16_data, call_pos, ovs[16].ramAddress)
-        vanilla_targets = {0x0226AEA0, 0x0226B188, 0x0227DC24}
+        current_target = _resolve_thumb_bl_target(ov16_data, call_pos, ov16.ramAddress)
+        if ov16.ramAddress <= current_target < ov16.ramAddress + len(ov16_data):
+            return False
+        vanilla_targets = {0x0226AEA0, 0x0226B188, 0x0227DC24, 0x0227DEA4, 0x0227DFF8, 0x0227E368}
         return current_target not in vanilla_targets
     except Exception:
         return False
@@ -672,6 +707,8 @@ def apply_type_effectiveness_patch(
         ov16 = ovs[16]
         ov16_data = bytearray(ov16.data)
         arm9 = bytearray(rom.arm9)
+        is_045 = _is_arm9_045(arm9)
+        is_047 = _is_arm9_047(arm9)
 
         # 1. Locate MessageUtil_MoveName allocation in ARM9 (ensure vanilla 16-char size)
         msg_pat = bytes.fromhex("041c0fd01020291c")
@@ -713,11 +750,27 @@ def apply_type_effectiveness_patch(
         call_pos = hook_pos + 22
 
         # 3. Resolve vanilla PrepareTextWindow and BattleSubscreen_NewFontOAM targets
+        prep_prologue = bytes.fromhex("f8b588b0171c0e1c051c1c1c301c391c07aa06ab")
+        prep_pos = ov16_data.find(prep_prologue)
+        prep_default = (
+            (ov16.ramAddress + prep_pos)
+            if prep_pos != -1
+            else (0x0227E368 if is_047 else (0x0227DC24 if is_045 else 0x0227DFF8))
+        )
+
+        oam_prologue = bytes.fromhex("f0b59fb00d1c071c286806920793279e2a9c002801d0")
+        oam_pos = ov16_data.find(oam_prologue)
+        oam_default = (
+            (ov16.ramAddress + oam_pos)
+            if oam_pos != -1
+            else (0x0227DE54 if is_047 else (0x0227D710 if is_045 else 0x0227DAE4))
+        )
+
         current_target = _resolve_thumb_bl_target(ov16_data, call_pos, ov16.ramAddress)
         if ov16.ramAddress <= current_target < ov16.ramAddress + len(ov16_data):
             prep_addr = current_target
         else:
-            prep_addr = 0x0227DC24
+            prep_addr = prep_default
 
         target_hook_pat = bytes.fromhex("062001903a483a490290")
         target_hook_pos = ov16_data.find(target_hook_pat)
@@ -727,24 +780,38 @@ def apply_type_effectiveness_patch(
             if ov16.ramAddress <= cur_oam_target < ov16.ramAddress + len(ov16_data):
                 new_font_oam = cur_oam_target
             else:
-                new_font_oam = 0x0227D710
+                new_font_oam = oam_default
         else:
-            new_font_oam = 0x0227D710
+            new_font_oam = oam_default
 
-        # Clean up legacy routine from Overlay 16 if present
-        old_ov16_routine = ov16_data.find(TYPE_EFF_MAGIC)
+        # Clean up legacy routine from Overlay 16 tail if present
+        old_ov16_routine = ov16_data.find(TYPE_EFF_MAGIC, max(0, len(ov16_data) - 0x200))
         if old_ov16_routine != -1:
             ov16_data = bytearray(ov16_data[:old_ov16_routine].rstrip(b"\x00"))
             if len(ov16_data) % 4 != 0:
                 ov16_data.extend(b"\x00" * (4 - (len(ov16_data) % 4)))
 
-        AUTOLOAD_LIST_OFF = 0x109840
         MODULE_PARAMS_OFF = 0x0BA0
-        LIT_MAIN_ARENA_HI_OFF = 0x020C9B9C - 0x02000000
+        # Derive true VANILLA_BSS_START and AUTOLOAD_LIST_OFF from ModuleParams.autoload_data_start (0x0BA8)
+        autoload_data_start = struct.unpack_from("<I", arm9, MODULE_PARAMS_OFF + 8)[0]
+        if 0x02100000 <= autoload_data_start < 0x02120000:
+            VANILLA_BSS_START = autoload_data_start
+            AUTOLOAD_LIST_OFF = (VANILLA_BSS_START - rom.arm9RamAddress) + 0x6C0
+        else:
+            VANILLA_BSS_START = 0x021094E0 if is_047 else (0x02109180 if is_045 else 0x021093A0)
+            AUTOLOAD_LIST_OFF = 0x109BA0 if is_047 else (0x109840 if is_045 else 0x109A60)
+
+        arena_init_pat = bytes.fromhex("010042a00880bde828009fe50880bde824009fe50880bde80000a0e30880bde8")
+        arena_init_pos = arm9.find(arena_init_pat)
+        if arena_init_pos != -1:
+            LIT_MAIN_ARENA_HI_OFF = arena_init_pos + 32
+        else:
+            LIT_MAIN_ARENA_HI_OFF = (0x020C9F24 if is_047 else (0x020C9B9C if is_045 else 0x020C9DF0)) - 0x02000000
+
         ORIGIN_TYPE_EFF = 0x023DF000
         VANILLA_AUTOLOAD_LIST = bytes.fromhex("0080ff01600600000000000000007e026000000020000000")
 
-        # Parse existing custom autoload entries (e.g. SoulLink / Nuzlocke) so we preserve them
+        # Parse existing custom autoload entries (e.g. SoulLink / Nuzlocke / Visual Engine) so we preserve them
         list_start, list_end = struct.unpack_from("<2I", arm9, MODULE_PARAMS_OFF)
         start_off = list_start - rom.arm9RamAddress
         end_off = list_end - rom.arm9RamAddress
@@ -754,10 +821,11 @@ def apply_type_effectiveness_patch(
             for entry_pos in range(start_off + 24, end_off, 12):
                 if entry_pos + 12 <= len(arm9):
                     dest, sz, bss = struct.unpack_from("<3I", arm9, entry_pos)
-                    blob = bytes(arm9[data_cursor:data_cursor + sz])
-                    data_cursor += sz
-                    if dest != ORIGIN_TYPE_EFF:
-                        custom_entries.append((dest, blob, bss))
+                    if 0x023C0000 <= dest < 0x023E0000 and 0 < sz <= 0x10000 and data_cursor + sz <= start_off:
+                        blob = bytes(arm9[data_cursor:data_cursor + sz])
+                        data_cursor += sz
+                        if dest not in (ORIGIN_TYPE_EFF, 0x023DEA80, 0x023DE800, 0x023DF840):
+                            custom_entries.append((dest, blob, bss))
 
         if enable:
             eff_code = _build_type_effectiveness_routine(
@@ -769,7 +837,7 @@ def apply_type_effectiveness_patch(
 
             # Hook 1: PrepareTextWindow call in BattleSubscreen_UpdateMoveDisplay -> ORIGIN_TYPE_EFF
             ov16_data[call_pos:call_pos + 4] = _make_thumb_bl(ov16.ramAddress + call_pos, ORIGIN_TYPE_EFF)
-            # Replace static move cache check (0x0227DADC: beq -> mov r8, r8 = c0 46, real ARMv5TE Thumb NOP!)
+            # Replace static move cache check (beq -> mov r8, r8 = c0 46, real ARMv5TE Thumb NOP!)
             ov16_data[hook_pos - 6:hook_pos - 4] = bytes.fromhex("c046")
 
             # Hook 2: BattleSubscreen_NewFontOAM call in BattleSubscreen_DrawTargetSelectMenu -> ORIGIN_TYPE_EFF + 0x14
@@ -791,7 +859,7 @@ def apply_type_effectiveness_patch(
             if prep_addr:
                 ov16_data[call_pos:call_pos + 4] = _make_thumb_bl(ov16.ramAddress + call_pos, prep_addr)
 
-            # Restore static move cache check in Overlay 16 (0x0227DADC: nop -> beq #0x227db02)
+            # Restore static move cache check in Overlay 16 (nop -> beq)
             ov16_data[hook_pos - 6:hook_pos - 4] = bytes.fromhex("11d0")
 
             # Restore original BattleSubscreen_NewFontOAM call in BattleSubscreen_DrawTargetSelectMenu
@@ -820,11 +888,31 @@ def apply_type_effectiveness_patch(
         new_list_end = rom.arm9RamAddress + len(new_arm9)
 
         struct.pack_into("<2I", new_arm9, MODULE_PARAMS_OFF, new_list_start, new_list_end)
-        high_arena_dests = [d for d, _, _ in custom_entries if 0x023D0000 <= d < 0x023E0000]
+        high_arena_dests = [d & ~0x1F for d, _, _ in custom_entries if 0x023C0000 <= d < 0x023E0000]
         arena_hi = min(high_arena_dests) if high_arena_dests else 0x023E0000
         struct.pack_into("<I", new_arm9, LIT_MAIN_ARENA_HI_OFF, arena_hi)
-        # Golden Rule: 0x0BAC MUST ALWAYS remain 0x02109180 (vanilla bss_start)
-        struct.pack_into("<I", new_arm9, 0xBAC, 0x02109180)
+        # Golden Rule: 0x0BAC MUST ALWAYS remain vanilla bss_start
+        struct.pack_into("<I", new_arm9, 0xBAC, VANILLA_BSS_START)
+
+        heap_param_pat = bytes.fromhex("ffffffff00d2000000000000000e0200000000001000000000000000")
+        heap_param_pos = new_arm9.find(heap_param_pat)
+        app_heap_off = (heap_param_pos + 28) if heap_param_pos != -1 else (0xEC660 if is_047 else (0xEC2D8 if is_045 else 0xEC52C))
+        if app_heap_off + 4 <= len(new_arm9):
+            cur_heap = bytes(new_arm9[app_heap_off:app_heap_off + 4])
+            if high_arena_dests:
+                if cur_heap in (
+                    b"\x00\x50\x10\x00", b"\x00\x40\x10\x00", b"\x00\x30\x10\x00", b"\x00\x20\x10\x00"
+                ):
+                    new_arm9[app_heap_off:app_heap_off + 4] = b"\x00\x18\x10\x00"
+                elif cur_heap == b"\x00\xd8\x10\x00":
+                    new_arm9[app_heap_off:app_heap_off + 4] = b"\x00\xa0\x10\x00"
+            else:
+                if cur_heap in (
+                    b"\x00\x18\x10\x00", b"\x00\x20\x10\x00", b"\x00\x30\x10\x00", b"\x00\x40\x10\x00"
+                ):
+                    new_arm9[app_heap_off:app_heap_off + 4] = b"\x00\x50\x10\x00"
+                elif cur_heap == b"\x00\xa0\x10\x00":
+                    new_arm9[app_heap_off:app_heap_off + 4] = b"\x00\xd8\x10\x00"
         arm9 = new_arm9
 
         ov16.data = bytes(ov16_data)
@@ -833,8 +921,10 @@ def apply_type_effectiveness_patch(
         rom.arm9 = bytes(arm9)
         # Update PPM header tag in pad16C if present
         if hasattr(rom, 'pad16C') and len(rom.pad16C) > 0x78 and rom.pad16C[0x74:0x78] == b"PPM\x01":
-            qol_f = rom.pad16C[0x78]
-            rom.pad16C[0x78] = (qol_f | 0x20) if enable else (qol_f & ~0x20)
+            pad = bytearray(rom.pad16C)
+            qol_f = pad[0x78]
+            pad[0x78] = (qol_f | 0x20) if enable else (qol_f & ~0x20)
+            rom.pad16C = pad
 
         if is_path and save_path:
             rom.saveToFile(save_path)
@@ -843,6 +933,7 @@ def apply_type_effectiveness_patch(
     except Exception as e:
         log(f"[Type Effectiveness] Exception: {e}")
         return False
+
 
 
 # -----------------------------------------------------------------------------
@@ -1109,16 +1200,35 @@ def apply_level_scaling_patch(
 # -----------------------------------------------------------------------------
 LR_OV5_PAT = bytes.fromhex("022080023042")      # movs r0, #2; lsls r0, r0, #10; tst r0, r6
 LR_OV5_PATCH = bytes.fromhex("0b2000023042")    # movs r0, #0x0b; lsls r0, r0, #8; tst r0, r6
-LR_ARM9_PAT = bytes.fromhex("6630008870470000683000887047")
-LR_ARM9_VANILLA = bytes.fromhex("6630008870470000")
+LR_ARM9_PAT = bytes.fromhex("77210901405870477722120181507047")
+LR_ARM9_VANILLA = bytes.fromhex("7721090140587047")
+LR_WEATHER_VANILLA = bytes.fromhex("6630008870470000")
 LR_ROUTINE_MAGIC = bytes.fromhex("06b50c4909880122")
 
-LR_ARM9_ROUTINE_OFFSET = 0x100880
-LR_ARM9_ROUTINE_ADDR   = 0x02100880
+LR_ARM9_ROUTINE_OFFSET_045 = 0x100880
+LR_ARM9_ROUTINE_ADDR_045   = 0x02100880
+LR_ARM9_ROUTINE_OFFSET     = 0x100AA4
+LR_ARM9_ROUTINE_ADDR       = 0x02100AA4
+LR_ARM9_ROUTINE_OFFSET_047 = 0x100BD8
+LR_ARM9_ROUTINE_ADDR_047   = 0x02100BD8
 
-LR_SHORTCUTS_ROUTINE = bytes.fromhex(
-    "06b50c49098801221202114204d001200002ab3006bc00bd02221202114204d001200002a33006bc00bd06bc6630008800bdc04620eb1c02"
+LR_SHORTCUTS_ROUTINE_045 = bytes.fromhex(
+    "06b50c49098801221202114204d001200002c23006bc00bd02221202114204d001200002ba3006bc00bd77210901405806bc00bd20eb1c02"
 )
+LR_SHORTCUTS_ROUTINE = bytes.fromhex(
+    "06b50c49098801221202114204d001200002c23006bc00bd02221202114204d001200002ba3006bc00bd77210901405806bc00bd40ed1c02"
+)
+LR_SHORTCUTS_ROUTINE_047 = bytes.fromhex(
+    "06b50c49098801221202114204d001200002c23006bc00bd02221202114204d001200002ba3006bc00bd77210901405806bc00bd80ee1c02"
+)
+
+
+def _get_lr_params(arm9: bytes):
+    if _is_arm9_047(arm9):
+        return LR_ARM9_ROUTINE_OFFSET_047, LR_ARM9_ROUTINE_ADDR_047, LR_SHORTCUTS_ROUTINE_047
+    if _is_arm9_045(arm9):
+        return LR_ARM9_ROUTINE_OFFSET_045, LR_ARM9_ROUTINE_ADDR_045, LR_SHORTCUTS_ROUTINE_045
+    return LR_ARM9_ROUTINE_OFFSET, LR_ARM9_ROUTINE_ADDR, LR_SHORTCUTS_ROUTINE
 
 
 def is_lr_shortcuts_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
@@ -1143,9 +1253,9 @@ def apply_lr_shortcuts_patch(
     Applies or removes the L/R trigger shortcuts (R: instant Bicycle, L: instant Town Map).
     Safe design:
     - Overworld button mask patched in Overlay 5 (Y, L, R).
-    - Resident routine placed in ARM9 at 0x02100880 (offset 0x100880) so it never crashes
+    - Resident routine placed in ARM9 at 0x02100BD8 (0.4.7) / 0x02100AA4 (0.4.6) / 0x02100880 (0.4.5) so it never crashes
       even if Bag_GetRegisteredItem is called outside the overworld.
-    - Reads raw held keys from 0x021CEB20 (gSystem.heldKeysRaw).
+    - Reads raw held keys from gSystem.heldKeysRaw.
     """
     def log(msg: str):
         if log_cb:
@@ -1173,6 +1283,17 @@ def apply_lr_shortcuts_patch(
         ov5 = ovs[5]
         ov5_data = bytearray(ov5.data)
         arm9 = bytearray(rom.arm9)
+        lr_off, lr_addr, lr_routine = _get_lr_params(arm9)
+
+        # 0. Always heal any legacy mis-hook at FieldOverworldState_GetWeather (FR 0x3C5A0 / US 0x3A74C)
+        #    or BagContext_GetItem (FR 0x82C28 / US 0x7CB94) without touching unrelated bytes
+        for bad_off in (0x3C5A0, 0x82C28, 0x3A74C, 0x7CB94):
+            if len(arm9) >= bad_off + 8:
+                for cand_addr in (LR_ARM9_ROUTINE_ADDR_047, LR_ARM9_ROUTINE_ADDR, LR_ARM9_ROUTINE_ADDR_045):
+                    bad_safe = bytes.fromhex("08b5") + _make_thumb_bl(rom.arm9RamAddress + bad_off + 2, cand_addr) + bytes.fromhex("08bd")
+                    bad_legacy = _make_thumb_bl(rom.arm9RamAddress + bad_off, cand_addr)
+                    if arm9[bad_off:bad_off + 8] == bad_safe or arm9[bad_off:bad_off + 4] == bad_legacy:
+                        arm9[bad_off:bad_off + 8] = LR_WEATHER_VANILLA
 
         # 1. Overlay 5 button check
         ov5_pos = ov5_data.find(LR_OV5_PAT)
@@ -1181,23 +1302,21 @@ def apply_lr_shortcuts_patch(
                 log("[L/R Shortcuts] Error: Y button check not found in Overlay 5.")
                 return False
 
-        # Clean up legacy routine from Overlay 5 if present
-        old_ov5_routine = ov5_data.find(LR_ROUTINE_MAGIC)
+        # Clean up legacy routine from Overlay 5 tail if present
+        old_ov5_routine = ov5_data.find(LR_ROUTINE_MAGIC, max(0, len(ov5_data) - 0x200))
         if old_ov5_routine != -1:
             ov5_data = bytearray(ov5_data[:old_ov5_routine])
         if len(ov5_data) % 4 != 0:
             ov5_data.extend(b"\x00" * (4 - (len(ov5_data) % 4)))
 
-        # 2. ARM9 Bag_GetRegisteredItem
+        # 2. ARM9 Bag_GetRegisteredItem (FR 0x02083524 / 0.4.6 0x02083778 / 0.4.7 0x020838AC / US 0x0207D3FC)
         arm9_pos = arm9.find(LR_ARM9_PAT)
         if arm9_pos == -1:
             arm9_pos = arm9.find(LR_ARM9_VANILLA)
         if arm9_pos == -1:
-            # Check if already hooked (either safe hook with push {r3, lr} or legacy hook with bl)
-            safe_hook = bytes.fromhex("08b5") + _make_thumb_bl(rom.arm9RamAddress + 0x3C5A2, LR_ARM9_ROUTINE_ADDR) + bytes.fromhex("08bd")
-            legacy_hook = _make_thumb_bl(rom.arm9RamAddress + 0x3C5A0, LR_ARM9_ROUTINE_ADDR)
-            if arm9[0x3C5A0:0x3C5A8] == safe_hook or arm9[0x3C5A0:0x3C5A4] == legacy_hook:
-                arm9_pos = 0x3C5A0
+            next_fn_pos = arm9.find(LR_ARM9_PAT[8:])
+            if next_fn_pos >= 8:
+                arm9_pos = next_fn_pos - 8
         if arm9_pos == -1:
             log("[L/R Shortcuts] Error: Bag_GetRegisteredItem not found in ARM9.")
             return False
@@ -1208,16 +1327,16 @@ def apply_lr_shortcuts_patch(
                 ov5_data[ov5_pos:ov5_pos + len(LR_OV5_PATCH)] = LR_OV5_PATCH
 
             # Place routine into ARM9 (permanently resident)
-            arm9[LR_ARM9_ROUTINE_OFFSET:LR_ARM9_ROUTINE_OFFSET + len(LR_SHORTCUTS_ROUTINE)] = LR_SHORTCUTS_ROUTINE
+            arm9[lr_off:lr_off + len(lr_routine)] = lr_routine
 
             # Hook Bag_GetRegisteredItem in ARM9 safely:
             # push {r3, lr} (2B)
-            # bl LR_ARM9_ROUTINE_ADDR (4B)
+            # bl lr_addr (4B)
             # pop {r3, pc} (2B)
             hook_addr = rom.arm9RamAddress + arm9_pos
-            bl_bytes = _make_thumb_bl(hook_addr + 2, LR_ARM9_ROUTINE_ADDR)
+            bl_bytes = _make_thumb_bl(hook_addr + 2, lr_addr)
             arm9[arm9_pos:arm9_pos + 2] = bytes.fromhex("08b5")      # push {r3, lr}
-            arm9[arm9_pos + 2:arm9_pos + 6] = bl_bytes               # bl LR_ARM9_ROUTINE_ADDR
+            arm9[arm9_pos + 2:arm9_pos + 6] = bl_bytes               # bl lr_addr
             arm9[arm9_pos + 6:arm9_pos + 8] = bytes.fromhex("08bd")  # pop {r3, pc}
 
             msg = (
@@ -1235,8 +1354,12 @@ def apply_lr_shortcuts_patch(
             # Restore vanilla Bag_GetRegisteredItem in ARM9
             arm9[arm9_pos:arm9_pos + len(LR_ARM9_VANILLA)] = LR_ARM9_VANILLA
 
-            # Clear ARM9 routine
-            arm9[LR_ARM9_ROUTINE_OFFSET:LR_ARM9_ROUTINE_OFFSET + len(LR_SHORTCUTS_ROUTINE)] = b"\x00" * len(LR_SHORTCUTS_ROUTINE)
+            # Clear ARM9 routine safely with bx lr (70 47) if our routine or zero-cave was present
+            cave_slice = arm9[lr_off:lr_off + len(lr_routine)]
+            if cave_slice[:8] == LR_ROUTINE_MAGIC or cave_slice == b"\x00" * len(lr_routine):
+                arm9[lr_off:lr_off + len(lr_routine)] = (
+                    b"\x70\x47" + b"\x00" * (len(lr_routine) - 2)
+                )
 
             msg = (
                 "[Raccourcis L/R] Raccourcis de terrain d'origine restaurés."
@@ -1299,17 +1422,25 @@ def apply_battle_inspector_patch(
 # -----------------------------------------------------------------------------
 # 11. INFINITE RARE CANDY & EMPTY POCKET OOB FIX
 # -----------------------------------------------------------------------------
-# 1. ARM9: Bag_TryRemoveItem (0x02083734 in FR, offset 0x83734 in ARM9)
+# 1. ARM9: Bag_TryRemoveItem (0x02083ABC in 0.4.7 / 0x02083988 in 0.4.6 / 0x02083734 in 0.4.5)
 #    Exempts item 488 (ITEM_SUPER_BONBON_INFINI, 0x01E8) from being decremented or deleted.
-# 2. Overlay 84: ItemListMenuCursorCB (RAM 0x0224EB76 / 0x0223F52C, offset 0x4010)
+# 2. Overlay 84: ItemListMenuCursorCB (RAM 0x0224ED96 / 0x0224EB76, offset 0x4010)
 #    Fixes vanilla Game Freak OOB bug where an empty pocket sentinel (0xFFFE)
 #    is read as pocket->items[0xFFFE] (256 KB OOB read crashing the heap).
 #    Changes comparison from == 0xFFFF to >= 0xFFFE (bhs) and literal from 0xFFFF to 0xFFFE.
 
-BAG_REMOVE_FR_OFF   = 0x83734
-BAG_REMOVE_FR_PATCH = bytes.fromhex("f0b585b001917a26019db6000290141c1f1cb54202d105b00120f0bd")
+BAG_REMOVE_FR_OFF_045 = 0x83734
+BAG_REMOVE_FR_OFF     = 0x83988
+BAG_REMOVE_FR_OFF_047 = 0x83ABC
+BAG_REMOVE_FR_PATCH   = bytes.fromhex("f0b585b001917a26019db6000290141c1f1cb54202d105b00120f0bd")
 BAG_GET_ITEM_FR_ORIG  = bytes.fromhex("6630008870470000")
-OV84_CURSOR_PAT     = bytes.fromhex("051c13480e1c8642")
+OV84_CURSOR_PAT       = bytes.fromhex("051c13480e1c8642")
+
+
+def _get_bag_remove_off(arm9: bytes) -> int:
+    if _is_arm9_047(arm9):
+        return BAG_REMOVE_FR_OFF_047
+    return BAG_REMOVE_FR_OFF_045 if _is_arm9_045(arm9) else BAG_REMOVE_FR_OFF
 
 
 def is_infinite_candy_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
@@ -1324,8 +1455,9 @@ def is_infinite_candy_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> 
 
         # Check ARM9 Bag_TryRemoveItem
         arm9 = rom.arm9
-        if len(arm9) > BAG_REMOVE_FR_OFF + len(BAG_REMOVE_FR_PATCH):
-            if arm9[BAG_REMOVE_FR_OFF:BAG_REMOVE_FR_OFF + len(BAG_REMOVE_FR_PATCH)] != BAG_REMOVE_FR_PATCH:
+        bag_off = _get_bag_remove_off(arm9)
+        if len(arm9) > bag_off + len(BAG_REMOVE_FR_PATCH):
+            if arm9[bag_off:bag_off + len(BAG_REMOVE_FR_PATCH)] != BAG_REMOVE_FR_PATCH:
                 return False
 
         ovs = rom.loadArm9Overlays([84])
@@ -1390,16 +1522,22 @@ def apply_infinite_candy_patch(
                 rom.files[ov84.fileID] = ov84.save()
                 rom.arm9OverlayTable = ndspy.code.saveOverlayTable(ovs)
 
-        # 2. Patch ARM9 (Bag_TryRemoveItem exemption for item 488)
+        # 2. Patch ARM9 (Bag_TryRemoveItem exemption for item 488 in ProjectPM 0.4.5 / 0.4.6 / 0.4.7)
         arm9 = bytearray(rom.arm9)
-        if len(arm9) > BAG_REMOVE_FR_OFF + len(BAG_REMOVE_FR_PATCH):
-            if enable:
-                arm9[BAG_REMOVE_FR_OFF:BAG_REMOVE_FR_OFF + len(BAG_REMOVE_FR_PATCH)] = BAG_REMOVE_FR_PATCH
+        if len(arm9) >= 0xBB0 and struct.unpack_from("<I", arm9, 0xBA8)[0] in (0x02109180, 0x021093A0, 0x021094E0):
+            bag_off = _get_bag_remove_off(arm9)
+            if len(arm9) > bag_off + len(BAG_REMOVE_FR_PATCH):
+                if enable:
+                    arm9[bag_off:bag_off + len(BAG_REMOVE_FR_PATCH)] = BAG_REMOVE_FR_PATCH
 
-        # 3. Ensure BagContext_GetItem at 0x82C28 is always pristine vanilla (never hooked)
-        if len(arm9) > 0x82C28 + 8:
-            if arm9[0x82C28:0x82C28 + 8] != BAG_GET_ITEM_FR_ORIG:
-                arm9[0x82C28:0x82C28 + 8] = BAG_GET_ITEM_FR_ORIG
+        # 3. Ensure FieldOverworldState_GetWeather and BagContext_GetItem are never mis-hooked
+        for bad_off in (0x3C5A0, 0x82C28, 0x3A74C, 0x7CB94):
+            if len(arm9) >= bad_off + 8:
+                for cand_addr in (LR_ARM9_ROUTINE_ADDR_047, LR_ARM9_ROUTINE_ADDR, LR_ARM9_ROUTINE_ADDR_045):
+                    bad_safe = bytes.fromhex("08b5") + _make_thumb_bl(rom.arm9RamAddress + bad_off + 2, cand_addr) + bytes.fromhex("08bd")
+                    bad_legacy = _make_thumb_bl(rom.arm9RamAddress + bad_off, cand_addr)
+                    if arm9[bad_off:bad_off + 8] == bad_safe or arm9[bad_off:bad_off + 4] == bad_legacy:
+                        arm9[bad_off:bad_off + 8] = BAG_GET_ITEM_FR_ORIG
 
         rom.arm9 = bytes(arm9)
 

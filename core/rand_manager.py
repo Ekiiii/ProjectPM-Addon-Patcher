@@ -13,22 +13,28 @@ import zlib
 import pickle
 import ndspy.rom
 
-# Known clean official Vanilla Platinum and stock ProjectPM 0.4.5 full ROM SHA-1s
+# Known clean official Vanilla Platinum and stock ProjectPM 0.4.5 / 0.4.6 / 0.4.7 full ROM SHA-1s
 KNOWN_CLEAN_ROM_HASHES = {
     # Vanilla Platinum
     "38914619d0e2e505ea99994cb1783cf6cb79ea29",  # Vanilla USA Rev 1
     "0862ec35b24de5c7e2dcb88c9eea0873110d755c",  # Vanilla USA Rev 1
     "f4448555e5dfad41763740e53a25cb8ec89ef239",  # Vanilla France
     "41ea92f794560e347cd9509f5ec9e9d479a4bbf1",  # Vanilla France
+    # ProjectPM FR & USA 0.4.7
+    "bff2d5c10f327ecaf7d13eb886b91ddf93df36f2",  # Standard FR 0.4.7
+    "d7c2aa2ad36e06cbd89951e2ed54a617d7aa043b",  # Standard USA 0.4.7
+    # ProjectPM FR & USA 0.4.6
+    "99770452858e197fbac80b7e3fc680fc92b50d8b",  # Standard FR 0.4.6
+    "8c1426650efba095fbdd66eda5d371f776afab30",  # Standard USA 0.4.6
     # ProjectPM FR 0.4.5
-    "7914acff08156d4c2be6d7babb275afe2d60a3b0",  # Standard FR
-    "534992df5165d8ed182da8b922da09614fd70022",  # Visual+ FR
+    "7914acff08156d4c2be6d7babb275afe2d60a3b0",  # Standard FR 0.4.5
+    "534992df5165d8ed182da8b922da09614fd70022",  # Visual+ FR 0.4.5
     # ProjectPM USA 0.4.5
     "13a17485f168f7c66a8632598929ffb9232be252",
     "0e0ea676a7d289fe7efd5b3b80434d7b067f1f4a",
 }
 
-# Standard clean file hashes for Nintendo DS Pokémon Platinum (Vanilla FR, Vanilla US, ProjectPM 0.4.5)
+# Standard clean file hashes for Nintendo DS Pokémon Platinum (Vanilla FR, Vanilla US, ProjectPM 0.4.5, 0.4.6 & 0.4.7)
 CLEAN_FILE_HASHES = {
     "fielddata/encountdata/pl_enc_data.narc": {
         "50100e5c276738c4e4758011b2b2e49922da1f1f",  # ProjectPM standard (FR & US)
@@ -41,7 +47,9 @@ CLEAN_FILE_HASHES = {
         "0832d441d7e543e14d68e9df7e9118b472d67833",  # Vanilla Platinum
     },
     "fielddata/script/scr_seq.narc": {
-        "5a0a2fb4d89451fc1040220f6c4155c698ca3cc9",  # ProjectPM standard
+        "37e8e8ffd854f9ee2a905ef411e5635e5ad7daaf",  # ProjectPM 0.4.7 standard
+        "6387f7f24df1a10e0be02680609afafd43cddcf1",  # ProjectPM 0.4.6 standard
+        "5a0a2fb4d89451fc1040220f6c4155c698ca3cc9",  # ProjectPM 0.4.5 standard
         "0184a6adf788980e2709e4183094cfc2f5965894",  # Vanilla FR
         "9f4d3587b7032f4f673ccc1b8971685b2199396b",  # Vanilla US
     },
@@ -65,6 +73,8 @@ CLEAN_FILE_HASHES = {
     "poketool/personal/evo.narc": {
         "24718dc9a1d612c5e5799b503e09a705dd8db2b4",  # ProjectPM standard
         "7755e3a884a11b098122ca9dd656223fd4b02dd0",  # Vanilla Platinum
+        "7f6f2556b70a7288702ffdc2138630273e4f4bb6",  # ProjectPM + Trade-Evos QoL
+        "752cf4677a0a9a1f483a68ffd8331f49658048bc",  # Vanilla + Trade-Evos QoL
     },
     "poketool/personal/wotbl.narc": {
         "393c66f4d142c709af050de459e7022653d5bf9d",  # ProjectPM standard
@@ -79,7 +89,8 @@ CLEAN_FILE_HASHES = {
         "fbbf1287b2ac10c5212be0e4a69461507e860005",  # Platinum clean growtbl
     },
     "poketool/waza/pl_waza_tbl.narc": {
-        "12cb9af69581a76fe17e4a7f5a7941608949cf97",  # ProjectPM standard
+        "f3d042fc77eaa68a188cde9760ef6faf85438a9f",  # ProjectPM 0.4.6 & 0.4.7 standard
+        "12cb9af69581a76fe17e4a7f5a7941608949cf97",  # ProjectPM 0.4.5 standard
         "42e2b71655a74d6e5bffb9ec75a25df930b20c59",  # Vanilla Platinum
     },
     "itemtool/itemdata/pl_item_data.narc": {
@@ -94,6 +105,8 @@ CLEAN_OV78_HASHES = {
     "8571cf57764db093c9ce385586894659297b783e",  # Vanilla US Rev 1
     "32996678d5919a686b31c426fd3d23d6d788f6e6",  # Vanilla FR
     "b39aa6eb12b7016b3f45bfc942c92974e2914120",  # ProjectPM 0.4.5
+    "11d7d285aa6664449b901eb880a98bde5fda8945",  # ProjectPM 0.4.6
+    "5a6e71db5464d0450ac6babb4384fac5e695f335",  # ProjectPM 0.4.7
 }
 
 RANDOMIZER_CANDIDATES = [
@@ -158,7 +171,6 @@ def extract_randomizer_data(rom_path, log_cb=None):
         rand_candidate = rom_path + ".rand.txt"
     if os.path.isfile(rand_candidate):
         result["rand_log_path"] = rand_candidate
-        result["is_randomized"] = True
 
     # Scan candidate files
     for fname in RANDOMIZER_CANDIDATES:

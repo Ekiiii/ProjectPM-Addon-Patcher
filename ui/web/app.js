@@ -112,7 +112,7 @@ window.addEventListener('pywebviewready', async () => {
 
     // Set version
     const verEl = document.getElementById('app-version');
-    if (verEl) verEl.innerText = initData.version || 'v1.0.8';
+    if (verEl) verEl.innerText = initData.version || 'v1.0.9';
     
     // Set initial seeds & codes
     if (initData.initial_coop) {
@@ -164,6 +164,10 @@ window.addEventListener('pywebviewready', async () => {
       if (cfg.visual_cam !== undefined) {
         const tCam = document.getElementById('toggle-visual-cam');
         if (tCam) tCam.checked = cfg.visual_cam;
+      }
+      if (cfg.visual_engine !== undefined) {
+        const tEng = document.getElementById('toggle-visual-engine');
+        if (tEng) tEng.checked = cfg.visual_engine;
       }
       if (cfg.backup_save !== undefined) {
         const tSav = document.getElementById('toggle-backup-save');
@@ -233,8 +237,9 @@ function saveCurrentOptionsToConfig() {
     const dstInput = document.getElementById('input-dest-rom');
     const cfg = {
       addon_mode: addonSel ? addonSel.value : 'none',
-      visual_bg: document.getElementById('toggle-visual-bg') ? document.getElementById('toggle-visual-bg').checked : true,
-      visual_cam: document.getElementById('toggle-visual-cam') ? document.getElementById('toggle-visual-cam').checked : true,
+      visual_bg: document.getElementById('toggle-visual-bg') ? document.getElementById('toggle-visual-bg').checked : false,
+      visual_cam: document.getElementById('toggle-visual-cam') ? document.getElementById('toggle-visual-cam').checked : false,
+      visual_engine: document.getElementById('toggle-visual-engine') ? document.getElementById('toggle-visual-engine').checked : false,
       backup_save: document.getElementById('toggle-backup-save') ? document.getElementById('toggle-backup-save').checked : true,
       team_exp_share: document.getElementById('toggle-team-exp-share') ? document.getElementById('toggle-team-exp-share').checked : false,
       free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,
@@ -288,7 +293,8 @@ function updatePatchSummaryBadges() {
     'toggle-iv-ev-display',
     'toggle-colored-natures',
     'toggle-visual-bg',
-    'toggle-visual-cam'
+    'toggle-visual-cam',
+    'toggle-visual-engine'
   ];
   let activeVisual = 0;
   visualToggles.forEach(id => {
@@ -448,20 +454,20 @@ function updateMpDetectIndicator() {
 
     if (effectiveLang !== res.mp_lang && effectiveLang !== 'none') {
       mpDetectEl.innerHTML = currentLang === 'fr'
-        ? `<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Multijoueur détecté :</strong> Project PM v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; <strong>Changement vers le Multijoueur ${targetLangStr}</strong>`
-        : `<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Multiplayer detected:</strong> Project PM v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; <strong>Switching to ${targetLangStr} Multiplayer</strong>`;
+        ? `<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Multijoueur détecté :</strong> Project PM v${res.mp_version || '0.4.7'} (${curLangStr}) &rarr; <strong>Changement vers le Multijoueur ${targetLangStr}</strong>`
+        : `<svg class="inline-svg text-amber" viewBox="0 0 16 16"><use href="#icon-lightning"></use></svg> <strong>Multiplayer detected:</strong> Project PM v${res.mp_version || '0.4.7'} (${curLangStr}) &rarr; <strong>Switching to ${targetLangStr} Multiplayer</strong>`;
     } else {
       mpDetectEl.innerHTML = currentLang === 'fr'
-        ? `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>ROM Project PM détectée :</strong> v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; Prête pour mise à jour / réactualisation`
-        : `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>Project PM ROM detected:</strong> v${res.mp_version || '0.4.5'} (${curLangStr}) &rarr; Ready to update / refresh`;
+        ? `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>ROM Project PM détectée :</strong> v${res.mp_version || '0.4.7'} (${curLangStr}) &rarr; Prête pour mise à jour / réactualisation`
+        : `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>Project PM ROM detected:</strong> v${res.mp_version || '0.4.7'} (${curLangStr}) &rarr; Ready to update / refresh`;
     }
   } else {
     const langStr = (res.lang === 'fr') 
       ? (currentLang === 'fr' ? 'Platine France' : 'Platinum France') 
       : (currentLang === 'fr' ? 'Platine USA' : 'Platinum USA');
     const targetStr = (effectiveLang === 'fr') 
-      ? (currentLang === 'fr' ? 'Français (v0.4.5)' : 'French (v0.4.5)') 
-      : (currentLang === 'fr' ? 'USA / Anglais (v0.4.5)' : 'USA / English (v0.4.5)');
+      ? (currentLang === 'fr' ? 'Français (v0.4.7)' : 'French (v0.4.7)') 
+      : (currentLang === 'fr' ? 'USA / Anglais (v0.4.7)' : 'USA / English (v0.4.7)');
     mpDetectEl.innerHTML = currentLang === 'fr'
       ? `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>ROM Vanilla détectée :</strong> ${langStr} &rarr; Multijoueur ${targetStr} sélectionné automatiquement`
       : `<svg class="inline-svg text-emerald" viewBox="0 0 16 16"><use href="#icon-check"></use></svg> <strong>Vanilla ROM detected:</strong> ${langStr} &rarr; Multiplayer ${targetStr} auto-selected`;
@@ -558,6 +564,10 @@ async function processSelectedRom(path, isRefresh = false) {
     if (toggleCam && res.has_visualplus_cam !== undefined) {
       toggleCam.checked = !!res.has_visualplus_cam;
     }
+    const toggleEng = document.getElementById('toggle-visual-engine');
+    if (toggleEng && res.has_visual_engine !== undefined) {
+      toggleEng.checked = !!res.has_visual_engine;
+    }
 
     // Sync Team EXP Share option from ROM
     const toggleExp = document.getElementById('toggle-team-exp-share');
@@ -640,20 +650,59 @@ async function processSelectedRom(path, isRefresh = false) {
 }
 
 function renderPatcherBadges(res) {
-  // ROM status tags are intentionally not displayed anymore.
   const badgesBox = document.getElementById('rom-badges-container');
-  badgesBox.innerHTML = '';
-  badgesBox.style.display = 'none';
+  if (!badgesBox) return;
+  if (!res || !res.badges || res.badges.length === 0) {
+    badgesBox.innerHTML = '';
+    badgesBox.style.display = 'none';
+    return;
+  }
+  badgesBox.style.display = 'flex';
+  const badgesHtml = res.badges.map(b => {
+    const label = (b.key && translations[b.key]) ? translations[b.key] : b.label;
+    return `<span class="status-badge ${b.color}">${label}</span>`;
+  }).join('');
+  badgesBox.innerHTML = badgesHtml;
 }
 
 async function browseDestRom() {
   try {
-    const sug = document.getElementById('input-dest-rom').value;
-    const defaultName = sug ? sug.split('/').pop() : 'ProjectPM_modded.nds';
-    const path = await window.pywebview.api.browse_save_rom(defaultName);
+    const dstInput = document.getElementById('input-dest-rom');
+    const overwriteToggle = document.getElementById('toggle-overwrite-source');
+    let sug = dstInput ? dstInput.value.trim() : '';
+    if ((!sug || (overwriteToggle && overwriteToggle.checked)) && currentRomInfo && currentRomInfo.path) {
+      const srcPath = currentRomInfo.path;
+      const dirName = srcPath.substring(0, srcPath.lastIndexOf('/'));
+      const baseName = srcPath.substring(srcPath.lastIndexOf('/') + 1).replace(/\.nds$/i, '');
+      const mpMode = document.getElementById('select-mp-mode') ? document.getElementById('select-mp-mode').value : 'fr';
+      const lang = (mpMode === 'en') ? 'EN' : 'FR';
+      const addonVal = document.getElementById('select-addon-mode') ? document.getElementById('select-addon-mode').value : 'none';
+      const randEnabled = document.getElementById('toggle-enable-randomizer') ? document.getElementById('toggle-enable-randomizer').checked : false;
+      const randSuffix = randEnabled ? '_Randomized' : '';
+      if (addonVal === 'restore') {
+        sug = `${dirName}/${baseName}_Clean${randSuffix}.nds`;
+      } else if (addonVal === 'nuzlocke') {
+        sug = `${dirName}/ProjectPM_${lang}_Nuzlocke${randSuffix}.nds`;
+      } else if (addonVal === 'soullink') {
+        sug = `${dirName}/ProjectPM_${lang}_SoulLink${randSuffix}.nds`;
+      } else if (currentRomInfo.has_multiplayer) {
+        sug = `${dirName}/${baseName}_Modded${randSuffix}.nds`;
+      } else {
+        sug = `${dirName}/ProjectPM_${lang}_Multiplayer${randSuffix}.nds`;
+      }
+    }
+    const defaultArg = sug || 'ProjectPM_modded.nds';
+    const path = await window.pywebview.api.browse_save_rom(defaultArg);
     if (path) {
-      document.getElementById('input-dest-rom').value = path;
-      saveCurrentOptionsToConfig();
+      if (overwriteToggle && overwriteToggle.checked) {
+        overwriteToggle.checked = false;
+      }
+      if (dstInput) {
+        dstInput.disabled = false;
+        dstInput.style.opacity = '1';
+        dstInput.value = path;
+      }
+      onAddonModeChange(true);
     }
   } catch (e) {
     console.error('[Browse Dest Error]', e);
@@ -744,7 +793,7 @@ function onToggleOverwriteSource() {
   onAddonModeChange();
 }
 
-function onAddonModeChange() {
+function onAddonModeChange(keepCustomDest = false) {
   updateModLangNote();
   const addonSelect = document.getElementById('select-addon-mode');
   const addonVal = addonSelect ? addonSelect.value : 'none';
@@ -760,6 +809,8 @@ function onAddonModeChange() {
   const overwriteToggle = document.getElementById('toggle-overwrite-source');
   const isOverwrite = !!(overwriteToggle && overwriteToggle.checked);
 
+  if (dstBtn) dstBtn.disabled = false;
+
   if (currentRomInfo && currentRomInfo.path) {
     const srcPath = currentRomInfo.path;
     const dirName = srcPath.substring(0, srcPath.lastIndexOf('/'));
@@ -771,7 +822,6 @@ function onAddonModeChange() {
       dstInput.value = srcPath;
       dstInput.disabled = true;
       dstInput.style.opacity = '0.7';
-      if (dstBtn) dstBtn.disabled = true;
 
       if (addonVal === 'restore') {
         if (btnSpan) {
@@ -801,24 +851,23 @@ function onAddonModeChange() {
     } else {
       dstInput.disabled = false;
       dstInput.style.opacity = '1';
-      if (dstBtn) dstBtn.disabled = false;
 
       if (addonVal === 'restore') {
-        dstInput.value = `${dirName}/${baseName}_Clean${randSuffix}.nds`;
+        if (!keepCustomDest) dstInput.value = `${dirName}/${baseName}_Clean${randSuffix}.nds`;
         if (btnSpan) {
           btnSpan.innerText = randEnabled
             ? (currentLang === 'fr' ? "DÉSINSTALLER MODS & RANDOMISER LA ROM" : "UNINSTALL MODS & RANDOMIZE ROM")
             : (currentLang === 'fr' ? "RESTAURER LA ROM D'ORIGINE (DÉSINSTALLER LES MODS)" : "RESTORE ORIGINAL ROM (UNINSTALL MODS)");
         }
       } else if (addonVal === 'nuzlocke') {
-        dstInput.value = `${dirName}/ProjectPM_${lang}_Nuzlocke${randSuffix}.nds`;
+        if (!keepCustomDest) dstInput.value = `${dirName}/ProjectPM_${lang}_Nuzlocke${randSuffix}.nds`;
         if (btnSpan) {
           btnSpan.innerText = randEnabled
             ? (currentLang === 'fr' ? `INJECTER NUZLOCKE & RANDOMISER LA ROM (${lang})` : `INJECT NUZLOCKE & RANDOMIZE ROM (${lang})`)
             : (currentLang === 'fr' ? `INJECTER LE MOD NUZLOCKE (${lang})` : `INJECT NUZLOCKE MOD (${lang})`);
         }
       } else if (addonVal === 'soullink') {
-        dstInput.value = `${dirName}/ProjectPM_${lang}_SoulLink${randSuffix}.nds`;
+        if (!keepCustomDest) dstInput.value = `${dirName}/ProjectPM_${lang}_SoulLink${randSuffix}.nds`;
         if (btnSpan) {
           btnSpan.innerText = randEnabled
             ? (currentLang === 'fr' ? `INJECTER SOUL LINK & RANDOMISER LA ROM (${lang})` : `INJECT SOUL LINK & RANDOMIZE ROM (${lang})`)
@@ -826,10 +875,12 @@ function onAddonModeChange() {
         }
       } else {
         // none
-        if (currentRomInfo.has_multiplayer) {
-          dstInput.value = `${dirName}/${baseName}_Modded${randSuffix}.nds`;
-        } else {
-          dstInput.value = `${dirName}/ProjectPM_${lang}_Multiplayer${randSuffix}.nds`;
+        if (!keepCustomDest) {
+          if (currentRomInfo.has_multiplayer) {
+            dstInput.value = `${dirName}/${baseName}_Modded${randSuffix}.nds`;
+          } else {
+            dstInput.value = `${dirName}/ProjectPM_${lang}_Multiplayer${randSuffix}.nds`;
+          }
         }
         if (btnSpan) {
           btnSpan.innerText = randEnabled
@@ -884,6 +935,7 @@ async function startPatching() {
     sl_variant: effectiveVariant,
     bg_opt: (document.getElementById('toggle-visual-bg') && document.getElementById('toggle-visual-bg').checked) ? 'builtin' : 'none',
     cam_opt: (document.getElementById('toggle-visual-cam') && document.getElementById('toggle-visual-cam').checked) ? 'builtin' : 'none',
+    visual_engine: document.getElementById('toggle-visual-engine') ? document.getElementById('toggle-visual-engine').checked : false,
     backup_save: document.getElementById('toggle-backup-save') ? document.getElementById('toggle-backup-save').checked : true,
     team_exp_share: document.getElementById('toggle-team-exp-share') ? document.getElementById('toggle-team-exp-share').checked : false,
     free_hms: document.getElementById('toggle-free-hms') ? document.getElementById('toggle-free-hms').checked : false,

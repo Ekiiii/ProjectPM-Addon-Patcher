@@ -41,13 +41,13 @@ def resolve_base_patch(target_mp: str, source_lang: str, assets_dir: str) -> str
     if target_mp == "fr":
         if source_lang == "fr":
             pattern = re.compile(r"^PlatinumMultiplayerV(.*)_FR\.xdelta$", re.IGNORECASE)
-            fallback = "PlatinumMultiplayerV0.4.5_FR.xdelta"
+            fallback = "PlatinumMultiplayerV0.4.7_FR.xdelta"
         else:
             pattern = re.compile(r"^PlatinumMultiplayerV(.*)_FR-From-USA\.xdelta$", re.IGNORECASE)
-            fallback = "PlatinumMultiplayerV0.4.5_FR-From-USA.xdelta"
+            fallback = "PlatinumMultiplayerV0.4.7_FR-From-USA.xdelta"
     else:
         pattern = re.compile(r"^PlatinumMultiplayerV(?!.*FR)(.*)\.xdelta$", re.IGNORECASE)
-        fallback = "PlatinumMultiplayerV0.4.5.xdelta"
+        fallback = "PlatinumMultiplayerV0.4.7.xdelta"
 
     candidates = [f for f in os.listdir(base_dir) if pattern.match(f)]
     if candidates:
@@ -90,6 +90,9 @@ def execute_patch_pipeline(
 
         bg_opt = options.get("bg_opt", "none")
         cam_opt = options.get("cam_opt", "none")
+        visual_engine = options.get("visual_engine", False)
+        if visual_engine:
+            log_cb("[Visuel] Moteur Visuel 60 FPS (Éclairage Dynamique & Nuages): Activé.")
         backup_save = options.get("backup_save", True)
         team_exp_share = options.get("team_exp_share", False)
         if team_exp_share:
@@ -305,17 +308,26 @@ def execute_patch_pipeline(
         if bg_opt == "builtin":
             _progress(0.75, t("progress_apply_visual_bg"))
             apply_battle_bg_patch(output_rom, assets_dir, enable=True, log_cb=log_cb)
-        elif bg_opt == "off":
+        elif bg_opt in ("off", "none") and getattr(info, "has_visual_bg", False):
             _progress(0.75, t("progress_disable_visual_bg"))
             apply_battle_bg_patch(output_rom, assets_dir, enable=False, log_cb=log_cb)
 
         # 6. Visual+ 3D Camera
+        from core.visual_patcher import is_camera_patch_active, apply_visual_engine_patch, is_visual_engine_active
         if cam_opt == "builtin":
-            _progress(0.85, t("progress_apply_visual_cam"))
+            _progress(0.84, t("progress_apply_visual_cam"))
             apply_camera_patch(output_rom, enable=True, log_cb=log_cb)
-        elif cam_opt == "off":
-            _progress(0.85, t("progress_restore_visual_cam"))
+        elif cam_opt in ("off", "none") and (getattr(info, "has_visual_cam", False) or is_camera_patch_active(output_rom)):
+            _progress(0.84, t("progress_restore_visual_cam"))
             apply_camera_patch(output_rom, enable=False, log_cb=log_cb)
+
+        # 6a. Custom 60 FPS Visual Engine (Dynamic Lighting, Clouds & Water Shimmer)
+        if visual_engine:
+            _progress(0.86, t("visual_engine_title"))
+            apply_visual_engine_patch(output_rom, enable=True, log_cb=log_cb)
+        elif getattr(info, "has_visual_engine", False) or is_visual_engine_active(output_rom):
+            _progress(0.86, t("visual_engine_title"))
+            apply_visual_engine_patch(output_rom, enable=False, log_cb=log_cb)
 
         # 6b. Shared Team EXP Mod
         from core.exp_share_patcher import apply_exp_share_patch, is_exp_share_active
@@ -483,8 +495,9 @@ def execute_patch_pipeline(
                 vis_flags = (
                     (0x01 if iv_ev_display else 0) |
                     (0x02 if colored_natures else 0) |
-                    (0x04 if (bg_opt == "builtin" or getattr(info, "has_visual_bg", False)) else 0) |
-                    (0x08 if (cam_opt == "builtin" or getattr(info, "has_visual_cam", False)) else 0)
+                    (0x04 if (bg_opt == "builtin" or (bg_opt == "keep" and getattr(info, "has_visual_bg", False))) else 0) |
+                    (0x08 if (cam_opt == "builtin" or (cam_opt == "keep" and getattr(info, "has_visual_cam", False))) else 0) |
+                    (0x10 if visual_engine else 0)
                 )
                 mode_flag = 0
                 if sl_enabled:
