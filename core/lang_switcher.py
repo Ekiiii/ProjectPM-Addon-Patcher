@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 lang_switcher.py
-Robust Language Switching Engine for ProjectPM Nintendo DS ROMs:
-- Seamlessly swaps the 37 localized data files between English and French
-- Works on already-modified ROMs (SoulLocke, Randomizer, Visual+, Custom Patches)
-- Does not fail on hash/checksum mismatches (unlike strict xdelta3 patches)
-- Fully preserves all active ROM mods, custom encounters, and gameplay state
+Swaps localized data files between English and French on ProjectPM ROMs.
 """
 import os
 import pickle

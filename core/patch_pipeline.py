@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 patch_pipeline.py
 Unified execution pipeline for ProjectPM Addon Patcher:
@@ -112,11 +111,8 @@ def execute_patch_pipeline(
         type_effectiveness = options.get("type_effectiveness", True)
         if type_effectiveness:
             log_cb("[QoL] Badges Capsules d'Efficacité en Combat (Solo & Duo): Activé.")
-        fast_transitions = False
-        level_scaling = False
-        lr_shortcuts = False
-        battle_inspector = False
         colored_natures = options.get("colored_natures", False)
+
         if colored_natures:
             log_cb("[Visuel] Natures colorées (+Rouge / -Bleu): Activé.")
         iv_ev_display = options.get("iv_ev_display", False)
@@ -268,10 +264,20 @@ def execute_patch_pipeline(
         effective_sl_lang = effective_mp or info.lang
         if sl_mode == "restore":
             _progress(0.60, t("progress_restore_projectpm"))
-            payload_json = os.path.join(payloads_dir, f"soullocke_{info.lang}.json")
-            if not os.path.isfile(payload_json):
-                payload_json = os.path.join(payloads_dir, f"soullocke_{sl_variant}.json")
-            if not os.path.isfile(payload_json):
+            candidate_names = [
+                f"{sl_variant}_{effective_sl_lang}.json",
+                f"{sl_variant}_{info.lang}.json",
+                f"soullocke_{effective_sl_lang}.json",
+                f"soullocke_{info.lang}.json",
+                "soullocke_fr.json",
+            ]
+            payload_json = None
+            for cname in candidate_names:
+                cpath = os.path.join(payloads_dir, cname)
+                if os.path.isfile(cpath):
+                    payload_json = cpath
+                    break
+            if not payload_json:
                 payload_json = os.path.join(payloads_dir, "soullocke_fr.json")
             ok = restore_clean_projectpm(working_rom, output_rom, payload_json, log_cb)
             if not ok:
@@ -357,9 +363,13 @@ def execute_patch_pipeline(
             apply_trade_evos_patch(output_rom, enable=False, log_cb=log_cb)
 
         # 6e. Infinite TMs
+        from core.qol_patcher import is_infinite_tms_active
         if infinite_tms:
             _progress(0.91, t("infinite_tms_title"))
             apply_infinite_tms_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_infinite_tms_active(output_rom):
+            _progress(0.91, t("infinite_tms_title"))
+            apply_infinite_tms_patch(output_rom, enable=False, log_cb=log_cb)
 
         # 6e2. Fast HP / EXP Bar Animation
         from core.qol_patcher import apply_fast_healthbar_patch, is_fast_healthbar_active, apply_type_effectiveness_patch, is_type_effectiveness_active
@@ -383,47 +393,8 @@ def execute_patch_pipeline(
         from core.qol_patcher import apply_infinite_candy_patch
         apply_infinite_candy_patch(output_rom, enable=True, log_cb=log_cb)
 
-        # 6e4. Fast Overworld Transitions (1-frame fades)
-        from core.qol_patcher import (
-            apply_fast_transitions_patch, is_fast_transitions_active,
-            apply_level_scaling_patch, is_level_scaling_active,
-            apply_lr_shortcuts_patch, is_lr_shortcuts_active,
-            apply_battle_inspector_patch, is_battle_inspector_active
-        )
-        if fast_transitions:
-            _progress(0.919, t("fast_transitions_title"))
-            apply_fast_transitions_patch(output_rom, enable=True, log_cb=log_cb)
-        elif is_fast_transitions_active(output_rom):
-            _progress(0.919, t("fast_transitions_title"))
-            apply_fast_transitions_patch(output_rom, enable=False, log_cb=log_cb)
-
-        # 6e5. Dynamic Trainer Level Scaling
-        if level_scaling:
-            _progress(0.920, t("level_scaling_title"))
-            apply_level_scaling_patch(output_rom, enable=True, log_cb=log_cb)
-        elif is_level_scaling_active(output_rom):
-            _progress(0.920, t("level_scaling_title"))
-            apply_level_scaling_patch(output_rom, enable=False, log_cb=log_cb)
-
-        # 6e6. Quick Overworld Shortcuts (L = Town Map / R = Bicycle)
-        if lr_shortcuts:
-            _progress(0.921, t("lr_shortcuts_title"))
-            apply_lr_shortcuts_patch(output_rom, enable=True, log_cb=log_cb)
-        elif is_lr_shortcuts_active(output_rom):
-            _progress(0.921, t("lr_shortcuts_title"))
-            apply_lr_shortcuts_patch(output_rom, enable=False, log_cb=log_cb)
-
-        # 6e7. In-Battle Stat & Turn Inspector
-        if battle_inspector:
-            _progress(0.922, t("battle_inspector_title"))
-            apply_battle_inspector_patch(output_rom, enable=True, log_cb=log_cb)
-        elif is_battle_inspector_active(output_rom):
-            _progress(0.922, t("battle_inspector_title"))
-            apply_battle_inspector_patch(output_rom, enable=False, log_cb=log_cb)
-
-
         # 6f. Visual Enhancements (Colored Natures & IV/EV Display)
-        from core.visual_enhancements import apply_colored_natures_patch, apply_iv_ev_patch, is_colored_natures_active
+        from core.visual_enhancements import apply_colored_natures_patch, apply_iv_ev_patch, is_colored_natures_active, is_iv_ev_active
         if colored_natures:
             _progress(0.92, t("colored_natures_title"))
             apply_colored_natures_patch(output_rom, enable=True, log_cb=log_cb)
@@ -434,6 +405,9 @@ def execute_patch_pipeline(
         if iv_ev_display:
             _progress(0.93, t("iv_ev_title"))
             apply_iv_ev_patch(output_rom, enable=True, log_cb=log_cb)
+        elif is_iv_ev_active(output_rom):
+            _progress(0.93, t("iv_ev_title"))
+            apply_iv_ev_patch(output_rom, enable=False, log_cb=log_cb)
 
         # 7. Custom xDelta patch (applied before final randomizer restoration)
         custom_patch = options.get("custom_patch")
@@ -475,46 +449,53 @@ def execute_patch_pipeline(
             log_cb(f"[Randomizer] Existing randomization detected ({len(rand_data.get('files', {}))} tables): re-applying at the end of patching to ensure 100% preservation...")
             restore_randomizer_data(output_rom, rand_data, log_cb=log_cb)
 
-        # 8b. Write PPM Header Tag at 0x1E0 for feature persistence and instant detection
+        # 8b. Write PPM Header Tag at 0x1E0 for feature persistence and instant detection,
+        # and ensure full 128 MB (134,217,728 bytes) cartridge padding after ndspy saves
         try:
-            if sl_mode == "restore":
-                with open(output_rom, "r+b") as f:
+            with open(output_rom, "r+b") as f:
+                f.seek(0, os.SEEK_END)
+                cur_size = f.tell()
+                if cur_size < 134217728:
+                    f.write(b"\xff" * (134217728 - cur_size))
+                if sl_mode == "restore":
                     f.seek(0x1E0)
                     f.write(b"\x00" * 8)
-            else:
-                qol_flags = (
-                    (0x01 if team_exp_share else 0) |
-                    (0x02 if free_hms else 0) |
-                    (0x04 if trade_evos else 0) |
-                    (0x08 if infinite_tms else 0) |
-                    (0x10 if fast_hp_bar else 0) |
-                    (0x20 if type_effectiveness else 0) |
-                    (0x40 if fast_transitions else 0) |
-                    (0x80 if level_scaling else 0)
-                )
-                vis_flags = (
-                    (0x01 if iv_ev_display else 0) |
-                    (0x02 if colored_natures else 0) |
-                    (0x04 if (bg_opt == "builtin" or (bg_opt == "keep" and getattr(info, "has_visual_bg", False))) else 0) |
-                    (0x08 if (cam_opt == "builtin" or (cam_opt == "keep" and getattr(info, "has_visual_cam", False))) else 0) |
-                    (0x10 if visual_engine else 0)
-                )
-                mode_flag = 0
-                if sl_enabled:
-                    if sl_mode == "nuzlocke":
-                        mode_flag = 2
-                    else:
-                        mode_flag = 1
-                qol2_flags = (
-                    (0x01 if lr_shortcuts else 0) |
-                    (0x02 if battle_inspector else 0)
-                )
-                tag_data = b"PPM\x01" + bytes([qol_flags, vis_flags, mode_flag, qol2_flags])
-                with open(output_rom, "r+b") as f:
+                else:
+                    qol_flags = (
+                        (0x01 if team_exp_share else 0) |
+                        (0x02 if free_hms else 0) |
+                        (0x04 if trade_evos else 0) |
+                        (0x08 if infinite_tms else 0) |
+                        (0x10 if fast_hp_bar else 0) |
+                        (0x20 if type_effectiveness else 0)
+                    )
+                    vis_flags = (
+                        (0x01 if iv_ev_display else 0) |
+                        (0x02 if colored_natures else 0) |
+                        (0x04 if (bg_opt == "builtin" or (bg_opt == "keep" and getattr(info, "has_visual_bg", False))) else 0) |
+                        (0x08 if (cam_opt == "builtin" or (cam_opt == "keep" and getattr(info, "has_visual_cam", False))) else 0) |
+                        (0x10 if visual_engine else 0)
+                    )
+                    mode_flag = 0
+                    if sl_enabled:
+                        if sl_mode == "nuzlocke":
+                            mode_flag = 2
+                        else:
+                            mode_flag = 1
+                    tag_data = b"PPM\x01" + bytes([qol_flags, vis_flags, mode_flag, 0])
                     f.seek(0x1E0)
                     f.write(tag_data)
         except Exception as e:
             log_cb(f"[Warning] Failed to write ROM header metadata: {e}")
+
+        # 8c. Automated Pre-Write Post-Patch ROM Integrity Validator
+        from core.i18n import get_lang
+        is_fr = (get_lang() == "fr")
+        _progress(0.97, "Validation de l'intégrité de la ROM..." if is_fr else "Validating ROM integrity...")
+        from core.rom_validator import validate_rom
+        log_cb("[Pipeline] Exécution du validateur d'intégrité post-patch (6 étapes)...")
+        validate_rom(output_rom, raise_on_error=True, log_cb=log_cb)
+        log_cb("[Pipeline] Validateur d'intégrité : 100% des vérifications (6 étapes) validées avec succès.")
 
         # 9. In-place overwrite finalization: atomically replace source ROM with new build
         if is_in_place and temp_final_inplace and os.path.isfile(temp_final_inplace):

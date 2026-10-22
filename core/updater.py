@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 updater.py
 Handles automatic updates via GitHub Releases:
@@ -17,7 +16,7 @@ import json
 import subprocess
 import time
 
-CURRENT_VERSION = "v1.0.9"
+CURRENT_VERSION = "v1.1.0"
 GITHUB_REPO = "Ekiiii/ProjectPM-Addon-Patcher"
 RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 

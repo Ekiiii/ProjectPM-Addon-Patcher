@@ -61,18 +61,6 @@ typedef u16            GXRgb;
 #define ADDR_GLB_MAT_COL1        0x021C5B24u
 #define ADDR_AREALIGHT_UPDATE    0x021D5299u
 #define ADDR_AREALIGHT_APPLY_TPL 0x021D52F5u
-#define ADDR_CHK_COLLISION       0x02060B7Du
-#define ADDR_ALLOC_STEP_STATE    0x02062AA5u
-#define ADDR_STEP_COORDS         0x020641B5u
-#define ADDR_SET_FACE_MOVE_DIR   0x020629A1u
-#define ADDR_SET_ANIM_ID         0x02062A0Du
-#define ADDR_SET_FLAGS_BITS      0x020628BDu
-#define ADDR_ADV_MOVE_STEP       0x02062BC9u
-#define ADDR_GET_STEP_STATE      0x02062AC9u
-#define ADDR_ADD_DIR_TO_POS      0x020642A5u
-#define ADDR_UPDATE_HEIGHT       0x020642F9u
-#define ADDR_SYNC_PREV_COORDS    0x02064209u
-#define ADDR_STEP_FINISH_CB      0x02062B69u
 #elif defined(PROFILE_045)
 #define ADDR_GET_SEC_MIDNIGHT    0x02013DD5u
 #define ADDR_VRAM_TRANSFER_REQ   0x0201E4B1u
@@ -85,18 +73,6 @@ typedef u16            GXRgb;
 #define ADDR_GLB_MAT_COL1        0x021D5024u
 #define ADDR_AREALIGHT_UPDATE    0x021E664Du
 #define ADDR_AREALIGHT_APPLY_TPL 0x021E66A9u
-#define ADDR_CHK_COLLISION       0x02065A5Du
-#define ADDR_ALLOC_STEP_STATE    0x02067B2Du
-#define ADDR_STEP_COORDS         0x020692F1u
-#define ADDR_SET_FACE_MOVE_DIR   0x020679D9u
-#define ADDR_SET_ANIM_ID         0x02067A6Du
-#define ADDR_SET_FLAGS_BITS      0x020678F5u
-#define ADDR_ADV_MOVE_STEP       0x02067C79u
-#define ADDR_GET_STEP_STATE      0x02067B65u
-#define ADDR_ADD_DIR_TO_POS      0x020693E1u
-#define ADDR_UPDATE_HEIGHT       0x02069435u
-#define ADDR_SYNC_PREV_COORDS    0x02069345u
-#define ADDR_STEP_FINISH_CB      0x02067C19u
 #elif defined(PROFILE_047)
 #define ADDR_GET_SEC_MIDNIGHT    0x02013DF5u
 #define ADDR_VRAM_TRANSFER_REQ   0x0201E4D1u
@@ -109,18 +85,6 @@ typedef u16            GXRgb;
 #define ADDR_GLB_MAT_COL1        0x021D53A4u
 #define ADDR_AREALIGHT_UPDATE    0x021E69CDu
 #define ADDR_AREALIGHT_APPLY_TPL 0x021E6A29u
-#define ADDR_CHK_COLLISION       0x02065DE5u
-#define ADDR_ALLOC_STEP_STATE    0x02067EB5u
-#define ADDR_STEP_COORDS         0x02069679u
-#define ADDR_SET_FACE_MOVE_DIR   0x02067D61u
-#define ADDR_SET_ANIM_ID         0x02067DF5u
-#define ADDR_SET_FLAGS_BITS      0x02067C7Du
-#define ADDR_ADV_MOVE_STEP       0x02068001u
-#define ADDR_GET_STEP_STATE      0x02067EEDu
-#define ADDR_ADD_DIR_TO_POS      0x02069769u
-#define ADDR_UPDATE_HEIGHT       0x020697BDu
-#define ADDR_SYNC_PREV_COORDS    0x020696CDu
-#define ADDR_STEP_FINISH_CB      0x02067FA1u
 #else /* ProjectPM 0.4.6 (FR & US) */
 #define ADDR_GET_SEC_MIDNIGHT    0x02013DD5u
 #define ADDR_VRAM_TRANSFER_REQ   0x0201E4B1u
@@ -133,18 +97,6 @@ typedef u16            GXRgb;
 #define ADDR_GLB_MAT_COL1        0x021D5244u
 #define ADDR_AREALIGHT_UPDATE    0x021E686Du
 #define ADDR_AREALIGHT_APPLY_TPL 0x021E68C9u
-#define ADDR_CHK_COLLISION       0x02065CB1u
-#define ADDR_ALLOC_STEP_STATE    0x02067D81u
-#define ADDR_STEP_COORDS         0x02069545u
-#define ADDR_SET_FACE_MOVE_DIR   0x02067C2Du
-#define ADDR_SET_ANIM_ID         0x02067CC1u
-#define ADDR_SET_FLAGS_BITS      0x02067B49u
-#define ADDR_ADV_MOVE_STEP       0x02067ECDu
-#define ADDR_GET_STEP_STATE      0x02067DB9u
-#define ADDR_ADD_DIR_TO_POS      0x02069635u
-#define ADDR_UPDATE_HEIGHT       0x02069689u
-#define ADDR_SYNC_PREV_COORDS    0x02069599u
-#define ADDR_STEP_FINISH_CB      0x02067E6Du
 #endif
 
 typedef struct {
@@ -245,13 +197,6 @@ typedef struct {
 } PlayerAvatar;
 
 typedef struct {
-    u16 animId;                    /* +0x00 */
-    s16 duration;                  /* +0x02 */
-    s32 dir;                       /* +0x04 */
-    fx32 speed;                    /* +0x08 */
-} StepMovementState;
-
-typedef struct {
     void *processManager;          /* +0x00 */
     FieldSystem_sub2 *unk_04;      /* +0x04 */
     void *bgConfig;                /* +0x08 */
@@ -302,20 +247,8 @@ typedef struct {
     s8  sineWaveTable[16];      /* +0x44..+0x53: 16-byte sine LUT */
     u8  horizonFogTable[32];    /* +0x54..+0x73: 32-byte 7-bit fog table */
     u32 shaderPack[5];          /* +0x74..+0x87: 20-byte packed shader LUT */
-    s16 moveVecX;               /* +0x88: smoothed X movement heading (-256..+256) */
-    s16 moveVecZ;               /* +0x8A: smoothed Z movement heading (-256..+256) */
-    u8  primaryFaceDir;         /* +0x8C: dominant visual facing direction (0..3) */
-    s8  diagStepDx;             /* +0x8D: active diagonal step X delta (-1, 0, +1) */
-    s8  diagStepDz;             /* +0x8E: active diagonal step Z delta (-1, 0, +1) */
-    u8  isDiagStep;             /* +0x8F: 1 if next player step is simultaneous 45-deg diagonal */
-    s16 lastCloudTileX;         /* +0x90: last world tile X streamed to VRAM_BG2_SCR */
-    s16 lastCloudTileY;         /* +0x92: last world tile Y streamed to VRAM_BG2_SCR */
-    u8  manualMoveActive;       /* +0x94: 1 when step initiated by manual D-Pad input */
-    u8  activeDiagFlags;        /* +0x95: bit7=diag active, bit1=(dx>0), bit0=(dz>0) */
-    u8  stepInitDur;            /* +0x96: initial duration of current player step */
-    u8  sideBlockedFlag;        /* +0x97: 1 if perpendicular sub-tile side should funnel to 0 */
-    u8 *playerMapObj;           /* +0x98: cached pointer to playerAvatar->mapObject */
-    PlayerAvatar *playerAvatar; /* +0x9C: cached pointer to fieldSystem->playerAvatar */
+    s16 lastCloudTileX;         /* +0x88: last world tile X streamed to VRAM_BG2_SCR */
+    s16 lastCloudTileY;         /* +0x8A: last world tile Y streamed to VRAM_BG2_SCR */
 } VisualEngineState;
 
 /* Game Function Pointers */
@@ -328,18 +261,5 @@ typedef struct {
 #define DC_FlushRange           ((void (*)(const void *, u32))ADDR_DC_FLUSH_RANGE)
 #define AreaLightManager_UpdateActiveTemplate ((void (*)(AreaLightManager *))ADDR_AREALIGHT_UPDATE)
 #define AreaLightTemplate_ApplyToModelAttributes ((void (*)(const AreaLightTemplate *, ModelAttributes *))ADDR_AREALIGHT_APPLY_TPL)
-
-#define PlayerAvatar_CheckCollision    ((u32 (*)(PlayerAvatar *, u8 *, s32))ADDR_CHK_COLLISION)
-#define MapObject_AllocStepState       ((StepMovementState *(*)(u8 *, s32))ADDR_ALLOC_STEP_STATE)
-#define MapObject_StepCoords           ((void (*)(u8 *, s32))ADDR_STEP_COORDS)
-#define MapObject_SetFaceAndMoveDir    ((void (*)(u8 *, s32))ADDR_SET_FACE_MOVE_DIR)
-#define MapObject_SetAnimId            ((void (*)(u8 *, u16))ADDR_SET_ANIM_ID)
-#define MapObject_SetFlagsBits         ((void (*)(u8 *, u32))ADDR_SET_FLAGS_BITS)
-#define MapObject_AdvanceMovementStep  ((void (*)(u8 *))ADDR_ADV_MOVE_STEP)
-#define MapObject_GetStepState         ((StepMovementState *(*)(u8 *))ADDR_GET_STEP_STATE)
-#define MapObject_AddDirToPos          ((void (*)(u8 *, s32, fx32))ADDR_ADD_DIR_TO_POS)
-#define MapObject_UpdateHeight         ((void (*)(u8 *))ADDR_UPDATE_HEIGHT)
-#define MapObject_SyncPrevCoords       ((void (*)(u8 *))ADDR_SYNC_PREV_COORDS)
-#define MapObject_StepFinishCb         ((void (*)(u8 *))ADDR_STEP_FINISH_CB)
 
 #endif /* VISUAL_ENGINE_H */

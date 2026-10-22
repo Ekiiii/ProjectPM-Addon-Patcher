@@ -1,41 +1,45 @@
-# v1.0.9
+# v1.1.0
 
 ---
 
 ## 🇫🇷 Français
 
-### Nouveautés de la version 1.0.9
+### Nouveautés de la version 1.1.0
 
-- **Support complet de Project PM v0.4.7 (Français & USA / Anglais)** :
-  - Mise à jour intégrale des patchs de base `.xdelta` (`PlatinumMultiplayerV0.4.7_FR.xdelta`, `PlatinumMultiplayerV0.4.7_FR-From-USA.xdelta`, `PlatinumMultiplayerV0.4.7.xdelta`) et des packs de localisation (`lang_fr.pack`, `lang_en.pack`).
-  - Conservation à 100 % de la traduction française intégrale (724 banques de textes dont les dialogues `617`/`618`, polices FR et 32 NARCs graphiques).
-  - Intégration native du correctif `0.4.7` des **Pokémon Shiny capturés en Coopération** (`Overlay 16`) et compatibilité réseau multijoueur `0.4.7` (`Overlay 122`, protocole `0x9E120018`).
+- **Correction des Combats Doubles Co-Op en mode SoulLocke & Nuzlocke (`0.4.5` / `0.4.6` / `0.4.7`)** :
+  - Correction de l'offset `mapLabelTextID` (`0x178`) dans la structure `BattleDTO` : les 2e rencontres sauvages et suivantes sur une même route restent désormais en **Combat Double Co-Op 2v2** avec votre partenaire au lieu de basculer en combat solo 1v1.
+  - Protection du tampon réseau `ov122` pendant les combats (`SoulLink_SyncTick`) : la synchronisation SoulLocke n'écrase plus le hash d'état de combat (`exportBlk + 0xCA..0xCB`) ni le tampon de commandes dresseur, éliminant les déconnexions et blocages à l'entrée des Combats Doubles.
+  - Correction de l'adresse `OV122_PARTY_EXP_ADDR` (`0x022A01CC`) sur `0.4.7` et ajout de payloads C dédiés par version (`0.4.5`, `0.4.6`, `0.4.7` FR / EN / USA).
 
-- **Mise à jour des Modes Soul Link & Nuzlocke et de tous les Patchs QoL / Visuels pour la v0.4.7** :
-  - Réalignement complet des moteurs C **SoulLocke** et **Nuzlocke** (FR & EN) sur la mémoire `0.4.7` (tout en conservant la rétrocompatibilité `0.4.6` et `0.4.5`).
-  - Réalignement de tous les patchs **QoL & Visuels** pour `0.4.7` : Badges Capsules d'Efficacité des Types (Solo & Duo), Multi Exp d'Équipe, CS Libres & Poké-Rider, CT Infinies, Évolutions Solo, Barres PV/EXP Rapides, Natures Colorées et Affichage IV/EV.
-  - Correctif du **Super Bonbon Infini (Infinite Rare Candy)** : l'objet n'est plus consommé lors de son utilisation depuis le sac (`Bag_TryRemoveItem`) et protection anti-crash lorsque la poche du sac devient vide.
+- **Correctif d'Affichage des Magasins (Moteur Visuel 60 FPS)** :
+  - Correction de la gestion du calque `BG 2` dans `Visual_UpdateCloudBg2` : la liste des articles (`Win 0`) et la description des objets (`Win 1`) dans les Boutiques Pokémon ne sont plus masquées ni décalées par le calque des ombres de nuages (en intérieur comme en extérieur).
 
-- **Nouvelle Option Graphique Expérimentale : Éclairage Dynamique, Ombres de Nuages & Eau** :
-  - Ajout d'une option dédiée (indépendante de Visual+) intégrant les transitions fluides d'éclairage jour/nuit et météo, les ombres de nuages défilantes au sol et les reflets d'eau animés (compatible `0.4.7`, `0.4.6` et `0.4.5`).
-  - Ajout des badges `NOUVEAU` et `EXPÉRIMENTAL` sur les nouvelles options de l'interface.
+- **Randomizer Dresseurs (Solo & Co-Op) & Re-Randomisation** :
+  - Respect strict des 4 structures `trpoke.narc` de Project PM (`16`, `20`, `24` et `28` octets) sans débordement sur `ball_seal`, la nature ou les IVs, avec prise en charge de la conservation des objets tenus et des équipes dresseurs Co-Op (`trpoke[973..1944]`).
+  - Possibilité de relancer le Randomizer plusieurs fois sur une ROM déjà randomisée (légendaires fixes, cadeaux, œufs et fossiles).
+
+- **Bascule Binaire CT Infinies / Affichage IV-EV & Validation Automatique de ROM** :
+  - Activation et désactivation binaires complètes pour les **CT Infinies** et l'**Affichage IV/EV** dans l'écran de résumé (`0.4.5`, `0.4.6`, `0.4.7`).
+  - Intégration d'un validateur automatique post-patch vérifiant l'intégrité des tables NARC, des scripts, des banques de textes et des hooks `ARM9`/Overlays avant chaque sauvegarde, ainsi que la correction des textes FR manquants (Casino de Voilaroc, générique de fin, Moiteur).
 
 ---
 
 ## 🇬🇧 English
 
-### What's New in Version 1.0.9
+### What's New in Version 1.1.0
 
-- **Full Project PM v0.4.7 Support (French & USA / English)**:
-  - Updated all base `.xdelta` patches (`PlatinumMultiplayerV0.4.7_FR.xdelta`, `PlatinumMultiplayerV0.4.7_FR-From-USA.xdelta`, `PlatinumMultiplayerV0.4.7.xdelta`) and localization packs (`lang_fr.pack`, `lang_en.pack`).
-  - Preserved 100% of the complete French localization (all 724 text banks including `617`/`618`, French fonts, and 32 localized graphical NARCs).
-  - Native `0.4.7` **Co-Op Shiny Capture** fix (`Overlay 16`) and `0.4.7` multiplayer network protocol compatibility (`Overlay 122`, protocol `0x9E120018`).
+- **Fixed Co-Op Double Battles in SoulLocke & Nuzlocke Modes (`0.4.5` / `0.4.6` / `0.4.7`)**:
+  - Fixed the `BattleDTO.mapLabelTextID` struct offset (`0x178`): 2nd and subsequent wild encounters on a route where a Pokémon was already caught now properly stay in **2v2 Co-Op Double Battles** with your partner instead of dropping to 1v1 solo battles.
+  - Guarded the `ov122` network buffer during battles (`SoulLink_SyncTick`): SoulLocke sync packets no longer overwrite the 16-bit Battle State Hash (`exportBlk + 0xCA..0xCB`) or trainer command buffer, preventing Co-Op Double Battle disconnects and softlocks.
+  - Corrected `OV122_PARTY_EXP_ADDR` (`0x022A01CC`) on `0.4.7` and added version-specific C payloads (`0.4.5`, `0.4.6`, `0.4.7` FR / EN / USA).
 
-- **Updated Soul Link, Nuzlocke & All QoL / Visual Patches for v0.4.7**:
-  - Re-aligned the **SoulLocke** and **Nuzlocke** C engines (FR & EN) for `0.4.7` memory offsets (while maintaining backward compatibility with `0.4.6` and `0.4.5`).
-  - Updated all **QoL & Visual** patches for `0.4.7`: Move Effectiveness Capsule Badges (Single & Double Battles), Shared Team EXP, Free HMs & Poké-Rider, Infinite TMs, Trade Evolutions Without Trading, Fast HP/EXP Bars, Colored Natures, and In-Game IV/EV Display.
-  - Fixed **Infinite Rare Candy** consumption in `Bag_TryRemoveItem` and added empty-pocket OOB crash protection.
+- **Fixed Poké Mart Shop Item List Display (60 FPS Visual Engine)**:
+  - Fixed `BG 2` layer handling in `Visual_UpdateCloudBg2`: the shop item list (`Win 0`) and item descriptions (`Win 1`) in Poké Marts are no longer hidden or scroll-shifted by the cloud shadow layer (both indoors and outdoors).
 
-- **New Experimental Graphics Option: Dynamic Lighting, Cloud Shadows & Water**:
-  - Added a standalone option (separate from Visual+) featuring smooth day/night & weather lighting transitions, drifting cumulus cloud shadows on the ground, and animated water reflections (compatible with `0.4.7`, `0.4.6`, and `0.4.5`).
-  - Added `NEW` and `EXPERIMENTAL` UI badges on new options.
+- **Trainer Randomizer (Solo & Co-Op) & Idempotent Re-Randomization**:
+  - Full support for all 4 Project PM `trpoke.narc` layouts (`16`, `20`, `24`, and `28` bytes) with zero overflow into `ball_seal`, nature, or IV fields, held item preservation, and Co-Op trainer party randomization (`trpoke[973..1944]`).
+  - Static encounters, gifts, eggs, and fossils can now be re-randomized cleanly on an already-randomized ROM.
+
+- **Binary Toggles for Infinite TMs / IV-EV Display & Automated ROM Validator**:
+  - Complete binary enable/disable toggles for **Infinite TMs** and **Summary Screen IV/EV Display** across `0.4.5`, `0.4.6`, and `0.4.7`.
+  - Built-in post-patch ROM validator checking NARC tables, scripts, text banks, and `ARM9`/Overlay hooks before saving, plus French text fixes (Veilstone Game Corner, End Credits, Damp battle messages).

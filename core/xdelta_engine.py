@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 xdelta_engine.py
 Secure wrapper around xdelta3 for base ROM patching (Vanilla -> ProjectPM).

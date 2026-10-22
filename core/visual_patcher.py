@@ -1,34 +1,7 @@
-# -*- coding: utf-8 -*-
-r"""
+"""
 visual_patcher.py
-Next-Gen 60 FPS Dynamic Visual Engine (Compiled in C via arm-none-eabi-gcc)
-& Visual+ Battle Backgrounds for Pokémon Platinum / ProjectPM 0.4.5:
-
-1. 3D Orbital Camera with Ease-In / Ease-Out & Left/Right Yaw Rotation:
-   - Sub-pixel Q8 spring-damper with acceleration limiting (`SmoothEaseStep` in C)
-     for true parabolic Ease-In and exponential Ease-Out.
-   - Smooth Left/Right orbital yaw (`±6°`, `cam->angle.y` + incremental 3D eye orbit
-     on `cam->position`), tall grass pitch (`-48.87° -> -53.27°`), and running/cycling
-     zoom-out (`0x1D8000 -> +0x22000`).
-   - Full 3x3 3D rotation matrix $R_y(\text{yaw}) \cdot R_x(\Delta \text{pitch})$ on 2D
-     billboards (`Hook5_BillboardMtx`) so sprites face the orbiting camera cleanly.
-
-2. Zero-Flicker Continuous Solar/Lunar Lighting & Moving Cloud Shadows:
-   - Dirty-flag state caching (`lastActiveIdx`, `lastSolarTq8`, `lastInGrass`,
-     `lastWeatherMode`, `lightDirty`) so 5-bit BGR555 `ModelAttributes` are only updated
-     when lighting state actually changes — 100% zero quantization flicker.
-   - Per-prop (`Hook4`) and per-billboard (`Hook6`) material color oscillations removed.
-   - Breeze leaf/petal particles (`Hook8`) completely removed (`ov5_draw3d_off` restored).
-   - Smooth 7-bit hardware depth fog & drifting cloud shadows (`REG_G3X_FOG_TABLE`).
-
-3. Hardware Specular Bloom & 5 Advanced Weather Shaders in C:
-   - 128-byte quadratic specular bloom LUT loaded into `REG_G3_SHININESS` (`0x040004C0`)
-     with `enableSpecularReflectShininessTable = TRUE` and `prmMatColor1` bit 15 enabled.
-   - 5 C shader modes (`SHADER_CLEAR_CLOUDS`, `SHADER_DAWN_MIST`, `SHADER_GOLDEN_GLOW`,
-     `SHADER_NIGHT_AURORA`, `SHADER_WET_STORM`, plus `SHADER_NATIVE_WEATHER` passthrough).
-
-4. Real-Time 60 FPS VRAM Water Palette Shimmer (`Hook7_WaterShimmer`):
-   - Smooth time-of-day and weather-reactive water palette shimmer with `DC_FlushRange`.
+Overworld visual engine (lighting, cloud shadows, water shimmer, 3D camera)
+and battle background patches for Pokémon Platinum / ProjectPM.
 """
 import os
 import shutil
@@ -45,13 +18,13 @@ LEGACY_ORIGIN_VISUAL = 0x023DF840
 LEGACY_ORIGINS_VISUAL = (0x023DE000, 0x023DE800, 0x023DEA80, 0x023DF840)
 VISUAL_MAGIC = 0x354E4547  # "GEN5"
 
-# Precompiled C symbol table (identical layout for FR/PPM 0.4.6, 0.4.5 and US profiles)
+# Precompiled C symbol table (identical layout for 0.4.7, 0.4.6, 0.4.5 and US profiles)
 DEFAULT_C_LABELS: Dict[str, int] = {
     "gVisualState":        0x023DE000,
-    "Hook3_AreaLightFree": 0x023DE0A0,
-    "Hook7_WaterShimmer":  0x023DE0A8,
-    "Hook1_FieldUpdate":   0x023DE0BC,
-    "Hook2_AreaLightApply": 0x023DE6B0,
+    "Hook3_AreaLightFree": 0x023DE08C,
+    "Hook7_WaterShimmer":  0x023DE094,
+    "Hook1_FieldUpdate":   0x023DE0A8,
+    "Hook2_AreaLightApply": 0x023DE6C4,
     "Hook5_BillboardMtx":  0x023DE844,
 }
 
@@ -580,60 +553,6 @@ def _build_visual_engine_payload(p: Dict[str, int], preset: str = "dynamic") -> 
     return bytes(buf), labels
 
 
-def _patch_diagonal_movement(
-    arm9_buf: bytearray,
-    is_ppm_or_fr: int,
-    enable: bool = False,
-    labels: Optional[Dict[str, int]] = None,
-) -> None:
-    """
-    Ensures `PlayerAvatar_UpdateMoveState`, `PlayerAvatar_CalcFaceDirectionInternal`,
-    `StepMovement_Init`, and `StepMovement_Tick` in ARM9 are 100% restored to original
-    vanilla Pokémon Platinum behavior.
-    """
-    (void_enable := enable, void_labels := labels)
-    ums_sig = bytes.fromhex("70b50c1c0021c943051c8c4204d10021")
-    face_sig = bytes.fromhex(
-        "2021014201d0022070471021084201d0032100e01139081c70470000"
-        "4021014201d0002070478021084201d0012100e08139081c70470000"
-    )
-    step_body_sig = bytes.fromhex("02a9098a0180478044608660281c211c")
-
-    ums_off = arm9_buf.find(ums_sig)
-    face_off = arm9_buf.find(face_sig)
-    step_body_off = arm9_buf.find(step_body_sig)
-    if ums_off == -1 or face_off == -1 or step_body_off < 16:
-        return
-
-    calc_off = face_off + 56
-    patch_off = calc_off + 0x26
-    step_init_off = step_body_off - 16
-    step_tick_off = step_init_off + 0x48
-
-    if is_ppm_or_fr:
-        vanilla_60 = bytes.fromhex(
-            "301cfdf700fb071c301cfdf7c8fb0090301cfdf7c8fb0021c9438f420cd00099"
-            "8c4203d1854201d1381cf8bd854201d0281cf8bd201cf8bd281cf8bd"
-        )
-        vanilla_step_tick_8 = bytes.fromhex("38b5051cfdf72cf8")
-    else:
-        vanilla_60 = bytes.fromhex(
-            "301cfdf790fb071c301cfdf732fc0090301cfdf732fc0021c9438f420cd00099"
-            "8c4203d1854201d1381cf8bd854201d0281cf8bd201cf8bd281cf8bd"
-        )
-        vanilla_step_tick_8 = bytes.fromhex("38b5051cfdf77cf8")
-
-    vanilla_calc_8 = bytes.fromhex("f8b5151c061c281c")
-    vanilla_step_init_12 = bytes.fromhex("f8b50c1c0c21051c161c1f1c")
-
-    # Always restore 100% vanilla movement in ARM9
-    arm9_buf[ums_off + 0x3A:ums_off + 0x3C] = b"\x0a\xd0"
-    arm9_buf[calc_off:calc_off + 8] = vanilla_calc_8
-    arm9_buf[patch_off:patch_off + 60] = vanilla_60
-    arm9_buf[step_init_off:step_init_off + 12] = vanilla_step_init_12
-    arm9_buf[step_tick_off:step_tick_off + 8] = vanilla_step_tick_8
-
-
 def _patch_fldtanime_narc(rom: ndspy.rom.NintendoDSRom, enable: bool) -> int:
     """
     Adjusts or restores outdoor water/flower texture animation cadence in `data/fldtanime.narc`.
@@ -779,14 +698,8 @@ def apply_visual_engine_patch(
     preset: str = "dynamic",
 ) -> bool:
     """
-    Installs (`enable=True`) or completely reverts (`enable=False`) our custom C-compiled
-    Next-Gen 60 FPS Dynamic Visual Engine (`visual_engine.c` at `0x023DE000`):
-    - Zero-Flicker Solar/Lunar Interpolation + Hardware Specular Bloom + 5 Weather Shaders
-      + Drifting 7-Bit Cloud Shadows (`Hook1_FieldUpdate`, `Hook2_AreaLightApply`, `Hook3_AreaLightFree`).
-    - Real-time 60 FPS VRAM Water Shimmer (`Hook7_WaterShimmer`) + `fldtanime.narc`.
-    - 3D Billboard Pitch & Yaw Alignment (`Hook5_BillboardMtx`).
-    - Leaves the Overlay 5 camera table (`ov5_cam_table_off`) untouched so Visual+ 3D Camera
-      remains completely independent.
+    Installs (enable=True) or reverts (enable=False) the overworld visual engine
+    (lighting, cloud shadows, water shimmer, billboard alignment) at 0x023DE000.
     """
     def log(msg: str):
         if log_cb:
@@ -822,54 +735,6 @@ def apply_visual_engine_patch(
                         data_cursor += sz
                         if dest not in LEGACY_ORIGINS_VISUAL:
                             custom_entries.append((dest, blob, bss))
-
-        # 2. Heal any legacy hook artifacts in ARM9 and Overlay 5 before applying/restoring
-        d1_off = p["bb_draw_hook1_off"]
-        if p["is_ppm_or_fr"] and d1_off > 0 and arm9_buf[d1_off + 4:d1_off + 6] == b"\x20\x1c":
-            if arm9_buf[d1_off + 10:d1_off + 14] == b"\x01\x28\x01\xd1":
-                arm9_buf[d1_off + 6:d1_off + 10] = b"\xb5\x30\x00\x78"
-        if len(arm9_buf) >= 0x100938 and arm9_buf[0x1008C0:0x1008C6] == b"\x38\xb5\x04\x1c\x15\x1c":
-            arm9_buf[0x1008C0:0x100938] = b"\x00" * 0x78
-
-        ov5_buf[p["ov5_al_free_assert_off"]:p["ov5_al_free_assert_off"] + 8] = p["ov5_al_free_assert_bytes"]
-        if p["is_ppm_or_fr"]:
-            ov5_buf[p["ov5_legacy_prop_off"]:p["ov5_legacy_prop_off"] + 4] = b"\xf3\xf7\xf4\xfa"
-        else:
-            ov5_buf[p["ov5_legacy_prop_off"]:p["ov5_legacy_prop_off"] + 4] = b"\xf4\xf7\x82\xf8"
-        ov5_buf[p["ov5_al_free_tail_off"] - 2:p["ov5_al_free_tail_off"]] = b"\x00\x20"
-        # Restore AreaLightManager_ApplyActiveTemplateToAreaModelAttrs first 12 bytes and AreaLightTemplate_Init prologue
-        ov5_buf[p["ov5_al_apply_off"] - 12:p["ov5_al_apply_off"]] = (
-            b"\x03\x1c\x99\x68\x30\x20\x48\x43\x5a\x68\xd9\x68"
-        )
-        ov5_buf[p["ov5_al_apply_bl_off"]:p["ov5_al_apply_bl_off"] + 8] = (
-            b"\x10\xb5\x04\x1c\x00\x21\x40\x22"
-        )
-
-        # Locate all G3dRenderer_Draw call sites inside BillboardList_Draw dynamically
-        bb_draw_sites: List[int] = []
-        scan_start = p["bb_mtx_hook_off"]
-        scan_end = min(len(arm9_buf) - 16, scan_start + 0xB8)
-        idx = scan_start
-        while idx < scan_end:
-            pos = arm9_buf.find(b"\x30\x30\x21\x1c", idx, scan_end)
-            if pos == -1:
-                break
-            pos_330c = arm9_buf.find(b"\x0c\x33", pos + 4, pos + 10)
-            if pos_330c != -1:
-                bb_draw_sites.append(pos_330c + 2)
-            idx = pos + 4
-
-        # Always restore Hook4 (prop), Hook6 (billboard draw), and Hook8 (breeze leaf particles) to vanilla
-        for site_off in bb_draw_sites:
-            arm9_buf[site_off:site_off + 4] = _make_thumb_bl(
-                0x02000000 + site_off, p["g3d_renderer_draw"], is_blx=False
-            )
-        ov5_buf[p["ov5_prop_off"]:p["ov5_prop_off"] + 4] = _make_thumb_bl(
-            ov5_base + p["ov5_prop_off"], p["prop_get_mat_shp"], is_blx=False
-        )
-        ov5_buf[p["ov5_draw3d_off"]:p["ov5_draw3d_off"] + 4] = _make_thumb_bl(
-            ov5_base + p["ov5_draw3d_off"], p["draw3d_part_fn"], is_blx=False
-        )
 
         if enable:
             payload, labels = _build_visual_engine_payload(p, preset=preset)
@@ -911,9 +776,6 @@ def apply_visual_engine_patch(
             # Update data/fldtanime.narc water/flower cadence
             _patch_fldtanime_narc(rom, enable=True)
 
-            # Restore vanilla movement in ARM9
-            _patch_diagonal_movement(arm9_buf, p["is_ppm_or_fr"], enable=True, labels=labels)
-
             log(
                 f"Moteur Visuel 60 FPS (Éclairage & Nuages) installé ({len(payload)} octets à 0x023DE000, preset={preset})."
             )
@@ -949,9 +811,6 @@ def apply_visual_engine_patch(
 
             # Restore vanilla data/fldtanime.narc delays
             _patch_fldtanime_narc(rom, enable=False)
-
-            # Restore vanilla diagonal movement in ARM9
-            _patch_diagonal_movement(arm9_buf, p["is_ppm_or_fr"], enable=False)
 
             log("Moteur Visuel 60 FPS (Éclairage & Nuages) désactivé (éclairage et animations d'origine restaurés).")
 

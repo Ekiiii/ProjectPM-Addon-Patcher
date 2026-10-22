@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 hm_patcher.py
-In-game Free HMs & Poké-Rider mod for Pokémon Platinum (Project PM):
-- Allows field moves (Cut, Rock Smash, Strength, Surf, Waterfall, Rock Climb, Flash, Defog)
-  to be used directly on overworld obstacles by pressing 'A' without teaching them to any Pokémon,
-  as long as the player has obtained the required Gym Badge.
-- Removes the HM move deletion restriction, allowing players to freely forget or overwrite
-  any HM with TMs or level-up moves without visiting the Move Deleter in Canalave City.
-- Completely self-contained within ARM9 binary modifications.
+Free HMs & Poké-Rider patch for Pokémon Platinum (ProjectPM).
+Allows using field moves on overworld obstacles with the required Gym Badge
+and removes the HM move deletion restriction in ARM9.
 """
 import os
 from typing import Optional, Callable, Union

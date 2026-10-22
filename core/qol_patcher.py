@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 qol_patcher.py
 Quality of Life (QoL) Patches for Pokémon Platinum (ProjectPM):
@@ -15,9 +14,7 @@ import ndspy.code
 
 from core.i18n import get_lang
 
-# -----------------------------------------------------------------------------
 # 1. FAST TEXT PATCH (Instant text rendering)
-# -----------------------------------------------------------------------------
 # Options_TextFrameDelay at RAM 0x02028BA0 (ARM9 offset 0x28BA0)
 # Vanilla: push {r3, lr}; bl #0x2028b84 (Options_TextSpeed)
 # Patch:   movs r0, #0; bx lr (00 20 70 47) -> returns 0-frame delay
@@ -128,9 +125,7 @@ def apply_fast_text_patch(
         return False
 
 
-# -----------------------------------------------------------------------------
 # 2. TRADE EVOLUTIONS WITHOUT TRADING (Trade-Evos Fix)
-# -----------------------------------------------------------------------------
 # Modifies poketool/personal/evo.narc:
 # Method 5 (EVO_TRADE) -> Method 4 (EVO_LEVEL) at level 36
 # Method 6 (EVO_TRADE_ITEM) -> Method 7 (EVO_ITEM) with matching item
@@ -277,18 +272,71 @@ def apply_trade_evos_patch(
         return False
 
 
-# -----------------------------------------------------------------------------
 # 3. INFINITE TMS (Gen 5+ Style)
-# -----------------------------------------------------------------------------
+TMS_CALLBACK_OFF_045 = 0x8C77E
+TMS_CALLBACK_OFF_046 = 0x8C9D2
+TMS_CALLBACK_OFF_047 = 0x8CB06
+
+TMS_CLEAN_BYTES_045 = bytes.fromhex("281c00f098f9")  # Clean base: adds r0, r5, #0; bl #0x208cab4
+TMS_CLEAN_BYTES_046 = bytes.fromhex("281c00f098f9")  # Clean base: adds r0, r5, #0; bl #0x208cd08
+TMS_CLEAN_BYTES_047 = bytes.fromhex("281c00f098f9")  # Clean base: adds r0, r5, #0; bl #0x208ce3c
+TMS_BL_BYTES_045 = TMS_CLEAN_BYTES_045  # Backwards compatibility alias
+TMS_BL_BYTES_046 = TMS_CLEAN_BYTES_046
+TMS_BL_BYTES_047 = TMS_CLEAN_BYTES_047
+TMS_NOP_BYTES    = bytes.fromhex("002000200020")  # 3x 16-bit Thumb NOP: movs r0, #0; movs r0, #0; movs r0, #0
+
+
+def _get_tms_callback_params(rom: Optional[ndspy.rom.NintendoDSRom], arm9: bytes) -> tuple:
+    if rom is not None:
+        try:
+            ov16 = rom.loadArm9Overlays().get(16)
+            if ov16:
+                if ov16.ramAddress == 0x0224A700:
+                    return TMS_CALLBACK_OFF_045, TMS_CLEAN_BYTES_045
+                elif ov16.ramAddress == 0x0224A920:
+                    return TMS_CALLBACK_OFF_046, TMS_CLEAN_BYTES_046
+                elif ov16.ramAddress == 0x0224AAE0:
+                    return TMS_CALLBACK_OFF_047, TMS_CLEAN_BYTES_047
+        except Exception:
+            pass
+
+    if _is_arm9_047(arm9):
+        return TMS_CALLBACK_OFF_047, TMS_CLEAN_BYTES_047
+    elif _is_arm9_045(arm9):
+        return TMS_CALLBACK_OFF_045, TMS_CLEAN_BYTES_045
+    else:
+        if len(arm9) >= 0xBB0:
+            bss = struct.unpack_from("<I", arm9, 0xBAC)[0]
+            if bss == 0x021093A0 or len(arm9) == 0x109A78:
+                return TMS_CALLBACK_OFF_046, TMS_CLEAN_BYTES_046
+        return TMS_CALLBACK_OFF_047, TMS_CLEAN_BYTES_047
+
+
 def is_infinite_tms_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
-    """Checks if the Infinite TMs patch is active."""
+    """Checks if the Infinite TMs patch is active in ARM9."""
     try:
         if isinstance(rom_input, str):
-            if os.path.isfile(rom_input):
-                with open(rom_input, "rb") as f:
-                    f.seek(0x1E0)
-                    tag = f.read(8)
-                return tag[:4] == b"PPM\x01" and bool(tag[4] & 0x08)
+            if not os.path.isfile(rom_input):
+                return False
+            rom = ndspy.rom.NintendoDSRom.fromFile(rom_input)
+        else:
+            rom = rom_input
+
+        arm9 = rom.arm9
+        cb_off, clean_bytes = _get_tms_callback_params(rom, arm9)
+        patch_len = len(TMS_NOP_BYTES)
+        if len(arm9) >= cb_off + patch_len:
+            cur = arm9[cb_off:cb_off + patch_len]
+            if cur == TMS_NOP_BYTES:
+                return True
+            if cur == clean_bytes:
+                return False
+
+        if isinstance(rom_input, str) and os.path.isfile(rom_input):
+            with open(rom_input, "rb") as f:
+                f.seek(0x1E0)
+                tag = f.read(8)
+            return tag[:4] == b"PPM\x01" and bool(tag[4] & 0x08)
     except Exception:
         pass
     return False
@@ -300,47 +348,66 @@ def apply_infinite_tms_patch(
     output_path: Optional[str] = None,
     log_cb: Optional[Callable[[str], None]] = None
 ) -> bool:
-    """Applies or disables Infinite TMs."""
+    """
+    Applies or disables Infinite TMs via real ARM9 binary patching.
+    - enable=True: NOPs out call to Bag_TryRemoveItem (00 20 00 20 00 20).
+    - enable=False: Restores clean base instructions (28 1c 00 f0 98 f9).
+    Supports versions 0.4.5, 0.4.6, and 0.4.7.
+    """
     def log(msg: str):
         if log_cb:
             log_cb(msg)
+
     is_fr = (get_lang() == "fr")
-    if enable:
-        log("[CT Infinies] Patch CT Infinies (Style 5G+) activé." if is_fr else "[Infinite TMs] Infinite TMs patch enabled.")
-    else:
-        log("[CT Infinies] CT consommables standard restaurées." if is_fr else "[Infinite TMs] Consumable TMs restored.")
-    return True
+
+    try:
+        is_path = isinstance(rom_input, str)
+        if is_path:
+            if not os.path.isfile(rom_input):
+                log(f"[Infinite TMs] Error: ROM not found: {rom_input}")
+                return False
+            rom = ndspy.rom.NintendoDSRom.fromFile(rom_input)
+            save_path = output_path or rom_input
+        else:
+            rom = rom_input
+            save_path = output_path
+
+        arm9 = bytearray(rom.arm9)
+        cb_off, clean_bytes = _get_tms_callback_params(rom, arm9)
+        patch_len = len(TMS_NOP_BYTES)
+
+        if len(arm9) < cb_off + patch_len:
+            log("[Infinite TMs] Error: ARM9 binary too small.")
+            return False
+
+        if enable:
+            arm9[cb_off:cb_off + patch_len] = TMS_NOP_BYTES
+            msg = (
+                "[CT Infinies] Patch CT Infinies (Style 5G+) activé."
+                if is_fr else
+                "[Infinite TMs] Infinite TMs patch enabled."
+            )
+        else:
+            arm9[cb_off:cb_off + patch_len] = clean_bytes
+            msg = (
+                "[CT Infinies] CT consommables standard restaurées."
+                if is_fr else
+                "[Infinite TMs] Consumable TMs restored."
+            )
+        log(msg)
+
+        rom.arm9 = bytes(arm9)
+        if is_path and save_path:
+            rom.saveToFile(save_path)
+
+        return True
+    except Exception as e:
+        log(f"[Infinite TMs] Exception: {e}")
+        return False
 
 
-# -----------------------------------------------------------------------------
-# 4. RUN INDOORS (Running everywhere)
-# -----------------------------------------------------------------------------
-def is_run_indoors_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
-    """Checks if running indoors is active."""
-    return False
+# 4. FAST HP & EXP BAR ANIMATION (4x Speed / Instant)
 
-
-def apply_run_indoors_patch(
-    rom_input: Union[str, ndspy.rom.NintendoDSRom],
-    enable: bool = True,
-    output_path: Optional[str] = None,
-    log_cb: Optional[Callable[[str], None]] = None
-) -> bool:
-    """Applies or disables Running Indoors."""
-    def log(msg: str):
-        if log_cb:
-            log_cb(msg)
-    is_fr = (get_lang() == "fr")
-    if enable:
-        log("[Course] Course en intérieur activée." if is_fr else "[Running] Running indoors enabled.")
-    else:
-        log("[Course] Déplacement standard restauré." if is_fr else "[Running] Standard movement restored.")
-    return True
-
-
-# -----------------------------------------------------------------------------
-# 5. FAST HP & EXP BAR ANIMATION (4x Speed / Instant)
-# -----------------------------------------------------------------------------
 # Modifies Overlay 16:
 # - HP fillOffset (seq_hp): 1 HP/frame -> 4 HP/frame
 # - EXP fillOffset (seq_exp): shr 16 -> shr 14 (4x step per frame)
@@ -482,9 +549,7 @@ def apply_fast_healthbar_patch(
         return False
 
 
-# -----------------------------------------------------------------------------
 # 6. MOVE TYPE EFFECTIVENESS DISPLAY IN BATTLE (Gen 4 Pixel-Art Capsule Badges)
-# -----------------------------------------------------------------------------
 # Compiled from payloads/type_eff_badge.c with arm-none-eabi-gcc -mcpu=arm946e-s -mthumb -Os
 # Renders authentic Gen 4 pixel-art capsule badges next to the move name:
 #   [x4] / [x2]   = Green capsule (Super effective)
@@ -837,7 +902,7 @@ def apply_type_effectiveness_patch(
 
             # Hook 1: PrepareTextWindow call in BattleSubscreen_UpdateMoveDisplay -> ORIGIN_TYPE_EFF
             ov16_data[call_pos:call_pos + 4] = _make_thumb_bl(ov16.ramAddress + call_pos, ORIGIN_TYPE_EFF)
-            # Replace static move cache check (beq -> mov r8, r8 = c0 46, real ARMv5TE Thumb NOP!)
+            # Replace static move cache check (beq -> mov r8, r8 = c0 46, Thumb NOP)
             ov16_data[hook_pos - 6:hook_pos - 4] = bytes.fromhex("c046")
 
             # Hook 2: BattleSubscreen_NewFontOAM call in BattleSubscreen_DrawTargetSelectMenu -> ORIGIN_TYPE_EFF + 0x14
@@ -891,7 +956,7 @@ def apply_type_effectiveness_patch(
         high_arena_dests = [d & ~0x1F for d, _, _ in custom_entries if 0x023C0000 <= d < 0x023E0000]
         arena_hi = min(high_arena_dests) if high_arena_dests else 0x023E0000
         struct.pack_into("<I", new_arm9, LIT_MAIN_ARENA_HI_OFF, arena_hi)
-        # Golden Rule: 0x0BAC MUST ALWAYS remain vanilla bss_start
+        # Keep vanilla bss_start at 0x0BAC so CRT0 does not zero out appended autoload tables
         struct.pack_into("<I", new_arm9, 0xBAC, VANILLA_BSS_START)
 
         heap_param_pat = bytes.fromhex("ffffffff00d2000000000000000e0200000000001000000000000000")
@@ -935,493 +1000,8 @@ def apply_type_effectiveness_patch(
         return False
 
 
+# 6. INFINITE RARE CANDY & EMPTY POCKET OOB FIX
 
-# -----------------------------------------------------------------------------
-# 7. FAST OVERWORLD TRANSITIONS (Instant doors, stairs & gate fades)
-# -----------------------------------------------------------------------------
-# Safely patches Overlay 5 (Field overlay) transition step counts:
-# 1. FieldMap_FadeScreen (doors & warps): 6 steps -> 1 step
-# 2. Stairs transitions (KAIDAN): 6 steps -> 1 step
-# 3. Gate & elevator transitions: 6 steps -> 1 step
-# Global StartScreenFade in ARM9 is kept 100% VANILLA to prevent title screen and cutscene freezes.
-FAST_TRANSITIONS_PAT = bytes.fromhex("f0b587b0051c0c980c1c171c1e1c")
-FAST_TRANSITIONS_OLD_PATCH = bytes.fromhex("01200c900d9000bf00bf00bf00bf00bf00bf")
-FAST_TRANSITIONS_VANILLA_FR_US = bytes.fromhex("002801d113f0f5fb0d98002801d113f0f0fb")
-FAST_TRANSITIONS_VANILLA_PPM   = bytes.fromhex("002801d113f037ff0d98002801d113f032ff")
-
-OV5_LEGACY_PATTERNS = [
-    # Legacy FieldMap fades that desynchronized battle transitions
-    (bytes.fromhex("062000900121019104200290"), bytes.fromhex("012000900121019104200290"), "FieldMap In"),
-    (bytes.fromhex("062000900120019004200290"), bytes.fromhex("012000900120019004200290"), "FieldMap Out"),
-]
-
-OV5_TRANSITION_PATTERNS = [
-    # (Vanilla pattern, Patched pattern, Description)
-    (bytes.fromhex("06200090012101910b200290"), bytes.fromhex("01200090012101910b200290"), "Stairs In"),
-    (bytes.fromhex("06200090012001900b200290"), bytes.fromhex("01200090012001900b200290"), "Stairs Out"),
-    (bytes.fromhex("0620009000210120019004200290"), bytes.fromhex("0120009000210120019004200290"), "Gates In"),
-    (bytes.fromhex("062000900120019004210291"), bytes.fromhex("012000900120019004210291"), "Gates Out"),
-]
-
-
-def is_fast_transitions_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
-    """Checks if Fast Overworld Transitions patch is active in Overlay 5."""
-    try:
-        rom = ndspy.rom.NintendoDSRom.fromFile(rom_input) if isinstance(rom_input, str) else rom_input
-        # Check if old ARM9 hook was present
-        pos = rom.arm9.find(FAST_TRANSITIONS_PAT)
-        if pos != -1 and rom.arm9[pos + 14:pos + 20] == bytes.fromhex("01200c900d90"):
-            return True
-
-        ovs = rom.loadArm9Overlays([5])
-        if 5 not in ovs:
-            return False
-        ov5_data = ovs[5].data
-        return OV5_TRANSITION_PATTERNS[0][1] in ov5_data
-    except Exception:
-        return False
-
-
-def apply_fast_transitions_patch(
-    rom_input: Union[str, ndspy.rom.NintendoDSRom],
-    enable: bool = True,
-    output_path: Optional[str] = None,
-    log_cb: Optional[Callable[[str], None]] = None
-) -> bool:
-    """
-    Applies or removes the Fast Transitions patch in Overlay 5 (Field transitions).
-    Safely reduces door, warp, stairs, and gate screen transitions to 1 frame.
-    Also automatically cleans up any legacy global ARM9 StartScreenFade patch to guarantee
-    flawless title screen and opening cutscene execution.
-    """
-    def log(msg: str):
-        if log_cb:
-            log_cb(msg)
-
-    is_fr = (get_lang() == "fr")
-
-    try:
-        is_path = isinstance(rom_input, str)
-        if is_path:
-            if not os.path.isfile(rom_input):
-                log(f"[Fast Transitions] Error: ROM not found: {rom_input}")
-                return False
-            rom = ndspy.rom.NintendoDSRom.fromFile(rom_input)
-            save_path = output_path or rom_input
-        else:
-            rom = rom_input
-            save_path = output_path
-
-        arm9 = bytearray(rom.arm9)
-        # 1. Always ensure ARM9 StartScreenFade is clean vanilla
-        pos = arm9.find(FAST_TRANSITIONS_PAT)
-        if pos != -1:
-            hook_pos = pos + 14
-            if arm9[hook_pos:hook_pos + len(FAST_TRANSITIONS_OLD_PATCH)] == FAST_TRANSITIONS_OLD_PATCH:
-                vanilla_bytes = FAST_TRANSITIONS_VANILLA_PPM if pos == 0xF5C8 else FAST_TRANSITIONS_VANILLA_FR_US
-                arm9[hook_pos:hook_pos + len(vanilla_bytes)] = vanilla_bytes
-                log("[Fast Transitions] Rétablissement de la fonction StartScreenFade ARM9 d'origine (anti-freeze écran titre)." if is_fr else "[Fast Transitions] Restored vanilla ARM9 StartScreenFade (prevents title screen freeze).")
-
-        # 2. Patch or restore Overlay 5 field transitions
-        ovs = rom.loadArm9Overlays()
-        if 5 not in ovs:
-            log("[Fast Transitions] Error: Overlay 5 not found in ROM.")
-            return False
-
-        ov5 = ovs[5]
-        ov5_data = bytearray(ov5.data)
-
-        # Always ensure legacy FieldMap In / FieldMap Out are 100% clean vanilla (anti-freeze battle transitions)
-        for van_pat, patch_pat, desc in OV5_LEGACY_PATTERNS:
-            idx = ov5_data.find(patch_pat)
-            if idx != -1:
-                ov5_data[idx:idx + len(van_pat)] = van_pat
-
-        num_patched = 0
-
-        for van_pat, patch_pat, desc in OV5_TRANSITION_PATTERNS:
-            if enable:
-                idx = ov5_data.find(van_pat)
-                if idx != -1:
-                    ov5_data[idx:idx + len(patch_pat)] = patch_pat
-                    num_patched += 1
-            else:
-                idx = ov5_data.find(patch_pat)
-                if idx != -1:
-                    ov5_data[idx:idx + len(van_pat)] = van_pat
-                    num_patched += 1
-
-        ov5.data = bytes(ov5_data)
-        rom.files[ov5.fileID] = ov5.save()
-        rom.arm9OverlayTable = ndspy.code.saveOverlayTable(ovs)
-        rom.arm9 = bytes(arm9)
-
-        if enable:
-            msg = (
-                f"[Transitions Rapides] Patch transitions d'environnement appliqué ({num_patched} fondus de portes, escaliers et péages accélérés à 1 frame)."
-                if is_fr else
-                f"[Fast Transitions] Fast field transitions patch applied ({num_patched} doors, stairs & gate fades accelerated to 1 frame)."
-            )
-        else:
-            msg = (
-                "[Transitions Rapides] Vitesse des transitions de terrain d'origine restaurée."
-                if is_fr else
-                "[Fast Transitions] Standard field transition speeds restored."
-            )
-        log(msg)
-
-        if is_path and save_path:
-            rom.saveToFile(save_path)
-
-        return True
-    except Exception as e:
-        log(f"[Fast Transitions] Exception: {e}")
-        return False
-
-
-# -----------------------------------------------------------------------------
-# 8. DYNAMIC TRAINER LEVEL SCALING
-# -----------------------------------------------------------------------------
-LEVEL_SCALING_MAGIC = bytes.fromhex("ffb5002d6bd02868")
-LEVEL_SCALING_HOOK_SITE = 0x4E  # Offset in Overlay 16
-LEVEL_SCALING_VANILLA_BYTES = bytes.fromhex("29680420")  # ldr r1, [r5]; movs r0, #4
-
-LEVEL_SCALING_ROUTINE = bytes.fromhex(
-    "ffb5002d6bd028680121084267d00421084264d108210902084260d16e68002e5dd07768002f5add062f58dc"
-    "00240023021c08328c21105c002800dd041cec320133bb42f7db002c4ad001250598a90004310958002e40d0"
-    "7768002f3ddd062f3bdc00220023061c08308c21095c012800dd0a1cec300133bb42f7dba21a002a2bdd0023"
-    "08368c21305c002821d000b48118642900dd64218c20315400bc0cbe8e24325b902c01d1012a0ed00a4303b4"
-    "00231021c0035b00824201d3121a5b1c4008013df7d11a1c03bc325302349c2ce8db0cbeec360133bb42d7db"
-    "0135032db7dbffbc2968042000bd"
-)
-
-
-def is_level_scaling_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
-    """Checks if the broken Trainer Level Scaling hook is present in Overlay 16."""
-    try:
-        rom = ndspy.rom.NintendoDSRom.fromFile(rom_input) if isinstance(rom_input, str) else rom_input
-        ovs = rom.loadArm9Overlays([16])
-        if 16 not in ovs:
-            return False
-        ov16 = ovs[16]
-        if len(ov16.data) < LEVEL_SCALING_HOOK_SITE + 4:
-            return False
-        return ov16.data[LEVEL_SCALING_HOOK_SITE:LEVEL_SCALING_HOOK_SITE + 4] != LEVEL_SCALING_VANILLA_BYTES
-    except Exception:
-        return False
-
-
-def apply_level_scaling_patch(
-    rom_input: Union[str, ndspy.rom.NintendoDSRom],
-    enable: bool = True,
-    output_path: Optional[str] = None,
-    log_cb: Optional[Callable[[str], None]] = None
-) -> bool:
-    """
-    Safely handles Dynamic Trainer Level Scaling.
-    Guarantees BattleSystem_Main State 0 is 100% vanilla to prevent black screens and freezes on battle entry.
-    """
-    def log(msg: str):
-        if log_cb:
-            log_cb(msg)
-
-    is_fr = (get_lang() == "fr")
-
-    try:
-        is_path = isinstance(rom_input, str)
-        if is_path:
-            if not os.path.isfile(rom_input):
-                log(f"[Level Scaling] Error: ROM not found: {rom_input}")
-                return False
-            rom = ndspy.rom.NintendoDSRom.fromFile(rom_input)
-            save_path = output_path or rom_input
-        else:
-            rom = rom_input
-            save_path = output_path
-
-        ovs = rom.loadArm9Overlays()
-        if 16 not in ovs:
-            log("[Level Scaling] Error: Overlay 16 not found in ROM.")
-            return False
-
-        ov16 = ovs[16]
-        ov16_data = bytearray(ov16.data)
-
-        if len(ov16_data) < LEVEL_SCALING_HOOK_SITE + 4:
-            log("[Level Scaling] Error: Overlay 16 binary too small.")
-            return False
-
-        # Always ensure Overlay 16 BattleSystem_Main State 0 is 100% clean vanilla!
-        # Prevents battle init crashes, black screens, and freezes on trainer encounters.
-        if ov16_data[LEVEL_SCALING_HOOK_SITE:LEVEL_SCALING_HOOK_SITE + 4] != LEVEL_SCALING_VANILLA_BYTES:
-            ov16_data[LEVEL_SCALING_HOOK_SITE:LEVEL_SCALING_HOOK_SITE + 4] = LEVEL_SCALING_VANILLA_BYTES
-            log("[Level Scaling] Rétablissement du code BattleSystem_Main d'origine (anti-freeze combat)." if is_fr else "[Level Scaling] Restored vanilla BattleSystem_Main (prevents battle freeze).")
-
-        # Clean up legacy routine from Overlay 16 if present
-        routine_pos = ov16_data.find(LEVEL_SCALING_MAGIC)
-        if routine_pos != -1:
-            if routine_pos + len(LEVEL_SCALING_ROUTINE) == len(ov16_data):
-                ov16_data = bytearray(ov16_data[:routine_pos].rstrip(b"\x00"))
-                if len(ov16_data) % 4 != 0:
-                    ov16_data.extend(b"\x00" * (4 - (len(ov16_data) % 4)))
-            else:
-                ov16_data[routine_pos:routine_pos + len(LEVEL_SCALING_ROUTINE)] = b"\x00" * len(LEVEL_SCALING_ROUTINE)
-
-        if enable:
-            msg = (
-                "[Level Scaling] Échelle de niveau dynamique (Pass-through sécurisé actif, combats 100% stables)."
-                if is_fr else
-                "[Level Scaling] Dynamic trainer level scaling (Safe pass-through active, 100% stable battles)."
-            )
-            log(msg)
-        else:
-            msg = (
-                "[Level Scaling] Niveaux d'origine des dresseurs restaurés."
-                if is_fr else
-                "[Level Scaling] Standard trainer levels restored."
-            )
-            log(msg)
-
-        ov16.data = bytes(ov16_data)
-        rom.files[ov16.fileID] = ov16.save()
-        rom.arm9OverlayTable = ndspy.code.saveOverlayTable(ovs)
-
-        if is_path and save_path:
-            rom.saveToFile(save_path)
-
-        return True
-    except Exception as e:
-        log(f"[Level Scaling] Exception: {e}")
-        return False
-
-
-# -----------------------------------------------------------------------------
-# 9. QUICK OVERWORLD SHORTCUTS (L = Town Map / R = Bicycle)
-# -----------------------------------------------------------------------------
-LR_OV5_PAT = bytes.fromhex("022080023042")      # movs r0, #2; lsls r0, r0, #10; tst r0, r6
-LR_OV5_PATCH = bytes.fromhex("0b2000023042")    # movs r0, #0x0b; lsls r0, r0, #8; tst r0, r6
-LR_ARM9_PAT = bytes.fromhex("77210901405870477722120181507047")
-LR_ARM9_VANILLA = bytes.fromhex("7721090140587047")
-LR_WEATHER_VANILLA = bytes.fromhex("6630008870470000")
-LR_ROUTINE_MAGIC = bytes.fromhex("06b50c4909880122")
-
-LR_ARM9_ROUTINE_OFFSET_045 = 0x100880
-LR_ARM9_ROUTINE_ADDR_045   = 0x02100880
-LR_ARM9_ROUTINE_OFFSET     = 0x100AA4
-LR_ARM9_ROUTINE_ADDR       = 0x02100AA4
-LR_ARM9_ROUTINE_OFFSET_047 = 0x100BD8
-LR_ARM9_ROUTINE_ADDR_047   = 0x02100BD8
-
-LR_SHORTCUTS_ROUTINE_045 = bytes.fromhex(
-    "06b50c49098801221202114204d001200002c23006bc00bd02221202114204d001200002ba3006bc00bd77210901405806bc00bd20eb1c02"
-)
-LR_SHORTCUTS_ROUTINE = bytes.fromhex(
-    "06b50c49098801221202114204d001200002c23006bc00bd02221202114204d001200002ba3006bc00bd77210901405806bc00bd40ed1c02"
-)
-LR_SHORTCUTS_ROUTINE_047 = bytes.fromhex(
-    "06b50c49098801221202114204d001200002c23006bc00bd02221202114204d001200002ba3006bc00bd77210901405806bc00bd80ee1c02"
-)
-
-
-def _get_lr_params(arm9: bytes):
-    if _is_arm9_047(arm9):
-        return LR_ARM9_ROUTINE_OFFSET_047, LR_ARM9_ROUTINE_ADDR_047, LR_SHORTCUTS_ROUTINE_047
-    if _is_arm9_045(arm9):
-        return LR_ARM9_ROUTINE_OFFSET_045, LR_ARM9_ROUTINE_ADDR_045, LR_SHORTCUTS_ROUTINE_045
-    return LR_ARM9_ROUTINE_OFFSET, LR_ARM9_ROUTINE_ADDR, LR_SHORTCUTS_ROUTINE
-
-
-def is_lr_shortcuts_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
-    """Checks if Quick L/R Shortcuts patch is active in Overlay 5 and ARM9."""
-    try:
-        rom = ndspy.rom.NintendoDSRom.fromFile(rom_input) if isinstance(rom_input, str) else rom_input
-        ovs = rom.loadArm9Overlays([5])
-        if 5 not in ovs:
-            return False
-        return LR_OV5_PATCH in ovs[5].data
-    except Exception:
-        return False
-
-
-def apply_lr_shortcuts_patch(
-    rom_input: Union[str, ndspy.rom.NintendoDSRom],
-    enable: bool = True,
-    output_path: Optional[str] = None,
-    log_cb: Optional[Callable[[str], None]] = None
-) -> bool:
-    """
-    Applies or removes the L/R trigger shortcuts (R: instant Bicycle, L: instant Town Map).
-    Safe design:
-    - Overworld button mask patched in Overlay 5 (Y, L, R).
-    - Resident routine placed in ARM9 at 0x02100BD8 (0.4.7) / 0x02100AA4 (0.4.6) / 0x02100880 (0.4.5) so it never crashes
-      even if Bag_GetRegisteredItem is called outside the overworld.
-    - Reads raw held keys from gSystem.heldKeysRaw.
-    """
-    def log(msg: str):
-        if log_cb:
-            log_cb(msg)
-
-    is_fr = (get_lang() == "fr")
-
-    try:
-        is_path = isinstance(rom_input, str)
-        if is_path:
-            if not os.path.isfile(rom_input):
-                log(f"[L/R Shortcuts] Error: ROM not found: {rom_input}")
-                return False
-            rom = ndspy.rom.NintendoDSRom.fromFile(rom_input)
-            save_path = output_path or rom_input
-        else:
-            rom = rom_input
-            save_path = output_path
-
-        ovs = rom.loadArm9Overlays()
-        if 5 not in ovs:
-            log("[L/R Shortcuts] Error: Overlay 5 not found in ROM.")
-            return False
-
-        ov5 = ovs[5]
-        ov5_data = bytearray(ov5.data)
-        arm9 = bytearray(rom.arm9)
-        lr_off, lr_addr, lr_routine = _get_lr_params(arm9)
-
-        # 0. Always heal any legacy mis-hook at FieldOverworldState_GetWeather (FR 0x3C5A0 / US 0x3A74C)
-        #    or BagContext_GetItem (FR 0x82C28 / US 0x7CB94) without touching unrelated bytes
-        for bad_off in (0x3C5A0, 0x82C28, 0x3A74C, 0x7CB94):
-            if len(arm9) >= bad_off + 8:
-                for cand_addr in (LR_ARM9_ROUTINE_ADDR_047, LR_ARM9_ROUTINE_ADDR, LR_ARM9_ROUTINE_ADDR_045):
-                    bad_safe = bytes.fromhex("08b5") + _make_thumb_bl(rom.arm9RamAddress + bad_off + 2, cand_addr) + bytes.fromhex("08bd")
-                    bad_legacy = _make_thumb_bl(rom.arm9RamAddress + bad_off, cand_addr)
-                    if arm9[bad_off:bad_off + 8] == bad_safe or arm9[bad_off:bad_off + 4] == bad_legacy:
-                        arm9[bad_off:bad_off + 8] = LR_WEATHER_VANILLA
-
-        # 1. Overlay 5 button check
-        ov5_pos = ov5_data.find(LR_OV5_PAT)
-        if ov5_pos == -1 and enable:
-            if ov5_data.find(LR_OV5_PATCH) == -1:
-                log("[L/R Shortcuts] Error: Y button check not found in Overlay 5.")
-                return False
-
-        # Clean up legacy routine from Overlay 5 tail if present
-        old_ov5_routine = ov5_data.find(LR_ROUTINE_MAGIC, max(0, len(ov5_data) - 0x200))
-        if old_ov5_routine != -1:
-            ov5_data = bytearray(ov5_data[:old_ov5_routine])
-        if len(ov5_data) % 4 != 0:
-            ov5_data.extend(b"\x00" * (4 - (len(ov5_data) % 4)))
-
-        # 2. ARM9 Bag_GetRegisteredItem (FR 0x02083524 / 0.4.6 0x02083778 / 0.4.7 0x020838AC / US 0x0207D3FC)
-        arm9_pos = arm9.find(LR_ARM9_PAT)
-        if arm9_pos == -1:
-            arm9_pos = arm9.find(LR_ARM9_VANILLA)
-        if arm9_pos == -1:
-            next_fn_pos = arm9.find(LR_ARM9_PAT[8:])
-            if next_fn_pos >= 8:
-                arm9_pos = next_fn_pos - 8
-        if arm9_pos == -1:
-            log("[L/R Shortcuts] Error: Bag_GetRegisteredItem not found in ARM9.")
-            return False
-
-        if enable:
-            # Patch Overlay 5 input check to accept Y, R, L
-            if ov5_pos != -1:
-                ov5_data[ov5_pos:ov5_pos + len(LR_OV5_PATCH)] = LR_OV5_PATCH
-
-            # Place routine into ARM9 (permanently resident)
-            arm9[lr_off:lr_off + len(lr_routine)] = lr_routine
-
-            # Hook Bag_GetRegisteredItem in ARM9 safely:
-            # push {r3, lr} (2B)
-            # bl lr_addr (4B)
-            # pop {r3, pc} (2B)
-            hook_addr = rom.arm9RamAddress + arm9_pos
-            bl_bytes = _make_thumb_bl(hook_addr + 2, lr_addr)
-            arm9[arm9_pos:arm9_pos + 2] = bytes.fromhex("08b5")      # push {r3, lr}
-            arm9[arm9_pos + 2:arm9_pos + 6] = bl_bytes               # bl lr_addr
-            arm9[arm9_pos + 6:arm9_pos + 8] = bytes.fromhex("08bd")  # pop {r3, pc}
-
-            msg = (
-                "[Raccourcis L/R] Raccourcis de terrain activés (R = Vélo immédiat, L = Carte de la Région)."
-                if is_fr else
-                "[L/R Shortcuts] Quick field shortcuts applied (R = Instant Bicycle, L = Town Map)."
-            )
-            log(msg)
-        else:
-            # Revert Overlay 5 input check
-            rev_pos = ov5_data.find(LR_OV5_PATCH)
-            if rev_pos != -1:
-                ov5_data[rev_pos:rev_pos + len(LR_OV5_PAT)] = LR_OV5_PAT
-
-            # Restore vanilla Bag_GetRegisteredItem in ARM9
-            arm9[arm9_pos:arm9_pos + len(LR_ARM9_VANILLA)] = LR_ARM9_VANILLA
-
-            # Clear ARM9 routine safely with bx lr (70 47) if our routine or zero-cave was present
-            cave_slice = arm9[lr_off:lr_off + len(lr_routine)]
-            if cave_slice[:8] == LR_ROUTINE_MAGIC or cave_slice == b"\x00" * len(lr_routine):
-                arm9[lr_off:lr_off + len(lr_routine)] = (
-                    b"\x70\x47" + b"\x00" * (len(lr_routine) - 2)
-                )
-
-            msg = (
-                "[Raccourcis L/R] Raccourcis de terrain d'origine restaurés."
-                if is_fr else
-                "[L/R Shortcuts] Standard button actions restored."
-            )
-            log(msg)
-
-        ov5.data = bytes(ov5_data)
-        rom.files[ov5.fileID] = ov5.save()
-        rom.arm9OverlayTable = ndspy.code.saveOverlayTable(ovs)
-        rom.arm9 = bytes(arm9)
-
-        if is_path and save_path:
-            rom.saveToFile(save_path)
-
-        return True
-    except Exception as e:
-        log(f"[L/R Shortcuts] Exception: {e}")
-        return False
-
-
-# -----------------------------------------------------------------------------
-# 10. IN-BATTLE STAT & TURN INSPECTOR (Move & Stat Tracker)
-# -----------------------------------------------------------------------------
-def is_battle_inspector_active(rom_input: Union[str, ndspy.rom.NintendoDSRom]) -> bool:
-    """Checks if the In-Battle Stat Tracker patch is active."""
-    try:
-        if isinstance(rom_input, str):
-            if os.path.isfile(rom_input):
-                with open(rom_input, "rb") as f:
-                    f.seek(0x1E0)
-                    tag = f.read(8)
-                return tag[:4] == b"PPM\x01" and bool(tag[7] & 0x02)
-        else:
-            return is_fast_healthbar_active(rom_input)
-    except Exception:
-        pass
-    return False
-
-
-def apply_battle_inspector_patch(
-    rom_input: Union[str, ndspy.rom.NintendoDSRom],
-    enable: bool = True,
-    output_path: Optional[str] = None,
-    log_cb: Optional[Callable[[str], None]] = None
-) -> bool:
-    """Applies or disables the In-Battle Stat & Turn Inspector."""
-    def log(msg: str):
-        if log_cb:
-            log_cb(msg)
-    is_fr = (get_lang() == "fr")
-    if enable:
-        log("[Inspecteur Combat] Inspecteur de combat activé (affichage tactile des boosts et tours restants)." if is_fr else "[Battle Inspector] In-battle stat & turn tracker enabled.")
-    else:
-        log("[Inspecteur Combat] Affichage de combat standard restauré." if is_fr else "[Battle Inspector] Standard battle display restored.")
-    return True
-
-
-# -----------------------------------------------------------------------------
-# 11. INFINITE RARE CANDY & EMPTY POCKET OOB FIX
-# -----------------------------------------------------------------------------
 # 1. ARM9: Bag_TryRemoveItem (0x02083ABC in 0.4.7 / 0x02083988 in 0.4.6 / 0x02083734 in 0.4.5)
 #    Exempts item 488 (ITEM_SUPER_BONBON_INFINI, 0x01E8) from being decremented or deleted.
 # 2. Overlay 84: ItemListMenuCursorCB (RAM 0x0224ED96 / 0x0224EB76, offset 0x4010)
@@ -1433,7 +1013,6 @@ BAG_REMOVE_FR_OFF_045 = 0x83734
 BAG_REMOVE_FR_OFF     = 0x83988
 BAG_REMOVE_FR_OFF_047 = 0x83ABC
 BAG_REMOVE_FR_PATCH   = bytes.fromhex("f0b585b001917a26019db6000290141c1f1cb54202d105b00120f0bd")
-BAG_GET_ITEM_FR_ORIG  = bytes.fromhex("6630008870470000")
 OV84_CURSOR_PAT       = bytes.fromhex("051c13480e1c8642")
 
 
@@ -1529,15 +1108,6 @@ def apply_infinite_candy_patch(
             if len(arm9) > bag_off + len(BAG_REMOVE_FR_PATCH):
                 if enable:
                     arm9[bag_off:bag_off + len(BAG_REMOVE_FR_PATCH)] = BAG_REMOVE_FR_PATCH
-
-        # 3. Ensure FieldOverworldState_GetWeather and BagContext_GetItem are never mis-hooked
-        for bad_off in (0x3C5A0, 0x82C28, 0x3A74C, 0x7CB94):
-            if len(arm9) >= bad_off + 8:
-                for cand_addr in (LR_ARM9_ROUTINE_ADDR_047, LR_ARM9_ROUTINE_ADDR, LR_ARM9_ROUTINE_ADDR_045):
-                    bad_safe = bytes.fromhex("08b5") + _make_thumb_bl(rom.arm9RamAddress + bad_off + 2, cand_addr) + bytes.fromhex("08bd")
-                    bad_legacy = _make_thumb_bl(rom.arm9RamAddress + bad_off, cand_addr)
-                    if arm9[bad_off:bad_off + 8] == bad_safe or arm9[bad_off:bad_off + 4] == bad_legacy:
-                        arm9[bad_off:bad_off + 8] = BAG_GET_ITEM_FR_ORIG
 
         rom.arm9 = bytes(arm9)
 

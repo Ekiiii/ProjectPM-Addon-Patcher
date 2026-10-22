@@ -6,9 +6,7 @@
 #define PACK_SHADER(m, s)  ((u32)(m) | ((u32)(s) << 16))
 #define PACK_LOBE(cx, cy, r) ((u16)((u32)(cx) | ((u32)(cy) << 6) | ((u32)(r) << 11)))
 
-/* ============================================================================
- * Fixed-Layout Global State at ORIGIN_VISUAL (0x023DE000)
- * ============================================================================ */
+/* Fixed-layout global state at ORIGIN_VISUAL (0x023DE000) */
 __attribute__((section(".data.state"), used))
 VisualEngineState gVisualState = {
     .magic          = VISUAL_MAGIC,
@@ -46,51 +44,13 @@ VisualEngineState gVisualState = {
         PACK_SHADER(DELTA_RGB(-2, -1,  3), DELTA_RGB(3, 4,  6)), /* 3: SHADER_NIGHT_AURORA */
         PACK_SHADER(DELTA_RGB(-6, -4,  3), DELTA_RGB(7, 7,  9))  /* 4: SHADER_WET_STORM */
     },
-    .moveVecX        = 0,
-    .moveVecZ        = 0,
-    .primaryFaceDir  = 1,
-    .diagStepDx      = 0,
-    .diagStepDz      = 0,
-    .isDiagStep      = 0,
     .lastCloudTileX  = 0x7FFF,
-    .lastCloudTileY  = 0x7FFF,
-    .manualMoveActive = 0,
-    .activeDiagFlags = 0,
-    .stepInitDur     = 0,
-    .sideBlockedFlag = 0,
-    .playerMapObj    = NULL,
-    .playerAvatar    = NULL
+    .lastCloudTileY  = 0x7FFF
 };
 
-typedef struct {
-    s16 moveVecX;         /* +0x00 */
-    s16 moveVecZ;         /* +0x02 */
-    u8  primaryFaceDir;   /* +0x04 */
-    s8  diagStepDx;       /* +0x05 */
-    s8  diagStepDz;       /* +0x06 */
-    u8  isDiagStep;       /* +0x07 */
-    s16 lastCloudTileX;   /* +0x08 */
-    s16 lastCloudTileY;   /* +0x0A */
-    u8  manualMoveActive; /* +0x0C */
-    u8  activeDiagFlags;  /* +0x0D */
-    u8  stepInitDur;      /* +0x0E */
-    u8  sideBlockedFlag;  /* +0x0F */
-    u8 *playerMapObj;     /* +0x10 */
-    PlayerAvatar *playerAvatar; /* +0x14 */
-} VisualMoveSubState;
-
-static inline VisualMoveSubState *GetMoveState(VisualEngineState *st) {
-    VisualMoveSubState *mv = (VisualMoveSubState *)&st->moveVecX;
-    __asm__ volatile("" : "+r"(mv));
-    return mv;
-}
-
-/* ============================================================================
- * 16 Distinct Multi-Lobe Macro Cloud Models (in 64x32 half-tile = 256x128px cell space)
- * 1 unit = 4 pixels -> radii 5..9 correspond to 40..72px billows, forming 100..200px clouds
- * ============================================================================ */
+/* 16 multi-lobe cloud models (64x32 half-tile = 256x128px cell space) */
 static const u16 gCloudLobes[16][4] = {
-    /* 0..3: Compact Cumulus Puffs (96x64 to 128x72 px — house-sized) */
+    /* 0..3: Compact Cumulus Puffs (96x64 to 128x72 px) */
     { PACK_LOBE(28, 16, 7), PACK_LOBE(36, 15, 6), 0, 0 },
     { PACK_LOBE(25, 15, 6), PACK_LOBE(33, 17, 7), PACK_LOBE(40, 15, 5), 0 },
     { PACK_LOBE(23, 17, 6), PACK_LOBE(31, 14, 7), PACK_LOBE(39, 16, 6), 0 },
@@ -111,18 +71,14 @@ static const u16 gCloudLobes[16][4] = {
     { PACK_LOBE(14, 17, 7), PACK_LOBE(25, 15, 9), PACK_LOBE(37, 15, 9), PACK_LOBE(49, 17, 7) }
 };
 
-/* ============================================================================
- * Forward Declarations of C Handlers Called by Naked Trampolines
- * ============================================================================ */
+/* Forward declarations of C handlers called by naked trampolines */
 __attribute__((used)) void Visual_FieldUpdate(AreaLightManager *lightMan, FieldSystem *fieldSystem);
 __attribute__((used)) void Visual_AreaLightFree(void);
 __attribute__((used)) void Visual_WaterShimmer(u32 slotIdx, u8 *slotPtr);
 __attribute__((used)) void Hook2_AreaLightApply(const AreaLightTemplate *tpl, ModelAttributes *attrs, u32 count);
 __attribute__((used)) void Hook5_BillboardMtx(MtxFx33 *mtx);
 
-/* ============================================================================
- * Thin Naked Assembly Trampolines (.text.trampolines)
- * ============================================================================ */
+/* Naked assembly trampolines (.text.trampolines) */
 __attribute__((naked, section(".text.trampolines"), used))
 void Hook3_AreaLightFree(void) {
     __asm__ volatile(
@@ -159,9 +115,7 @@ void Hook1_FieldUpdate(void) {
     );
 }
 
-/* ============================================================================
- * Compact Shared Helpers (Color Math, Ease-In/Ease-Out)
- * ============================================================================ */
+/* Shared helpers (color math, ease-in/ease-out) */
 static inline VisualEngineState *GetVisualState(void) {
     VisualEngineState *st = &gVisualState;
     __asm__ volatile("" : "+r"(st));
@@ -202,12 +156,7 @@ static s16 SmoothEaseStep(s32 *posVelQ8, s32 target) {
     return (s16)(posVelQ8[0] >> 8);
 }
 
-/* ============================================================================
- * Hardware BG2 2D Multi-Model Cloud Shadows
- * - 4-Level Marching Squares (4^4 = 256 smooth bilinear contour tiles)
- * - 16 Macro-Scale Cloud Models (96..208px wide) + Golden-Ratio Row Staggering
- * - Pure Multiplicative Dimming (PAL6[1] = 0x0000, BLDALPHA = 0x0E02)
- * ============================================================================ */
+/* Hardware BG2 2D multi-model cloud shadows */
 __attribute__((noinline))
 static u8 EvalCloudVertex(s32 wx, s32 wy) {
     s32 py = (wy & 15) << 1;
@@ -257,24 +206,29 @@ static void Visual_UpdateCloudBg2(FieldSystem *fieldSystem) {
     volatile u16 *io16 = GetIoBase16();
     volatile u32 *io32 = (volatile u32 *)io16;
 
-    if (fieldSystem == NULL || (io16[6] & 3u) == 0u) {
-        if (io16[6] == 0x1E09u) {
-            io16[0] &= (u16)~0x0400u;
-            if (io32[20] == 0x0E020144u) {
-                io32[20] = 0;
+    u32 uiUsingBg2 = ((io16[6] & 3u) == 0u) || ((io16[4] & 3u) == 3u);
+    if (fieldSystem == NULL || uiUsingBg2) {
+        if (uiUsingBg2) {
+            io32[6] = 0;
+            io16[0] |= 0x0400u;
+        }
+        if (io32[20] == 0x0E020144u) {
+            io32[20] = 0;
+            io32[6]  = 0;
+            if (!uiUsingBg2) {
+                io16[0] &= (u16)~0x0400u;
             }
         }
         return;
     }
 
     VisualEngineState *st = GetVisualState();
-    VisualMoveSubState *mv = GetMoveState(st);
 
-    /* Enforce pure black (0x0000) on PAL6[0..1] every frame so shadows purely darken without any grey/beige veil */
+    /* Keep PAL6[0..1] pure black (0x0000) so shadows darken without tinting */
     PLTT_BG_PAL6[0] = 0u;
 
     /* Sentinel check: Tile 0 must be 0 (sky) and Tile 255 must be 0x11111111 (solid interior) */
-    if (VRAM_BG2_CHR[0] != 0u || VRAM_BG2_CHR[255u * 8u] != 0x11111111u) {
+    if (io32[20] != 0x0E020144u || VRAM_BG2_CHR[0] != 0u || VRAM_BG2_CHR[255u * 8u] != 0x11111111u) {
         for (u32 idx = 0; idx < 256u; idx++) {
             u32 v00 = idx & 3u;
             u32 v10 = (idx >> 2) & 3u;
@@ -294,7 +248,7 @@ static void Visual_UpdateCloudBg2(FieldSystem *fieldSystem) {
                 VRAM_BG2_CHR[(idx << 3) + py] = word;
             }
         }
-        mv->lastCloudTileX = 0x7FFF;
+        st->lastCloudTileX = 0x7FFF;
     }
 
     io16[4] = (io16[4] & (u16)~3u) | 2u; /* BG0 (3D) priority 2 */
@@ -310,9 +264,9 @@ static void Visual_UpdateCloudBg2(FieldSystem *fieldSystem) {
         s16 baseWx = (s16)(hofs >> 3);
         s16 baseWy = (s16)(vofs >> 3);
 
-        if (baseWx != mv->lastCloudTileX || baseWy != mv->lastCloudTileY) {
-            mv->lastCloudTileX = baseWx;
-            mv->lastCloudTileY = baseWy;
+        if (baseWx != st->lastCloudTileX || baseWy != st->lastCloudTileY) {
+            st->lastCloudTileX = baseWx;
+            st->lastCloudTileY = baseWy;
             u8 prevRow[33];
             for (u32 x = 0; x <= 32u; x++) {
                 prevRow[x] = EvalCloudVertex((s32)baseWx + (s32)x, (s32)baseWy);
@@ -340,13 +294,10 @@ static void Visual_UpdateCloudBg2(FieldSystem *fieldSystem) {
     io16[0] |= 0x0400u;
 }
 
-/* ============================================================================
- * Hook 2 & 3: AreaLight Apply & Free
- * ============================================================================ */
+/* Hook 2 & 3: AreaLight apply & free */
 __attribute__((noinline))
 void Visual_AreaLightFree(void) {
     VisualEngineState *st = GetVisualState();
-    VisualMoveSubState *mv = GetMoveState(st);
     u8 preset = st->presetForcedWeather;
     u32 *p = (u32 *)&st->currPitchOff;
     for (u32 i = 0; i < 12; i++) {
@@ -355,9 +306,7 @@ void Visual_AreaLightFree(void) {
     st->presetForcedWeather = preset;
     st->lightDirty      = 1;
     st->activeCamPitch  = 0xDD40;
-    mv->lastCloudTileX  = 0x7FFF;
-    mv->activeDiagFlags = 0;
-    mv->isDiagStep      = 0;
+    st->lastCloudTileX  = 0x7FFF;
     G3X_SetFog(FALSE, 0, 0, 0);
     Visual_UpdateCloudBg2(NULL);
 }
@@ -374,20 +323,15 @@ void Hook2_AreaLightApply(const AreaLightTemplate *tpl, ModelAttributes *attrs, 
     AreaLightTemplate_ApplyToModelAttributes(tpl, attrs);
 }
 
-/* ============================================================================
- * 3D Orbital Camera Step (Ultra-Subtle, Silky-Smooth Ease-In / Ease-Out)
- * ============================================================================ */
+/* 3D orbital camera step */
 __attribute__((noinline))
 static void Visual_StepCamera(FieldSystem *fieldSystem) {
     VisualEngineState *st = GetVisualState();
-    VisualMoveSubState *mv = GetMoveState(st);
     u8 inGrass = 0;
 
     PlayerAvatar *avatar = fieldSystem->playerAvatar;
-    mv->playerAvatar = avatar;
     if (avatar != NULL) {
         u8 *mapObj = avatar->mapObject;
-        mv->playerMapObj = mapObj;
         if (mapObj != NULL && (u32)(*(u32 *)(mapObj + 0xAC) - 2u) <= 1u) {
             inGrass = 1;
         }
@@ -414,9 +358,7 @@ static void Visual_StepCamera(FieldSystem *fieldSystem) {
     Camera_CalcLookAtPos(cam);
 }
 
-/* ============================================================================
- * Zero-Flicker Lighting & Hardware Specular Rebuild
- * ============================================================================ */
+/* Lighting & hardware specular rebuild */
 __attribute__((noinline))
 static void Visual_RebuildLight(
     ModelAttributes *attrs,
@@ -471,19 +413,12 @@ static void Visual_RebuildLight(
     }
 }
 
-/* ============================================================================
- * Hook 1: 60 FPS Field Update (Orbital Camera + Shaders + BG2 Cloud Shadows)
- * ============================================================================ */
+/* Hook 1: 60 FPS field update (camera, shaders, BG2 cloud shadows) */
 void Visual_FieldUpdate(AreaLightManager *lightMan, FieldSystem *fieldSystem) {
     AreaLightManager_UpdateActiveTemplate(lightMan);
 
     VisualEngineState *st = GetVisualState();
-    VisualMoveSubState *mv = GetMoveState(st);
     st->frameCounter++;
-    if (fieldSystem->playerAvatar != NULL) {
-        mv->playerAvatar = fieldSystem->playerAvatar;
-        mv->playerMapObj = fieldSystem->playerAvatar->mapObject;
-    }
 
     if (lightMan->templateCount <= 1 || lightMan->templates[0].validLightsMask < 8) {
         Visual_AreaLightFree();
@@ -493,7 +428,7 @@ void Visual_FieldUpdate(AreaLightManager *lightMan, FieldSystem *fieldSystem) {
 
     Visual_StepCamera(fieldSystem);
 
-    /* Select Weather & Time-of-Day Shader Mode */
+    /* Select weather & time-of-day shader mode */
     u32 count = lightMan->templateCount;
     u32 activeIdx = (u32)lightMan->activeTemplateIndex;
 
@@ -518,7 +453,7 @@ void Visual_FieldUpdate(AreaLightManager *lightMan, FieldSystem *fieldSystem) {
     if (activeIdx >= count) activeIdx = 0;
     st->weatherShaderMode = weatherMode;
 
-    /* Continuous Solar/Lunar Interpolation with Dirty-Flag Caching */
+    /* Continuous solar/lunar interpolation with dirty-flag caching */
     u32 curHalfSec = (u32)GetSecondsSinceMidnight() >> 1;
     const AreaLightTemplate *currTpl = &lightMan->templates[activeIdx];
     const AreaLightTemplate *prevTpl = (activeIdx > 0 && !(st->presetForcedWeather & 0x80u))
@@ -550,13 +485,11 @@ void Visual_FieldUpdate(AreaLightManager *lightMan, FieldSystem *fieldSystem) {
     st->baseSpecEmi = *(volatile u32 *)ADDR_GLB_MAT_COL1 | 0x8000u;
     *(volatile u32 *)ADDR_GLB_MAT_COL1 = st->baseSpecEmi;
 
-    /* Hardware BG2 2D Fluffy Cumulus Cloud Shadows on the Ground */
+    /* Hardware BG2 cloud shadows on the ground */
     Visual_UpdateCloudBg2((weatherMode <= SHADER_GOLDEN_GLOW) ? fieldSystem : NULL);
 }
 
-/* ============================================================================
- * Hook 5: 3D Billboard Pitch & Orbital Yaw Alignment
- * ============================================================================ */
+/* Hook 5: 3D billboard pitch & yaw alignment */
 void Hook5_BillboardMtx(MtxFx33 *mtx) {
     MTX_Identity33(mtx);
     VisualEngineState *st = GetVisualState();
@@ -584,9 +517,7 @@ void Hook5_BillboardMtx(MtxFx33 *mtx) {
     mtx->m[2][2] = cosP;
 }
 
-/* ============================================================================
- * Hook 7: Real-Time 60 FPS VRAM Water Palette Shimmer
- * ============================================================================ */
+/* Hook 7: 60 FPS VRAM water palette shimmer */
 void Visual_WaterShimmer(u32 slotIdx, u8 *slotPtr) {
     u8 *pAnimEntry = *(u8 **)(slotPtr + 0x08);
     if (pAnimEntry == NULL || (pAnimEntry[1] & 1u) == 0) {

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 build_exe.py
 Compiles ProjectPM Addon Patcher into a standalone Windows .exe using PyInstaller.
@@ -39,9 +38,6 @@ def build():
         "--exclude-module=unicorn",
         "--exclude-module=capstone",
         "--exclude-module=keystone",
-        "--hidden-import=PIL",
-        "--hidden-import=PIL.Image",
-        "--hidden-import=PIL.ImageTk",
         "--hidden-import=ndspy",
         "--hidden-import=ndspy.rom",
         "--hidden-import=ndspy.narc",
@@ -60,16 +56,24 @@ def build():
         "--hidden-import=core.smart_injector",
         "--hidden-import=core.patch_pipeline",
         "--hidden-import=core.rom_detector",
+        "--hidden-import=core.rom_validator",
         "--hidden-import=webview",
         "--hidden-import=webview.platforms.winforms",
         "--hidden-import=webview.platforms.edgechromium",
         "--hidden-import=clr",
         "--hidden-import=pythonnet",
-        os.path.join(ROOT_DIR, "main.py")
+        "main.py"
     ]
 
     print("Running PyInstaller...")
     res = subprocess.run(cmd, cwd=ROOT_DIR)
+    spec_file = os.path.join(ROOT_DIR, "ProjectPM-Addon-Patcher.spec")
+    if os.path.isfile(spec_file):
+        try:
+            os.remove(spec_file)
+        except OSError:
+            pass
+
     if res.returncode != 0:
         print("ERROR: PyInstaller compilation failed.")
         sys.exit(1)
@@ -85,3 +89,4 @@ def build():
 
 if __name__ == "__main__":
     build()
+

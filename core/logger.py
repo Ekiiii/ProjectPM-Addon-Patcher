@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 logger.py
-Physical On-Disk Persistent Logging Subsystem for ProjectPM Addon Patcher.
-Records comprehensive diagnostic logs to disk:
-- System & environment information
-- Loaded ROM analysis & cryptographic SHA-1 hashes
-- Detailed patching pipeline progress & xDelta commands
-- Injected payloads, restored tables, and randomizer states
-- Full stack traces upon any warning or error
+On-disk logging for ProjectPM Addon Patcher.
 """
 import os
 import sys
@@ -37,7 +30,7 @@ def get_logs_dir() -> str:
         pass
     return logs_dir
 
-def init_logging(app_version: str = "1.0.9"):
+def init_logging(app_version: str = "1.1.0"):
     """Initializes the physical log files for this application run."""
     global _current_log_file, _latest_log_file
     with _log_lock:

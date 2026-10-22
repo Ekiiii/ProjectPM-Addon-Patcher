@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/randomizer.py
 Project PM ROM Randomizer Engine (v8 compatibility).
@@ -15,6 +14,9 @@ import itertools
 import base64
 import datetime
 from typing import Dict, List, Tuple, Set, Optional, Any, Callable
+
+import ndspy.rom
+import ndspy.narc
 
 from core.i18n import t, get_lang
 
@@ -66,29 +68,29 @@ _RGR = 336
 _RSR = 380
 
 STATIC_BATTLES = (
-    ('Acuity Cavern Uxie', 701, 480, 50),
-    ('Valor Cavern Azelf', 701, 482, 50),
-    ('Spear Pillar Dialga', 701, 483, 70),
-    ('Spear Pillar Palkia', 701, 484, 70),
-    ('Turnback Cave Giratina', 701, 487, 47),
-    ('Stark Mountain Heatran', 701, 485, 50),
-    ('Rock Peak Ruins Regirock', 701, 377, 30),
-    ('Iceberg Ruins Regice', 701, 378, 30),
-    ('Iron Ruins Registeel', 701, 379, 30),
-    ('Snowpoint Temple Regigigas', 701, 486, 1),
-    ('Newmoon Island Darkrai', 701, 491, 50),
-    ('Hall of Origin Arceus', 701, 493, 80),
-    ('Old Chateau Rotom', 292, 479, 20),
-    ('Route 209 Spiritomb', 292, 442, 25),
-    ('Valley Windworks Drifloon', 701, 425, 15),
-    ('Flower Paradise Shaymin', 792, 492, 30),
-    ('Distortion World Giratina', 793, 487, 47, {'as_op': 701}),
-    ('Eterna Forest Spiky-eared Pichu', 859, 172, 14, {'form': 1, 'hits': 2})
+    ('Acuity Cavern Uxie', 361, 70, 480, 50, {}),
+    ('Valor Cavern Azelf', 357, 142, 482, 50, {}),
+    ('Spear Pillar Dialga', 239, 182, 483, 70, {}),
+    ('Spear Pillar Palkia', 240, 182, 484, 70, {}),
+    ('Turnback Cave Giratina', 291, 80, 487, 47, {}),
+    ('Distortion World Giratina', 389, 219, 487, 47, {'as_op': 701}),
+    ('Stark Mountain Heatran', 286, 272, 485, 50, {}),
+    ('Rock Peak Ruins Regirock', 396, 187, 377, 30, {}),
+    ('Iceberg Ruins Regice', 394, 187, 378, 30, {}),
+    ('Iron Ruins Registeel', 392, 187, 379, 30, {}),
+    ('Snowpoint Temple Regigigas', 317, 146, 486, 1, {}),
+    ('Newmoon Island Darkrai', 363, 140, 491, 50, {}),
+    ('Hall of Origin Arceus', 238, 135, 493, 80, {}),
+    ('Old Chateau Rotom', 337, 91, 479, 20, {}),
+    ('Route 209 Spiritomb', 441, 350, 442, 25, {}),
+    ('Valley Windworks Drifloon', 216, 472, 425, 15, {}),
+    ('Flower Paradise Shaymin', 310, 148, 492, 30, {}),
+    ('Eterna Forest Spiky-eared Pichu', 219, (2692, 3016), 172, 14, {'form': 0})
 )
 
 STATIC_GIFTS = (
-    ('Hearthome Eevee', 133, 20),
-    ('Veilstone Porygon', 137, 25)
+    ('Hearthome Eevee', 117, 121, 133, 20),
+    ('Veilstone Porygon', 153, 125, 137, 25)
 )
 
 FOSSIL_TABLE = (
@@ -107,6 +109,10 @@ STATICS_HONEY_MIRROR = (5, 6, 7)
 STATICS_EGG_NARC = 'fielddata/script/scr_seq.narc'
 STATICS_GIVEEGG_OPCODE = 151
 STATICS_EGG_GIFTS = (("Cynthia's egg", 175), ("Riley's egg", 447))
+STATICS_EGGS = (
+    ("Cynthia's egg", 71, 3673, 175),
+    ("Riley's egg", 329, 822, 447)
+)
 
 SPECIAL_FEEBAS_MEMBER = 0
 SPECIAL_TROPHY_MEMBER = 8
@@ -134,8 +140,12 @@ TRAINER_MON_FORM_SHIFT = 10
 TRAINER_MON_SPECIES_MASK = (1 << TRAINER_MON_FORM_SHIFT) - 1
 
 TRMON_SIZE_EXTENDED = {0: 16, 1: 24, 2: 20, 3: 28}
+STRIDE_BY_MON_TYPE = TRMON_SIZE_EXTENDED
 TRMON_SIZE_VANILLA = {0: 8, 1: 16, 2: 12, 3: 20}
 TRMON_OFF_ABILITY = {0: 8, 1: 16, 2: 10, 3: 18}
+TRMON_OFF_BALL_SEAL = {0: 6, 1: 14, 2: 8, 3: 16}
+TRMON_OFF_NATURE_BY_TYPE = {0: 10, 1: 18, 2: 12, 3: 20}
+TRMON_OFF_HELD_ITEM = {2: 6, 3: 6}
 
 PERSONAL_ENTRY_SIZE = 44
 PERSONAL_OFF_TYPE1 = 6
@@ -630,121 +640,113 @@ def statics_honey(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[int
     log(f"[rand] honey trees: randomized across {len(STATICS_HONEY_MEMBERS)} tiers (and mirrors)")
     return {'honey_randomized': True}
 
-def statics_eggs(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[int], rule: str, rng: random.Random, log: Callable = print) -> Optional[Dict[str, Any]]:
-    """Randomizes the two gift eggs (Togepi and Happiny) in script bytecode."""
-    res = rom.find(STATICS_EGG_NARC)
-    if res is None:
+def statics_eggs(rom: Any, db: Dict[int, Dict[str, Any]], pool: List[int], rule: str, rng: random.Random, log: Callable = print) -> Optional[Dict[str, Any]]:
+    """Randomizes the two gift eggs (Togepi and Riolu) in scr_seq.narc using invariant bytecode coordinates."""
+    nds = ndspy.rom.NintendoDSRom(bytes(rom.data)) if hasattr(rom, 'data') else ndspy.rom.NintendoDSRom.fromFile(rom.path if hasattr(rom, 'path') else rom)
+    s_raw = nds.getFileByName(STATICS_EGG_NARC)
+    if s_raw is None:
         log(f"[rand] gift eggs: {STATICS_EGG_NARC} not found - skipped")
         return None
-    ss, se = res
-    buf = bytearray(rom.read(ss, se))
+    scr = ndspy.narc.NARC(s_raw)
     sim_str = (rule == 'similar_strength')
     out = {}
-    found_any = False
-    for label, orig in STATICS_EGG_GIFTS:
-        sig = struct.pack('<HH', STATICS_GIVEEGG_OPCODE, orig)
-        pos = buf.find(sig)
-        if pos < 0:
-            log(f"[rand] {label}: signature not found - skipped")
+    for label, subfile, op_off, orig_sp in STATICS_EGGS:
+        if subfile >= len(scr.files):
             continue
-        if buf.find(sig, pos + 1) >= 0:
-            log(f"[rand] {label}: signature not unique - skipped")
+        sdata = bytearray(scr.files[subfile])
+        if op_off + 4 > len(sdata):
             continue
         cands = pool
-        if sim_str and orig in db:
-            cands = _rand_strength(cands, db, db[orig]['bst'])
-        new = rng.choice(cands) if cands else rng.choice(pool)
-        struct.pack_into('<HH', buf, pos, STATICS_GIVEEGG_OPCODE, new)
-        out[label] = (orig, new)
-        log(f"[rand] {label}: {species_name(orig)} -> {species_name(new)}")
-        found_any = True
-    if found_any:
-        rom.write(ss, se, bytes(buf))
+        if sim_str and orig_sp in db:
+            cands = _rand_strength(cands, db, db[orig_sp]['bst'])
+        new_sp = rng.choice(cands) if cands else rng.choice(pool)
+        struct.pack_into('<H', sdata, op_off + 2, new_sp)
+        scr.files[subfile] = bytes(sdata)
+        out[label] = (orig_sp, new_sp)
+        log(f"[rand] {label}: {species_name(orig_sp)} -> {species_name(new_sp)}")
+    if out:
+        nds.setFileByName(STATICS_EGG_NARC, scr.save())
+        if hasattr(rom, 'data'):
+            rom.data = bytearray(nds.save())
     return out if out else None
 
-def statics_script_sites(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[int], rule: str, rng_battles: random.Random, rng_gifts: random.Random, do_battles: bool, do_gifts: bool, log: Callable = print) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
-    """Randomizes one-time legendary/scripted battles and gift Pokemon inside scr_seq.narc."""
-    res = rom.find(STATICS_EGG_NARC)
-    if res is None:
-        log(f"[rand] script sites: {STATICS_EGG_NARC} not found - skipped")
+def statics_script_sites(rom: Any, db: Dict[int, Dict[str, Any]], pool: List[int], rule: str, rng_battles: random.Random, rng_gifts: random.Random, do_battles: bool, do_gifts: bool, log: Callable = print) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    """Randomizes one-time legendary/scripted battles and gift Pokemon inside scr_seq.narc using invariant coordinates."""
+    nds = ndspy.rom.NintendoDSRom(bytes(rom.data)) if hasattr(rom, 'data') else ndspy.rom.NintendoDSRom.fromFile(rom.path if hasattr(rom, 'path') else rom)
+    s_raw = nds.getFileByName('fielddata/script/scr_seq.narc')
+    if s_raw is None:
+        log('[rand] script sites: fielddata/script/scr_seq.narc not found - skipped')
         return (None, None)
-    ss, se = res
-    buf = bytearray(rom.read(ss, se))
+    scr = ndspy.narc.NARC(s_raw)
     sim_str = (rule == 'similar_strength')
-    plan = []
-    if do_battles:
-        for site in STATIC_BATTLES:
-            label, op, sp, lv = site[:4]
-            opt = site[4] if len(site) > 4 else {}
-            sig = struct.pack('<HHH', op, sp, lv)
-            cands = pool
-            if sim_str and sp in db:
-                cands = _rand_strength(cands, db, db[sp]['bst'])
-            new = rng_battles.choice(cands) if cands else rng_battles.choice(pool)
-            plan.append(('battle', label, sig, sp, new, opt))
-    if do_gifts:
-        for label, sp, lv in STATIC_GIFTS:
-            sig = struct.pack('<HH', 273, sp)
-            cands = pool
-            if sim_str and sp in db:
-                cands = _rand_strength(cands, db, db[sp]['bst'])
-            new = rng_gifts.choice(cands) if cands else rng_gifts.choice(pool)
-            plan.append(('gift', label, sig, sp, new, {}))
-    found = []
-    for kind, label, sig, old, new, opt in plan:
-        hits = []
-        pos = buf.find(sig)
-        while pos >= 0:
-            hits.append(pos)
-            pos = buf.find(sig, pos + 1)
-        expected = opt.get('hits', 1)
-        if len(hits) != expected:
-            log(f"[rand] {label}: signature count {len(hits)} vs expected {expected} - skipped")
-            continue
-        found.append((kind, label, hits, old, new, opt))
-    gifts = {}
     battles = {}
-    for kind, label, hits, old, new, opt in found:
-        for at in hits:
-            if 'as_op' in opt:
-                struct.pack_into('<H', buf, at, opt['as_op'])
-            struct.pack_into('<H', buf, at + 2, new)
-            if 'form' in opt:
-                struct.pack_into('<H', buf, at + 6, 0)
-        if kind == 'battle':
-            battles[label] = (old, new)
-        else:
-            gifts[label] = (old, new)
-        log(f"[rand] {label}: {species_name(old)} -> {species_name(new)}")
-    if found:
-        rom.write(ss, se, bytes(buf))
+    gifts = {}
+
+    if do_battles:
+        for entry in STATIC_BATTLES:
+            label, subfile, offsets, orig_sp, lv, opt = entry
+            if subfile >= len(scr.files):
+                continue
+            sdata = bytearray(scr.files[subfile])
+            cands = pool
+            if sim_str and orig_sp in db:
+                cands = _rand_strength(cands, db, db[orig_sp]['bst'])
+            new_sp = rng_battles.choice(cands) if cands else rng_battles.choice(pool)
+            off_list = offsets if isinstance(offsets, (tuple, list)) else [offsets]
+            for off in off_list:
+                if off + 4 <= len(sdata):
+                    if 'as_op' in opt:
+                        struct.pack_into('<H', sdata, off, opt['as_op'])
+                    struct.pack_into('<H', sdata, off + 2, new_sp)
+                    if 'form' in opt and off + 8 <= len(sdata):
+                        struct.pack_into('<H', sdata, off + 6, opt['form'])
+            scr.files[subfile] = bytes(sdata)
+            battles[label] = (orig_sp, new_sp)
+            log(f"[rand] {label}: {species_name(orig_sp)} -> {species_name(new_sp)}")
+
+    if do_gifts:
+        for label, subfile, sp_off, orig_sp, lv in STATIC_GIFTS:
+            if subfile >= len(scr.files):
+                continue
+            sdata = bytearray(scr.files[subfile])
+            cands = pool
+            if sim_str and orig_sp in db:
+                cands = _rand_strength(cands, db, db[orig_sp]['bst'])
+            new_sp = rng_gifts.choice(cands) if cands else rng_gifts.choice(pool)
+            if sp_off + 2 <= len(sdata):
+                struct.pack_into('<H', sdata, sp_off, new_sp)
+            scr.files[subfile] = bytes(sdata)
+            gifts[label] = (orig_sp, new_sp)
+            log(f"[rand] {label}: {species_name(orig_sp)} -> {species_name(new_sp)}")
+
+    if battles or gifts:
+        nds.setFileByName('fielddata/script/scr_seq.narc', scr.save())
+        if hasattr(rom, 'data'):
+            rom.data = bytearray(nds.save())
     return (battles if battles else None, gifts if gifts else None)
 
-def fossils_randomize(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[int], rule: str, rng: random.Random, log: Callable = print) -> Optional[Dict[str, Any]]:
-    """Randomizes revived fossil Pokemon."""
-    res = rom.find('fielddata/script/scr_seq.narc')
-    if res is None:
-        return None
-    ss, se = res
-    buf = bytearray(rom.read(ss, se))
+def fossils_randomize(rom: Any, db: Dict[int, Dict[str, Any]], pool: List[int], rule: str, rng: random.Random, log: Callable = print) -> Optional[Dict[str, Any]]:
+    """Randomizes revived fossil Pokemon in arm9.bin at offset 0xF3534."""
+    nds = ndspy.rom.NintendoDSRom(bytes(rom.data)) if hasattr(rom, 'data') else ndspy.rom.NintendoDSRom.fromFile(rom.path if hasattr(rom, 'path') else rom)
     sim_str = (rule == 'similar_strength')
     out = {}
-    found_any = False
-    for label, item_id, sp in FOSSIL_TABLE:
-        sig = struct.pack('<HHH', 273, sp, 20)
-        pos = buf.find(sig)
-        if pos < 0:
+    FOSSIL_TABLE_OFFSET = 0xF3534
+    arm9 = bytearray(nds.arm9)
+    for i, (label, item_id, orig_sp) in enumerate(FOSSIL_TABLE):
+        entry_off = FOSSIL_TABLE_OFFSET + (i * 4)
+        if entry_off + 4 > len(arm9):
             continue
         cands = pool
-        if sim_str and sp in db:
-            cands = _rand_strength(cands, db, db[sp]['bst'])
-        new = rng.choice(cands) if cands else rng.choice(pool)
-        struct.pack_into('<H', buf, pos + 2, new)
-        out[label] = (sp, new)
-        log(f"[rand] {label}: {species_name(sp)} -> {species_name(new)}")
-        found_any = True
-    if found_any:
-        rom.write(ss, se, bytes(buf))
+        if sim_str and orig_sp in db:
+            cands = _rand_strength(cands, db, db[orig_sp]['bst'])
+        new_sp = rng.choice(cands) if cands else rng.choice(pool)
+        struct.pack_into('<H', arm9, entry_off + 2, new_sp)
+        out[label] = (orig_sp, new_sp)
+        log(f"[rand] {label}: {species_name(orig_sp)} -> {species_name(new_sp)}")
+    if out:
+        nds.arm9 = bytes(arm9)
+        if hasattr(rom, 'data'):
+            rom.data = bytearray(nds.save())
     return out if out else None
 
 def special_wilds(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[int], mode: str, rule: str, rng: random.Random, log: Callable = print, do_special: bool = True, do_gba: bool = False) -> Optional[Dict[str, Any]]:
@@ -830,11 +832,9 @@ def trades_randomize(rom: RandNDSRom, db: Dict[int, Dict[str, Any]], pool: List[
     rom.write(ss, se, narc.to_bytes())
     return trades if trades else None
 
-def trade_dialogue_buffered(rom: RandNDSRom) -> bool:
-    return True
-
 
 def _open_narc(rom: RandNDSRom, path: str, log: Callable = print):
+
     res = rom.find(path)
     if res is None:
         log(f"[rand] ERROR: {path} not found in this ROM")
@@ -1043,96 +1043,120 @@ def detect_trainer_layout(trdata: RandNARC, trpoke: RandNARC, count: int) -> Tup
     layout = 'extended' if extended_votes >= vanilla_votes else 'vanilla'
     return (layout, TRMON_OFF_ABILITY, usable)
 
-def randomize_trainers(rom: RandNDSRom, seed: Any, db: Dict[int, Dict[str, Any]], exclude_legendaries: bool, similar_strength: bool, log: Callable = print) -> Tuple[bool, Dict[str, Any]]:
-    """Randomizes every trainer party in poketool/trainer/trdata.narc and trpoke.narc."""
-    tr_path = 'poketool/trainer/trdata.narc'
-    tp_path = 'poketool/trainer/trpoke.narc'
-    tr_span, trdata = _open_narc(rom, tr_path, log)
-    if trdata is None:
+def randomize_trainers(rom: Any, seed: Any, db: Dict[int, Dict[str, Any]], exclude_legendaries: bool, similar_strength: bool, log: Callable = print, keep_items: bool = False) -> Tuple[bool, Dict[str, Any]]:
+    """Randomizes every trainer party in poketool/trainer/trdata.narc and trpoke.narc (Solo and Co-Op)."""
+    nds = ndspy.rom.NintendoDSRom(bytes(rom.data)) if hasattr(rom, 'data') else ndspy.rom.NintendoDSRom.fromFile(rom.path if hasattr(rom, 'path') else rom)
+    trdata_raw = nds.getFileByName('poketool/trainer/trdata.narc')
+    trpoke_raw = nds.getFileByName('poketool/trainer/trpoke.narc')
+    if trdata_raw is None or trpoke_raw is None:
+        log('[rand] ERROR: trainer NARCs not found in this ROM')
         return (False, {})
-    tp_span, trpoke = _open_narc(rom, tp_path, log)
-    if trpoke is None:
-        return (False, {})
+    trdata = ndspy.narc.NARC(trdata_raw)
+    trpoke = ndspy.narc.NARC(trpoke_raw)
     rng = _cat_rng(seed, 'trainers')
     pool = rand_build_pool(db, exclude_legendaries)
-    count = min(trdata.num_files, trpoke.num_files)
-    layout, _, usable = detect_trainer_layout(trdata, trpoke, count)
-    base_size = TRMON_SIZE_EXTENDED[TRDATATYPE_BASE] if layout == 'extended' else TRMON_SIZE_VANILLA[TRDATATYPE_BASE]
-    log(f"[rand] trainers: {count} entries, pool {len(pool)} species, layout={layout} ({usable}/{count} parties readable)")
-    if usable * 2 < count:
-        log('[rand] ERROR: trainer party data format unsupported in this ROM.')
-        return (False, {})
+    num_trainers = min(973, len(trdata.files))
+    log(f"[rand] trainers: {num_trainers} entries, pool {len(pool)} species, keep_items={keep_items}")
 
-    def _reroll(body: bytes, party_size: int, size: int) -> Tuple[bytearray, int]:
-        rolled = 0
-        new_body = bytearray(len(body))
-        for m in range(party_size):
-            src = m * size
-            dst = m * base_size
-            sp = struct.unpack_from('<H', body, src + TRMON_OFF_SPECIES)[0] & TRAINER_MON_SPECIES_MASK
-            if not sp:
-                continue
-            cands = pool
-            if similar_strength and sp in db:
-                filt = _rand_strength(cands, db, db[sp]['bst'])
-                if filt:
-                    cands = filt
-            new_sp = rng.choice(cands)
-            new_body[dst + 2:dst + 4] = body[src + 2:src + 4] # copy level & IVs
-            struct.pack_into('<H', new_body, dst + TRMON_OFF_SPECIES, new_sp & TRAINER_MON_SPECIES_MASK)
-            if layout == 'extended':
-                new_body[dst + TRMON_OFF_NATURE] = TRMON_NATURE_UNSET
-            rolled += 1
-        return (new_body, rolled)
+    def _randomize_single_party(party_data: bytes, psize: int, orig_mtype: int, is_keep_items: bool) -> Tuple[bytes, int]:
+        if not psize:
+            return (b'', 0)
+        orig_stride = STRIDE_BY_MON_TYPE.get(orig_mtype, 16)
+        if is_keep_items:
+            mtype = orig_mtype
+            stride = orig_stride
+            body = bytearray(psize * stride)
+            copy_len = min(len(party_data), len(body))
+            body[:copy_len] = party_data[:copy_len]
+            for m in range(psize):
+                off = m * stride
+                orig_sp = struct.unpack_from('<H', party_data, m * orig_stride + 4)[0] & TRAINER_MON_SPECIES_MASK if len(party_data) >= (m + 1) * orig_stride else 0
+                cands = pool
+                if similar_strength and orig_sp in db:
+                    filt = _rand_strength(cands, db, db[orig_sp]['bst'])
+                    if filt:
+                        cands = filt
+                new_sp = rng.choice(cands)
+                struct.pack_into('<H', body, off + 4, new_sp & TRAINER_MON_SPECIES_MASK)
+                
+                lvl = struct.unpack_from('<H', body, off + 2)[0]
+                if lvl < 1 or lvl > 100:
+                    struct.pack_into('<H', body, off + 2, 50)
+                
+                seal_off = TRMON_OFF_BALL_SEAL.get(mtype, 6)
+                struct.pack_into('<H', body, off + seal_off, 0)
+                
+                ab_off = TRMON_OFF_ABILITY.get(mtype, 8)
+                cur_ab = struct.unpack_from('<H', body, off + ab_off)[0]
+                if cur_ab > 126:
+                    struct.pack_into('<H', body, off + ab_off, 0)
+                
+                nat_off = TRMON_OFF_NATURE_BY_TYPE.get(mtype, 10)
+                body[off + nat_off] = TRMON_NATURE_UNSET
+                
+                if mtype == 2:
+                    struct.pack_into('<H', body, off + 14, 0)
+                elif mtype == 3:
+                    struct.pack_into('<H', body, off + 22, 0)
+            return (bytes(body), psize)
+        else:
+            stride = 16
+            body = bytearray(psize * stride)
+            for m in range(psize):
+                off = m * stride
+                src_off = m * orig_stride
+                orig_sp = 0
+                orig_lvl = 50
+                orig_iv = 100
+                if len(party_data) >= src_off + orig_stride:
+                    orig_iv = struct.unpack_from('<H', party_data, src_off)[0]
+                    orig_lvl = struct.unpack_from('<H', party_data, src_off + 2)[0]
+                    orig_sp = struct.unpack_from('<H', party_data, src_off + 4)[0] & TRAINER_MON_SPECIES_MASK
+                cands = pool
+                if similar_strength and orig_sp in db:
+                    filt = _rand_strength(cands, db, db[orig_sp]['bst'])
+                    if filt:
+                        cands = filt
+                new_sp = rng.choice(cands)
+                lvl = max(1, min(100, orig_lvl))
+                struct.pack_into('<HHHHHBB I', body, off, orig_iv, lvl, new_sp & TRAINER_MON_SPECIES_MASK, 0, 0, TRMON_NATURE_UNSET, 0, 0)
+            return (bytes(body), psize)
 
     mons = 0
+    coop_mons = 0
     skipped = 0
-    for i in range(count):
-        head = trdata.get(i)
-        if len(head) < TRAINER_HEADER_SIZE:
+
+    for tid in range(1, num_trainers):
+        head = bytearray(trdata.files[tid])
+        if len(head) < 28:
             skipped += 1
             continue
-        ps = head[TRDATA_OFF_PARTY_SIZE]
-        body = bytearray(trpoke.get(i))
-        if not ps:
-            continue
-        stride = trainer_mon_stride(head, body)
-        if not stride or not trainer_party_is_sane(body, ps, stride):
-            skipped += 1
-            continue
-        new_body, n = _reroll(body, ps, stride)
-        mons += n
-        trpoke.put(i, bytes(new_body))
-        new_head = bytearray(head)
-        new_head[TRDATA_OFF_MON_TYPE] &= 0xFC
-        trdata.put(i, bytes(new_head))
+        
+        solo_mtype = head[0]
+        solo_psize = head[3]
+        if solo_psize > 0 and tid < len(trpoke.files):
+            orig_solo_party = trpoke.files[tid]
+            new_solo_party, n_solo = _randomize_single_party(orig_solo_party, solo_psize, solo_mtype, keep_items)
+            trpoke.files[tid] = new_solo_party
+            head[0] = solo_mtype if keep_items else 0
+            mons += n_solo
+        
+        coop_idx, coop_size, coop_mtype = struct.unpack_from('<HBB', head, 24)
+        if 973 <= coop_idx < len(trpoke.files) and coop_size > 0:
+            orig_coop_party = trpoke.files[coop_idx]
+            new_coop_party, n_coop = _randomize_single_party(orig_coop_party, coop_size, coop_mtype, keep_items)
+            trpoke.files[coop_idx] = new_coop_party
+            head[27] = coop_mtype if keep_items else 0
+            coop_mons += n_coop
+        
+        trdata.files[tid] = bytes(head)
 
-    hard_mons = 0
-    for i in range(count):
-        head = trdata.get(i)
-        if len(head) < TRAINER_HEADER_SIZE_HARD:
-            continue
-        member = struct.unpack_from('<H', head, TRDATA_OFF_HARD_MEMBER)[0]
-        hsize = head[TRDATA_OFF_HARD_PARTY_SIZE]
-        if not member or not hsize or member >= trpoke.num_files or hsize > 6:
-            continue
-        body = bytearray(trpoke.get(member))
-        stride = _mon_stride(hsize, body)
-        if not stride or not trainer_party_is_sane(body, hsize, stride):
-            continue
-        new_body, n = _reroll(body, hsize, stride)
-        hard_mons += n
-        trpoke.put(member, bytes(new_body))
-        new_head = bytearray(head)
-        new_head[TRDATA_OFF_HARD_MON_TYPE] &= 0xFC
-        trdata.put(i, bytes(new_head))
-
-    if not _save_narc(rom, tp_span, trpoke, tp_path, log):
-        return (False, {})
-    if not _save_narc(rom, tr_span, trdata, tr_path, log):
-        return (False, {})
-    log(f"[rand] trainers: {mons} Pokemon rerolled (+ {hard_mons} hard-mode)")
-    return (True, {'trainer_mons': mons, 'hard_mons': hard_mons, 'skipped': skipped})
+    nds.setFileByName('poketool/trainer/trdata.narc', trdata.save())
+    nds.setFileByName('poketool/trainer/trpoke.narc', trpoke.save())
+    if hasattr(rom, 'data'):
+        rom.data = bytearray(nds.save())
+    log(f"[rand] trainers: {mons} Solo Pokemon rerolled (+ {coop_mons} Co-Op)")
+    return (True, {'trainer_mons': mons, 'hard_mons': coop_mons, 'coop_mons': coop_mons, 'skipped': skipped})
 
 def _shiny_hits(data: bytes) -> List[int]:
     """Finds threshold byte offset in ARM9 shiny check pattern (48 40 50 40 <thr> 28 01 D2)."""
@@ -1739,7 +1763,7 @@ def randomize_rom(
     do_honey = bool(settings.get('honey', True))
     do_statics = bool(settings.get('statics', True))
     evo_mode = settings.get('evolutions_mode', 'vanilla')
-    do_battles = bool(settings.get('battles', False))
+    do_battles = bool(settings.get('battles', do_statics))
     do_gifts = bool(settings.get('gifts', False))
     do_trade_get = bool(settings.get('trade_get', False))
     do_trade_want = bool(settings.get('trade_want', False))
@@ -1798,7 +1822,8 @@ def randomize_rom(
         if settings.get('movesets'):
             randomize_learnsets(rom, coop_seed, log)
         if settings.get('trainers'):
-            randomize_trainers(rom, coop_seed, db, c_noleg, c_simstr, log)
+            keep_items = bool(settings.get('trainers_keep_items', settings.get('keep_items', False)))
+            randomize_trainers(rom, coop_seed, db, c_noleg, c_simstr, log, keep_items=keep_items)
         rom.save(out_rom)
         coop_code = encode_coop_code(settings)
         summary['coop_code'] = coop_code

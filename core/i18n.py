@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 i18n.py
 Bilingual dictionary for ProjectPM Addon Patcher.
@@ -15,13 +14,9 @@ TRANSLATIONS = {
         "en": "ProjectPM Addon Patcher",
         "fr": "ProjectPM Addon Patcher"
     },
-    "app_subtitle": {
-        "en": "Community Mod & Addon Manager for Pokémon Platinum",
-        "fr": "Gestionnaire de Mods & Addons pour Pokémon Platine"
-    },
     "header_version": {
-        "en": "v1.0.9",
-        "fr": "v1.0.9"
+        "en": "v1.1.0",
+        "fr": "v1.1.0"
     },
     "section_rom": {
         "en": "1. SELECT YOUR ROM & DESTINATION",
@@ -170,38 +165,6 @@ TRANSLATIONS = {
     "type_eff_caption_targets": {
         "en": "Target selection (badge next to each Pokémon)",
         "fr": "Choix de la cible (badge à côté de chaque Pokémon)"
-    },
-    "badge_fast_transitions_yes": {
-        "en": "Fast Transitions: Active",
-        "fr": "Transitions Rapides : Actif"
-    },
-    "badge_fast_transitions_no": {
-        "en": "Fast Transitions: Inactive",
-        "fr": "Transitions Rapides : Inactif"
-    },
-    "badge_level_scaling_yes": {
-        "en": "Level Scaling: Active",
-        "fr": "Échelle Niveaux : Actif"
-    },
-    "badge_level_scaling_no": {
-        "en": "Level Scaling: Inactive",
-        "fr": "Échelle Niveaux : Inactif"
-    },
-    "badge_lr_shortcuts_yes": {
-        "en": "L/R Shortcuts: Active",
-        "fr": "Raccourcis L/R : Actif"
-    },
-    "badge_lr_shortcuts_no": {
-        "en": "L/R Shortcuts: Inactive",
-        "fr": "Raccourcis L/R : Inactif"
-    },
-    "badge_battle_inspector_yes": {
-        "en": "Battle Inspector: Active",
-        "fr": "Inspecteur Combat : Actif"
-    },
-    "badge_battle_inspector_no": {
-        "en": "Battle Inspector: Inactive",
-        "fr": "Inspecteur Combat : Inactif"
     },
     "badge_iv_ev_yes": {
         "en": "IV/EV: Active",
@@ -367,14 +330,6 @@ TRANSLATIONS = {
         "en": "Uninstall Game Mods",
         "fr": "Désinstaller les mods de jeu"
     },
-    "addon_restore_title": {
-        "en": "Uninstall Game Mods (Restore Original ROM)",
-        "fr": "Désinstaller les mods de jeu (Restaurer la ROM d'origine)"
-    },
-    "addon_restore_desc": {
-        "en": "Uninstalls gameplay mods (Soul Link, Nuzlocke, etc.) and restores the original multiplayer ROM.",
-        "fr": "Désinstalle les mods de jeu (Soul Link, Nuzlocke, etc.) et restaure la ROM multijoueur d'origine."
-    },
     "addon_standard_title": {
         "en": "Standard / Official (Classic Multiplayer)",
         "fr": "Standard / Officiel (Multijoueur classique)"
@@ -463,54 +418,6 @@ TRANSLATIONS = {
         "en": "TYPE EFFECTIVENESS",
         "fr": "EFFICACITÉ TYPES"
     },
-    "fast_transitions_title": {
-        "en": "Fast Environment Transitions (Instant Screen Fades)",
-        "fr": "Transitions d'Environnement Rapides (Fondu 1-Frame)"
-    },
-    "fast_transitions_desc": {
-        "en": "Speeds up screen fades when entering doors, climbing stairs, crossing gates, or warping between maps to 1 frame.",
-        "fr": "Réduit à 1 seule frame les temps d'animation et de fondu lors des portes de péage, escaliers et téléportations de zones."
-    },
-    "fast_transitions_badge": {
-        "en": "FAST FADES",
-        "fr": "FONDU RAPIDE"
-    },
-    "level_scaling_title": {
-        "en": "Dynamic Trainer Level Scaling",
-        "fr": "Échelle de Niveau Dynamique des Dresseurs (Level Scaling)"
-    },
-    "level_scaling_desc": {
-        "en": "Automatically scales all opponent trainer and gym leader Pokémon levels and stats to match your current party's level cap.",
-        "fr": "Ajuste automatiquement les niveaux et statistiques des Pokémon des dresseurs adverses et des champions au niveau max de votre équipe."
-    },
-    "level_scaling_badge": {
-        "en": "LEVEL SCALING",
-        "fr": "LEVEL SCALING"
-    },
-    "lr_shortcuts_title": {
-        "en": "Unused Shoulder Button Field Shortcuts (L / R)",
-        "fr": "Raccourcis de Terrain sur Gâchettes L / R"
-    },
-    "lr_shortcuts_desc": {
-        "en": "Press R on the overworld to instantly mount/dismount your Bicycle without registering it, and press L to immediately open the Town Map.",
-        "fr": "Appuyez sur R sur le terrain pour monter/descendre instantanément du Vélo sans l'enregistrer, et sur L pour ouvrir directement la Carte."
-    },
-    "lr_shortcuts_badge": {
-        "en": "L/R SHORTCUTS",
-        "fr": "RACCOURCIS L/R"
-    },
-    "battle_inspector_title": {
-        "en": "In-Battle Stat & Turn Inspector",
-        "fr": "Inspecteur de Combat (Stats & Tours de Météo)"
-    },
-    "battle_inspector_desc": {
-        "en": "Displays active stat stage boosts (+1 Atk, -1 Spe) and remaining turns for weather, Trick Room, screens, and entry hazards directly on the battle touch screen.",
-        "fr": "Affiche les modificateurs de statistiques (+1 Atq, -1 Vit) et les tours restants de météo, distorsion et protections en direct sur l'écran tactile."
-    },
-    "battle_inspector_badge": {
-        "en": "INSPECTOR",
-        "fr": "INSPECTEUR"
-    },
     "fast_text_title": {
         "en": "Instant Text Speed (Fast Text)",
         "fr": "Vitesse de Texte Instantanée (Fast Text)"
@@ -522,18 +429,6 @@ TRANSLATIONS = {
     "fast_text_badge": {
         "en": "FAST TEXT",
         "fr": "TEXTE RAPIDE"
-    },
-    "run_indoors_title": {
-        "en": "Running Everywhere & Indoors",
-        "fr": "Courir Partout (Bâtiments & Intérieurs)"
-    },
-    "run_indoors_desc": {
-        "en": "Allows using running shoes inside all buildings, houses, and indoor facilities.",
-        "fr": "Autorise la course à pied à l'intérieur de tous les bâtiments, maisons et centres Pokémon."
-    },
-    "run_indoors_badge": {
-        "en": "INDOOR RUN",
-        "fr": "COURSE INTÉRIEURE"
     },
     "iv_ev_title": {
         "en": "In-Game IV & EV Display",
@@ -933,10 +828,6 @@ TRANSLATIONS = {
         "en": "Wild Encounters (187 Sinnoh Areas)",
         "fr": "Rencontres Sauvages (187 zones de Sinnoh)"
     },
-    "rand_cat_wilds_desc": {
-        "en": "Modifies tall grass, surfing, fishing, and radar encounters.",
-        "fr": "Modifie les hautes herbes, surf, pêche et rencontres radar."
-    },
     "rand_cat_starters": {
         "en": "Briefcase Starter Trio",
         "fr": "Trio de Starters dans la Valise"
@@ -973,21 +864,9 @@ TRANSLATIONS = {
         "en": "Static & Legendary Encounters",
         "fr": "Rencontres Fixes & Légendaires"
     },
-    "rand_cat_special": {
-        "en": "Special Wild Encounters (Feebas, Marsh...)",
-        "fr": "Rencontres Sauvages Spéciales (Barpau, Grand Marais...)"
-    },
     "rand_cat_gba": {
         "en": "GBA Dual-Slot Encounters",
         "fr": "Rencontres Cartouches GBA insérées"
-    },
-    "rand_cat_gifts": {
-        "en": "NPC Gift Pokémon (Eevee, Porygon...)",
-        "fr": "Pokémon Cadeaux des PNJ (Évoli, Porygon...)"
-    },
-    "rand_cat_trades": {
-        "en": "In-Game NPC Trades",
-        "fr": "Échanges Internes avec les PNJ"
     },
     # Wild options
     "rand_wild_opts_title": {
@@ -1072,30 +951,6 @@ TRANSLATIONS = {
     "rand_trainers_noleg": {
         "en": "No Legendaries (Trainer Teams)",
         "fr": "Exclure les Légendaires (Dresseurs)"
-    },
-    "rand_types": {
-        "en": "Pokémon Types",
-        "fr": "Types Élémentaires des Pokémon"
-    },
-    "rand_types_desc": {
-        "en": "Rerolls types for all 493 Pokémon (Dual types preserved).",
-        "fr": "Reroll les types élémentaires (double-types cohérents)."
-    },
-    "rand_abilities": {
-        "en": "Abilities",
-        "fr": "Talents des Pokémon (Abilities)"
-    },
-    "rand_abilities_desc": {
-        "en": "Rerolls passive abilities among all species.",
-        "fr": "Reroll les 123 talents passifs parmi les Pokémon."
-    },
-    "rand_movesets": {
-        "en": "Movesets (Learned by Level)",
-        "fr": "Attaques apprises par Niveau (Movesets)"
-    },
-    "rand_movesets_desc": {
-        "en": "Rerolls moves learned while leveling up.",
-        "fr": "Reroll les attaques apprises tout en conservant les paliers."
     },
     # Co-Op Seed & Code
     "rand_coop_seed_title": {

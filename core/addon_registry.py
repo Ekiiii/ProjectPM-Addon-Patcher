@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 addon_registry.py
-Central modular registry for Multiplayer versions and Addons.
-Allows easily adding new multiplayer localizations and new community addons in the future.
+Registry of multiplayer versions and addon variants.
 """
 
 MULTIPLAYER_VERSIONS = [

@@ -1,13 +1,13 @@
-/* ==========================================================================
-   PROJECT PM ADDON PATCHER & RANDOMIZER - APPLICATION LOGIC
+/*
+   Project PM Addon Patcher & Randomizer - Application Logic
    Author: Ekiii
-   Bilingual Support (FR / EN) & Integrated Sinnoh Randomizer Wizard
-   ========================================================================== */
+*/
 
 let currentLang = 'en';
 let translations = {};
 let currentRomInfo = null;
 let pokemonNames = {};
+let isHydratingConfig = true;
 
 const SHINY_STEPS = {
   1: { val: 8, label_fr: '1/8192 (Vanilla Platine)', label_en: '1/8192 (Vanilla Platinum)' },
@@ -51,9 +51,7 @@ let wizardState = {
   coop_code: ''
 };
 
-// ============================================================================
 // WINDOW CONTROLS & SEAMLESS DRAG
-// ============================================================================
 function startWindowDrag(e) {
   // Handled natively by .pywebview-drag-region and CSS -webkit-app-region: drag
 }
@@ -76,9 +74,7 @@ function windowClose() {
   }
 }
 
-// ============================================================================
 // INITIALIZATION & BOOT SPLASH
-// ============================================================================
 function setBootSplash(percent, statusText) {
   const bar = document.getElementById('boot-splash-bar');
   const txt = document.getElementById('boot-splash-status');
@@ -112,7 +108,7 @@ window.addEventListener('pywebviewready', async () => {
 
     // Set version
     const verEl = document.getElementById('app-version');
-    if (verEl) verEl.innerText = initData.version || 'v1.0.9';
+    if (verEl) verEl.innerText = initData.version || 'v1.1.0';
     
     // Set initial seeds & codes
     if (initData.initial_coop) {
@@ -147,16 +143,6 @@ window.addEventListener('pywebviewready', async () => {
     // Restore saved user preferences & ROM paths
     if (initData.saved_config) {
       const cfg = initData.saved_config;
-      if (cfg.last_output_rom) {
-        document.getElementById('input-output-rom').value = cfg.last_output_rom;
-      }
-      if (cfg.addon_mode) {
-        const sel = document.getElementById('select-addon-mode');
-        if (sel) {
-          sel.value = cfg.addon_mode;
-          onAddonModeChange();
-        }
-      }
       if (cfg.visual_bg !== undefined) {
         const tBg = document.getElementById('toggle-visual-bg');
         if (tBg) tBg.checked = cfg.visual_bg;
@@ -205,17 +191,34 @@ window.addEventListener('pywebviewready', async () => {
         const tNat = document.getElementById('toggle-colored-natures');
         if (tNat) tNat.checked = cfg.colored_natures;
       }
+      if (cfg.addon_mode) {
+        const sel = document.getElementById('select-addon-mode');
+        if (sel) sel.value = cfg.addon_mode;
+      }
+      if (cfg.last_output_rom) {
+        const dstEl = document.getElementById('input-dest-rom');
+        if (dstEl) dstEl.value = cfg.last_output_rom;
+      }
+      onAddonModeChange(true);
       updatePatchSummaryBadges();
 
       if (cfg.last_source_rom) {
         setBootSplash(88, currentLang === 'fr' ? 'Analyse de la dernière ROM...' : 'Scanning last ROM...');
         document.getElementById('input-source-rom').value = cfg.last_source_rom;
         await processSelectedRom(cfg.last_source_rom);
+        if (cfg.last_output_rom) {
+          const overwriteToggle = document.getElementById('toggle-overwrite-source');
+          const dstEl = document.getElementById('input-dest-rom');
+          if (dstEl && !(overwriteToggle && overwriteToggle.checked)) {
+            dstEl.value = cfg.last_output_rom;
+          }
+        }
       }
     }
   } catch (err) {
     console.error('[App Init Error]', err);
   } finally {
+    isHydratingConfig = false;
     hideBootSplash();
   }
 });
@@ -232,6 +235,7 @@ async function chooseInitialLanguage(lang) {
 }
 
 function saveCurrentOptionsToConfig() {
+  if (isHydratingConfig) return;
   if (window.pywebview && window.pywebview.api && window.pywebview.api.save_app_config) {
     const addonSel = document.getElementById('select-addon-mode');
     const dstInput = document.getElementById('input-dest-rom');
@@ -247,10 +251,6 @@ function saveCurrentOptionsToConfig() {
       trade_evos: document.getElementById('toggle-trade-evos') ? document.getElementById('toggle-trade-evos').checked : false,
       fast_hp_bar: document.getElementById('toggle-fast-hp-bar') ? document.getElementById('toggle-fast-hp-bar').checked : false,
       type_effectiveness: document.getElementById('toggle-type-effectiveness') ? document.getElementById('toggle-type-effectiveness').checked : true,
-      fast_transitions: false,
-      level_scaling: false,
-      lr_shortcuts: false,
-      battle_inspector: false,
       iv_ev_display: document.getElementById('toggle-iv-ev-display') ? document.getElementById('toggle-iv-ev-display').checked : false,
       colored_natures: document.getElementById('toggle-colored-natures') ? document.getElementById('toggle-colored-natures').checked : false,
       last_output_rom: dstInput ? dstInput.value : ''
@@ -259,9 +259,7 @@ function saveCurrentOptionsToConfig() {
   }
 }
 
-// ============================================================================
 // MODAL MANAGEMENT & SUMMARY BADGES (QoL & VISUAL)
-// ============================================================================
 function updatePatchSummaryBadges() {
   // QoL patches count
   const qolToggles = [
@@ -342,9 +340,7 @@ function closeVisualModal() {
   saveCurrentOptionsToConfig();
 }
 
-// ============================================================================
 // TAB NAVIGATION
-// ============================================================================
 function switchTab(tabId) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -357,9 +353,7 @@ function switchTab(tabId) {
   }
 }
 
-// ============================================================================
 // LOCALIZATION (FR / EN DYNAMIC SWITCHING)
-// ============================================================================
 async function changeLang(lang) {
   if (lang === currentLang) return;
   currentLang = lang;
@@ -421,9 +415,7 @@ function applyTranslations(lang) {
   });
 }
 
-// ============================================================================
 // FILE SELECTION & ROM DETECTION (MAIN WORKSPACE)
-// ============================================================================
 async function browseSourceRom() {
   try {
     const path = await window.pywebview.api.browse_source_rom();
@@ -605,18 +597,6 @@ async function processSelectedRom(path, isRefresh = false) {
       toggleTypeEff.checked = !!res.has_type_eff;
     }
 
-    // Sync Fast Transitions from ROM
-    const toggleFastTrans = document.getElementById('toggle-fast-transitions');
-    if (toggleFastTrans && res.has_fast_transitions !== undefined) {
-      toggleFastTrans.checked = !!res.has_fast_transitions;
-    }
-
-    // Sync Battle Inspector from ROM
-    const toggleInspector = document.getElementById('toggle-battle-inspector');
-    if (toggleInspector && res.has_battle_inspector !== undefined) {
-      toggleInspector.checked = !!res.has_battle_inspector;
-    }
-
     // Sync IV/EV display from ROM
     const toggleIv = document.getElementById('toggle-iv-ev-display');
     if (toggleIv && res.has_iv_ev !== undefined) {
@@ -734,9 +714,7 @@ window.addEventListener('drop', (e) => {
   }
 });
 
-// ============================================================================
 // PATCHER & MODES PIPELINE
-// ============================================================================
 function updateModLangNote() {
   const note = document.getElementById('soullink-lang-note');
   if (!note) return;
@@ -943,10 +921,6 @@ async function startPatching() {
     trade_evos: document.getElementById('toggle-trade-evos') ? document.getElementById('toggle-trade-evos').checked : false,
     fast_hp_bar: document.getElementById('toggle-fast-hp-bar') ? document.getElementById('toggle-fast-hp-bar').checked : false,
     type_effectiveness: document.getElementById('toggle-type-effectiveness') ? document.getElementById('toggle-type-effectiveness').checked : true,
-    fast_transitions: document.getElementById('toggle-fast-transitions') ? document.getElementById('toggle-fast-transitions').checked : false,
-    level_scaling: false,
-    lr_shortcuts: false,
-    battle_inspector: document.getElementById('toggle-battle-inspector') ? document.getElementById('toggle-battle-inspector').checked : false,
     iv_ev_display: document.getElementById('toggle-iv-ev-display') ? document.getElementById('toggle-iv-ev-display').checked : false,
     colored_natures: document.getElementById('toggle-colored-natures') ? document.getElementById('toggle-colored-natures').checked : false,
     custom_patch: document.getElementById('input-custom-patch') ? (document.getElementById('input-custom-patch').value.trim() || null) : null,
@@ -1003,9 +977,7 @@ window.onPatchComplete = async (ok, msg) => {
   }
 };
 
-// ============================================================================
 // INTEGRATED RANDOMIZER & STEP-BY-STEP WIZARD
-// ============================================================================
 function onToggleRandomizerChange() {
   const toggle = document.getElementById('toggle-enable-randomizer');
   const activeBox = document.getElementById('rand-active-controls');
@@ -1793,9 +1765,7 @@ async function executeImportCodes() {
   }
 }
 
-// ============================================================================
 // SAVES & ABOUT ACTIONS
-// ============================================================================
 function clearLog(id) {
   const el = document.getElementById(id);
   if (el) el.innerText = '';
@@ -1803,7 +1773,7 @@ function clearLog(id) {
 
 function openBackupsFolder() {
   const srcRom = document.getElementById('input-source-rom') ? document.getElementById('input-source-rom').value : '';
-  const outRom = document.getElementById('input-output-rom') ? document.getElementById('input-output-rom').value : '';
+  const outRom = document.getElementById('input-dest-rom') ? document.getElementById('input-dest-rom').value : '';
   const target = srcRom || outRom || '';
   if (window.pywebview && window.pywebview.api && window.pywebview.api.open_backups_folder) {
     window.pywebview.api.open_backups_folder(target);
@@ -1871,10 +1841,8 @@ window.onUpdateCheckResult = (data) => {
   }
 };
 
-// ============================================================================
 // PREVIEW ARROWS: any .toggle-card with data-preview="path|i18nKey;path2|i18nKey2"
 // gets a small chevron that expands/collapses its example images below the card.
-// ============================================================================
 function initPreviewArrows() {
   document.querySelectorAll('.toggle-card[data-preview]').forEach(card => {
     if (card.dataset.previewReady) return;

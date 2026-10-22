@@ -1,7 +1,6 @@
-/* ==========================================================================
-   PROJECT PM ADDON PATCHER & RANDOMIZER - PIXEL ART DS THEME
-   Inspired by Nintendo DS Pokémon Platinum / Sinnoh Interface
-   ========================================================================== */
+/*
+   Project PM Addon Patcher & Randomizer - Stylesheet
+*/
 
 @font-face {
   font-family: 'PlatinumDS';
@@ -49,9 +48,7 @@
   scrollbar-color: #1e2c44 #080d16;
 }
 
-/* ==========================================================================
-   RETRO PIXEL ART SCROLLBAR (DS POKÉMON PLATINUM THEME)
-   ========================================================================== */
+/* RETRO PIXEL ART SCROLLBAR (DS POKÉMON PLATINUM THEME) */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -123,9 +120,7 @@ body {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-/* ==========================================================================
-   CUSTOM PIXEL ART TITLE BAR (FRAMELESS DRAGGABLE)
-   ========================================================================== */
+/* CUSTOM PIXEL ART TITLE BAR (FRAMELESS DRAGGABLE) */
 .custom-titlebar {
   display: flex;
   justify-content: space-between;
@@ -268,9 +263,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   NAVIGATION TABS
-   ========================================================================== */
+/* NAVIGATION TABS */
 .nav-tabs {
   display: flex;
   background-color: #0f1624;
@@ -316,9 +309,7 @@ body {
   fill: currentColor;
 }
 
-/* ==========================================================================
-   MAIN CONTENT AREA
-   ========================================================================== */
+/* MAIN CONTENT AREA */
 .main-content {
   flex: 1;
   overflow-y: auto;
@@ -333,9 +324,7 @@ body {
   display: block;
 }
 
-/* ==========================================================================
-   PIXEL ART CARDS
-   ========================================================================== */
+/* PIXEL ART CARDS */
 .pixel-card {
   background-color: var(--bg-card);
   border: 2px solid #2a374f;
@@ -382,9 +371,7 @@ body {
   padding: 18px;
 }
 
-/* ==========================================================================
-   GRID & LAYOUT
-   ========================================================================== */
+/* GRID & LAYOUT */
 .grid-2-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -397,9 +384,7 @@ body {
 .ml-3 { margin-left: 12px; }
 .w-100 { width: 100%; }
 
-/* ==========================================================================
-   INPUTS & CONTROLS
-   ========================================================================== */
+/* INPUTS & CONTROLS */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -455,9 +440,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   PIXEL BUTTONS
-   ========================================================================== */
+/* PIXEL BUTTONS */
 .pixel-btn {
   display: inline-flex;
   align-items: center;
@@ -542,9 +525,7 @@ body {
   color: #fff !important;
 }
 
-/* ==========================================================================
-   ROM STATUS BOX & BADGES
-   ========================================================================== */
+/* ROM STATUS BOX & BADGES */
 .rom-status-box {
   background-color: #0e1524;
   border: 1px solid #1e293b;
@@ -592,9 +573,7 @@ body {
 .status-badge.cyan { background-color: #0891b2; color: #fff; }
 .status-badge.slate { background-color: #475569; color: #fff; }
 
-/* ==========================================================================
-   RADIO CARDS
-   ========================================================================== */
+/* RADIO CARDS */
 .radio-box-group {
   display: flex;
   flex-direction: column;
@@ -678,9 +657,7 @@ body {
   line-height: 1.3;
 }
 
-/* ==========================================================================
-   TOGGLE CARDS & SWITCHES
-   ========================================================================== */
+/* TOGGLE CARDS & SWITCHES */
 .toggle-card {
   display: flex;
   justify-content: space-between;
@@ -865,9 +842,7 @@ body {
   background-color: #fff;
 }
 
-/* ==========================================================================
-   RANDOMIZER SEEDS & CODES
-   ========================================================================== */
+/* RANDOMIZER SEEDS & CODES */
 .sync-alert-banner {
   display: flex;
   gap: 12px;
@@ -950,9 +925,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   STARTERS PREVIEW
-   ========================================================================== */
+/* STARTERS PREVIEW */
 .starters-preview-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1080,9 +1053,7 @@ body {
   color: var(--color-gold);
 }
 
-/* ==========================================================================
-   SHINY SLIDER
-   ========================================================================== */
+/* SHINY SLIDER */
 .shiny-slider-card {
   background-color: var(--bg-input);
   border: 1px solid #23314d;
@@ -1139,9 +1110,7 @@ body {
   font-weight: 700;
 }
 
-/* ==========================================================================
-   RANDOMIZER TWO-COLUMN LAYOUT (WORLD VS CO-OP SEPARATED)
-   ========================================================================== */
+/* RANDOMIZER TWO-COLUMN LAYOUT (WORLD VS CO-OP SEPARATED) */
 .rand-columns-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -1256,9 +1225,7 @@ body {
   border-left-color: #10b981;
 }
 
-/* ==========================================================================
-   TERMINAL & PROGRESS BAR
-   ========================================================================== */
+/* TERMINAL & PROGRESS BAR */
 .terminal-card {
   background-color: var(--bg-terminal);
   border: 2px solid #000;
@@ -1319,9 +1286,7 @@ body {
   word-break: break-all;
 }
 
-/* ==========================================================================
-   FOOTER
-   ========================================================================== */
+/* FOOTER */
 .app-footer {
   display: flex;
   justify-content: space-between;
@@ -1369,9 +1334,7 @@ body {
   100% { transform: scale(0.95); box-shadow: 0 0 4px #10b981; }
 }
 
-/* ==========================================================================
-   ABOUT TAB
-   ========================================================================== */
+/* ABOUT TAB */
 .about-hero {
   display: flex;
   gap: 24px;
@@ -1459,9 +1422,7 @@ body {
   line-height: 1.4;
 }
 
-/* ==========================================================================
-   LEGAL DISCLAIMER & ROM NOTICE SECTION
-   ========================================================================== */
+/* LEGAL DISCLAIMER & ROM NOTICE SECTION */
 .legal-section {
   margin-top: 24px;
   border-top: 1px solid #1e293b;
@@ -1560,9 +1521,7 @@ body {
 }
 
 
-/* ==========================================================================
-   RANDOMIZER INTEGRATED CARD & WIZARD MODAL
-   ========================================================================== */
+/* RANDOMIZER INTEGRATED CARD & WIZARD MODAL */
 .flex-between {
   display: flex;
   justify-content: space-between;
@@ -1912,9 +1871,9 @@ body {
   background-color: #047857;
 }
 
-/* ========================================================================== */
+/*  */
 /* PATCH LAUNCHER CARDS (QoL & VISUAL MODAL LAUNCHERS)                       */
-/* ========================================================================== */
+/*  */
 .patch-launcher-card {
   background: linear-gradient(180deg, #111a2e 0%, #0d1424 100%);
   border: 2px solid #1e293b;
@@ -1992,9 +1951,7 @@ body {
   align-items: center;
 }
 
-/* ==========================================================================
-   BOOT SPLASH SCREEN OVERLAY
-   ========================================================================== */
+/* BOOT SPLASH SCREEN OVERLAY */
 #app-boot-splash {
   position: fixed;
   inset: 0;
@@ -2039,9 +1996,7 @@ body {
   transition: width 0.25s ease;
 }
 
-/* ==========================================================================
-   PREVIEW ARROW (small chevron expanding example images under an option)
-   ========================================================================== */
+/* PREVIEW ARROW (small chevron expanding example images under an option) */
 .toggle-card[data-preview] { position: relative; }
 
 .preview-arrow {

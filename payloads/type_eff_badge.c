@@ -1,20 +1,9 @@
 /*
  * type_eff_badge.c
- * Clean C implementation of in-battle Move Type Effectiveness Capsule Badges
- * for Pokémon Platinum FR / US (ProjectPM) - Single & Double Battle Edition.
+ * In-battle move type effectiveness capsule badges for Pokémon Platinum (ProjectPM).
  *
- * Compiled with:
+ * Build:
  *   arm-none-eabi-gcc -mcpu=arm946e-s -mthumb -Os -fno-builtin -nostdlib
- *
- * Features:
- * 1. Move Selection Screen (Sub OBJ Palette 3):
- *    - Single enemy or identical effectiveness on both enemies:
- *      Renders a 17x12 pixel-art single capsule badge ([x4], [x2], [x1], [x1/2], [x1/4], [x0]).
- *    - Double battle with 2 alive enemies having different effectiveness:
- *      Renders a 19x12 pixel-art bicolor split capsule badge ([Left | Right], e.g. [2|1], [1|1/2]).
- * 2. Target Selection Screen (Sub OBJ Palette 6):
- *    - Renders the individual 17x12 pixel-art capsule badge right next to each target's name
- *      (e.g. "CANINOS ♂ [x2]", "DYNAVOLT ♂ [x1]").
  */
 #include <stdint.h>
 

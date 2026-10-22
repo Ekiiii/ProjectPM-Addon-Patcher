@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 bridge.py
-PyWebView JS-Python Bridge for ProjectPM Addon Patcher & Randomizer:
-- Exposes bidirectional APIs for ROM detection, patching pipeline, and randomizer
-- Background async threading with real-time webview callback evaluation
-- Native Windows File Dialogs (Open ROM, Save ROM, Select Patches)
-- Seed generator & share code encoder/decoder
-- Automatic backup management and GitHub updates
+PyWebView JS-Python bridge for ROM analysis, patching, randomization, and file dialogs.
 """
 import os
 import sys
@@ -58,9 +52,7 @@ class PatcherBridge:
             except Exception as e:
                 print(f"[Bridge JS Error] {e}")
 
-    # =========================================================================
     # APP INITIALIZATION & LOCALIZATION
-    # =========================================================================
     def init_app(self) -> Dict[str, Any]:
         """Returns startup configuration, translations, and initial seeds."""
         cfg = load_config()
@@ -152,9 +144,7 @@ class PatcherBridge:
         """Saves user preferences (ROM paths, settings) to disk."""
         return save_config(cfg_data)
 
-    # =========================================================================
     # NATIVE WINDOW CONTROLS & SEAMLESS DRAG
-    # =========================================================================
     def window_drag(self):
         """No-op: pywebview-drag-region provides smooth native window dragging."""
         pass
@@ -188,9 +178,7 @@ class PatcherBridge:
         except Exception as e:
             print(f"[Window Close Error] {e}")
 
-    # =========================================================================
     # FILE DIALOGS
-    # =========================================================================
     def browse_source_rom(self) -> Optional[str]:
         """Opens native file picker for selecting source Nintendo DS ROM."""
         if not self._window:
@@ -252,9 +240,7 @@ class PatcherBridge:
             return os.path.abspath(result[0]).replace("\\", "/")
         return None
 
-    # =========================================================================
     # ROM DETECTION & BADGES
-    # =========================================================================
     def analyze_rom(self, rom_path: str) -> Dict[str, Any]:
         """Performs deep binary analysis on ROM and returns badges and state."""
         if not rom_path or not os.path.isfile(rom_path):
@@ -447,34 +433,6 @@ class PatcherBridge:
                     "color": "slate"
                 })
 
-            # 8d. QoL: Fast Transitions Badge
-            if getattr(info, "has_fast_transitions", False):
-                badges.append({
-                    "key": "badge_fast_transitions_yes",
-                    "label": t("badge_fast_transitions_yes"),
-                    "color": "emerald"
-                })
-            else:
-                badges.append({
-                    "key": "badge_fast_transitions_no",
-                    "label": t("badge_fast_transitions_no"),
-                    "color": "slate"
-                })
-
-            # 8e. QoL: Battle Inspector Badge
-            if getattr(info, "has_battle_inspector", False):
-                badges.append({
-                    "key": "badge_battle_inspector_yes",
-                    "label": t("badge_battle_inspector_yes"),
-                    "color": "emerald"
-                })
-            else:
-                badges.append({
-                    "key": "badge_battle_inspector_no",
-                    "label": t("badge_battle_inspector_no"),
-                    "color": "slate"
-                })
-
             # 9. Visual: In-Game IV & EV Display Badge
             if getattr(info, "has_iv_ev", False):
                 badges.append({
@@ -569,22 +527,17 @@ class PatcherBridge:
                 "has_trade_evos": bool(getattr(info, "has_trade_evos", False)),
                 "has_fast_hp": bool(getattr(info, "has_fast_hp", False)),
                 "has_type_eff": bool(getattr(info, "has_type_eff", False)),
-                "has_fast_transitions": bool(getattr(info, "has_fast_transitions", False)),
-                "has_level_scaling": bool(getattr(info, "has_level_scaling", False)),
-                "has_lr_shortcuts": bool(getattr(info, "has_lr_shortcuts", False)),
-                "has_battle_inspector": bool(getattr(info, "has_battle_inspector", False)),
                 "has_iv_ev": bool(getattr(info, "has_iv_ev", False)),
                 "has_colored_natures": bool(getattr(info, "has_colored_natures", False)),
                 "size_mb": round(os.path.getsize(rom_path) / (1024 * 1024), 1),
                 "suggested_output": sug_path,
                 "badges": badges
             }
+
         except Exception as e:
             return {"valid": False, "error": str(e)}
 
-    # =========================================================================
     # SHARE CODES & SEEDS
-    # =========================================================================
     def generate_coop_code(self, settings: Dict[str, Any]) -> Dict[str, str]:
         """Encodes or generates a PMC-XXXX-XXXX Co-op code."""
         if not settings.get('coop_seed'):
@@ -606,9 +559,7 @@ class PatcherBridge:
             return {"success": False, "error": err}
         return {"success": True, "settings": settings}
 
-    # =========================================================================
     # PATCHING PIPELINE EXECUTION
-    # =========================================================================
     def run_patching(self, in_rom: str, out_rom: str, options: Dict[str, Any]):
         """Runs the patcher pipeline in a background thread."""
         if self._is_patching:
@@ -653,9 +604,7 @@ class PatcherBridge:
         t_thread.start()
         return {"started": True}
 
-    # =========================================================================
     # RANDOMIZER EXECUTION
-    # =========================================================================
     def run_randomizer(self, in_rom: str, out_rom: str, settings: Dict[str, Any]):
         """Runs the randomizer engine in a background thread."""
         if self._is_randomizing:
@@ -712,9 +661,7 @@ class PatcherBridge:
         t_thread.start()
         return {"started": True}
 
-    # =========================================================================
     # EXTERNAL ACTIONS & UPDATES
-    # =========================================================================
     def open_external_url(self, url: str):
         """Opens web link in the user's default browser or folder in explorer."""
         if url.startswith("http://") or url.startswith("https://"):

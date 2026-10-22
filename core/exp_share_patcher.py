@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 exp_share_patcher.py
-In-game Shared Team EXP mod for Pokémon Platinum (ProjectPM):
-- Distributes battle experience to all party Pokémon (Gen 6+ EXP Share / EXP ALL style)
-- Active battlers on the field receive full 100% experience reward
-- Non-combatant bench Pokémon receive balanced 50% partial experience
-- Fainted (HP=0) and max-level (Lv100) Pokémon are safely skipped
-- Seamlessly integrates into Overlay 16 battle engine
+Team EXP Share patch for Pokémon Platinum (ProjectPM).
+Gives 100% EXP to active battlers and 50% EXP to non-fainted bench Pokémon in Overlay 16.
 """
 import os
 from typing import Optional, Callable, Union

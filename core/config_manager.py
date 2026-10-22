@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 config_manager.py
-Persistent User Configuration & State Subsystem for ProjectPM Addon Patcher.
-Stores user preferences on disk in `config.json`:
-- Chosen UI language & first-launch prompt flag
-- Last selected Source ROM & Destination ROM paths
-- Preferred patching & randomizer options
+Persistent user configuration storage (config.json).
 """
 import os
 import sys
@@ -34,6 +29,7 @@ def get_default_config() -> Dict[str, Any]:
         "last_output_rom": "",
         "visual_bg": True,
         "visual_cam": True,
+        "visual_engine": False,
         "backup_save": True,
         "addon_mode": "soullink",
         "mp_mode": "fr",
@@ -42,21 +38,18 @@ def get_default_config() -> Dict[str, Any]:
         "infinite_tms": False,
         "trade_evos": False,
         "fast_text": False,
-        "run_indoors": False,
         "iv_ev_display": False,
         "colored_natures": False,
         "fast_hp_bar": False,
-        "type_effectiveness": True,
-        "fast_transitions": False,
-        "level_scaling": False,
-        "lr_shortcuts": False,
-        "battle_inspector": False
+        "type_effectiveness": True
     }
+
 
 def load_config() -> Dict[str, Any]:
     """Loads configuration from config.json, returning defaults if not found."""
     cfg = get_default_config()
     cfg_path = get_config_path()
+    needs_prune = False
 
     with _config_lock:
         if os.path.isfile(cfg_path):
@@ -64,9 +57,16 @@ def load_config() -> Dict[str, Any]:
                 with open(cfg_path, "r", encoding="utf-8") as f:
                     saved = json.load(f)
                     if isinstance(saved, dict):
-                        cfg.update(saved)
+                        for k, v in saved.items():
+                            if k in cfg:
+                                cfg[k] = v
+                            else:
+                                needs_prune = True
             except Exception as e:
                 print(f"[Config Load Error] {e}")
+
+    if needs_prune:
+        save_config(cfg)
     return cfg
 
 def save_config(data: Dict[str, Any]) -> bool:
@@ -74,20 +74,22 @@ def save_config(data: Dict[str, Any]) -> bool:
     cfg_path = get_config_path()
     with _config_lock:
         try:
-            # Merge with current
             current = get_default_config()
             if os.path.isfile(cfg_path):
                 try:
                     with open(cfg_path, "r", encoding="utf-8") as f:
                         loaded = json.load(f)
                         if isinstance(loaded, dict):
-                            current.update(loaded)
+                            for k, v in loaded.items():
+                                if k in current:
+                                    current[k] = v
                 except Exception:
                     pass
 
-            current.update(data)
+            for k, v in data.items():
+                if k in current:
+                    current[k] = v
 
-            # Write temp then atomic rename
             tmp_path = cfg_path + ".tmp"
             with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(current, f, indent=2, ensure_ascii=False)

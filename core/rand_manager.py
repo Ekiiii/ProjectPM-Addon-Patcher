@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 rand_manager.py
-Automatic preservation and restoration engine for Pokémon Platinum Randomizers.
-Detects, snapshots, and re-applies all randomized tables (wild encounters, starters,
-trainers, base stats, types, movesets, evolutions, items, overlays) across any base
-patch, mod injection, or visual conversion.
+Preservation and restoration of randomized ROM tables across base patches and mod injections.
 """
 import os
 import shutil

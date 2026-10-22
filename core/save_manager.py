@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 save_manager.py
-Robust and automatic backup and companion synchronization system for:
-- Emulator Save files (.sav, .dsv) across all common emulator folder structures
-- Randomizer companion files (.rand.txt)
-- Safe ROM backups before patching and modification
+Backup and companion file (.sav, .dsv, .rand.txt) management.
 """
 import os
 import glob
@@ -98,9 +94,7 @@ def backup_and_sync_save(source_rom: str, output_rom: str, log_cb: Optional[Call
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
 
-    # =========================================================================
     # 1. ROM BACKUP (with automatic cleanup of older ROM backups to save disk)
-    # =========================================================================
     rom_bak = os.path.join(src_backup_dir, f"{src_base}.{timestamp}.nds")
     try:
         shutil.copy2(source_rom, rom_bak)
@@ -120,9 +114,7 @@ def backup_and_sync_save(source_rom: str, output_rom: str, log_cb: Optional[Call
     except Exception as e:
         log(f"[Backup] Warning: could not backup ROM ({e})")
 
-    # =========================================================================
     # 2. SOURCE SAVES SEARCH & BACKUP (.sav / .dsv)
-    # =========================================================================
     source_saves = find_existing_saves(source_rom)
     backed_up_count = 0
     seen_bak_names = set()
@@ -151,9 +143,7 @@ def backup_and_sync_save(source_rom: str, output_rom: str, log_cb: Optional[Call
         except Exception as e:
             log(f"[Backup] Warning: could not backup save {os.path.basename(save_path)} ({e})")
 
-    # =========================================================================
     # 3. DESTINATION SAVES BACKUP (if output_rom already exists with a save)
-    # =========================================================================
     if output_rom and os.path.abspath(source_rom) != os.path.abspath(output_rom):
         dest_saves = find_existing_saves(output_rom)
         out_backup_dir = os.path.join(out_dir, "PMBackups")
@@ -189,9 +179,7 @@ def backup_and_sync_save(source_rom: str, output_rom: str, log_cb: Optional[Call
         else:
             log("[Save] Note: No existing save file (.sav / .dsv) found to backup.")
 
-    # =========================================================================
     # 4. COMPANION SAVE SYNCHRONIZATION
-    # =========================================================================
     # If source ROM has a save and target ROM has a different name, copy the save
     # so player can immediately resume playing the newly patched/modded ROM!
     if source_saves and src_base != out_base:
@@ -206,9 +194,7 @@ def backup_and_sync_save(source_rom: str, output_rom: str, log_cb: Optional[Call
         except Exception as e:
             log(f"[Save] Warning: could not copy companion save ({e})")
 
-    # =========================================================================
     # 5. RANDOMIZER RECORD PRESERVATION (.rand.txt)
-    # =========================================================================
     src_rand = os.path.join(src_dir, src_base + ".rand.txt")
     if not os.path.isfile(src_rand) and os.path.isfile(source_rom + ".rand.txt"):
         src_rand = source_rom + ".rand.txt"
